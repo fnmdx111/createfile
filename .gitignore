@@ -1,0 +1,8 @@
+*.pyc
+.idea/
+__pycache__/
+main*.py
+mock/*
+dumps/*
+*.c
+build/
