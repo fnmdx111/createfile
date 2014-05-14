@@ -56,7 +56,17 @@
         selection: {
           mode: 'xy'
         },
-        title: "CT View - " + stream_title
+        title: "CT View - " + stream_title,
+        mouse: {
+          track: true,
+          relative: true,
+          trackFormatter: function(obj) {
+            var date, path;
+            date = moment(Math.floor(obj.x)).format('YYYY/MM/DD HH:mm:ss');
+            path = idx_table[obj.x.toString()][obj.y[0].toString()];
+            return "" + path + " ::= cl: " + obj.y + ", ts: " + date;
+          }
+        }
       };
       draw_graph = function(opts) {
         return Flotr.draw(container, [data], Flotr._.extend(Flotr._.clone(options), opts || {}));

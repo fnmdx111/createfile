@@ -153,6 +153,7 @@
       context.lineTo(left, top);
       context.lineTo(left + width, top);
       context.lineTo(left + width, top + height);
+      context.lineTo(left, top + height);
       if (options.fill) {
         context.fillStyle = options.fillStyle;
         context.fill();

@@ -50,9 +50,13 @@ fire_post = () ->
         selection:
           mode: 'xy'
         title: "CT View - #{stream_title}"
-        # mouse:
-          # track: on
-          # relative: yes
+        mouse:
+          track: on
+          relative: yes
+          trackFormatter: (obj) ->
+            date = moment(Math.floor obj.x).format 'YYYY/MM/DD HH:mm:ss'
+            path = idx_table[obj.x.toString()][obj.y[0].toString()]
+            "#{path} ::= cl: #{obj.y}, ts: #{date}"
 
       draw_graph = (opts) ->
         Flotr.draw container, [data], Flotr._.extend(Flotr._.clone(options),

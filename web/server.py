@@ -1,4 +1,5 @@
 # encoding: utf-8
+from collections import defaultdict
 from functools import lru_cache
 import os
 from flask import jsonify, Flask, render_template, request
@@ -29,14 +30,15 @@ def prepare_partitions(stream_uri):
 @lru_cache(maxsize=16)
 def get_cl(stream_uri):
     files = []
-    fp_idx_table = {}
+    fp_idx_table = defaultdict(dict)
     for partition in prepare_partitions(stream_uri):
         fs, ds = partition.get_fdt()
-        for i, (path, obj) in enumerate(fs.items()):
-            l = [obj.create_time.timestamp() * 1000]
+        for path, obj in fs.items():
+            js_timestamp = obj.create_time.timestamp() * 1000
+            l = [js_timestamp]
             l.extend(obj.cluster_list)
             files.append(l)
-            fp_idx_table[i] = path
+            fp_idx_table[js_timestamp][obj.cluster_list[0][0]] = path
             # files ::= [
             #     [timestamp, [cl_seg_start, cl_seg_end], ...],
             #     ...
