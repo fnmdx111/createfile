@@ -4,6 +4,7 @@ import os
 from struct import unpack
 from construct import *
 from datetime import datetime, timezone
+from pandas import DataFrame
 from drive.fs import Partition
 from drive.fs.fat32.speedup._op import find_cluster_lists
 from drive.keys import *
@@ -83,6 +84,18 @@ class FAT32DirectoryTableEntry:
                  'modify_time', 'modify_timestamp',
                  'skip', 'is_deleted']
 
+    __attr__ = __slots__[:]
+    __attr__.remove('skip')
+    __attr__.remove('is_deleted')
+
+    def to_dict(self):
+        return {key: getattr(self, key) for key in self.__attr__
+                if hasattr(self, key)}
+
+    def to_tuple(self):
+        return tuple(getattr(self, key) for key in self.__attr__
+                     if hasattr(self, key))
+
     def __init__(self, raw, dir_name, state_mgr, current_obj, partition):
         obj = self.__struct__.parse(raw)
 
@@ -92,8 +105,7 @@ class FAT32DirectoryTableEntry:
         self.is_directory = bool(obj[k_attribute] & 0x10)
 
         self.first_cluster = self._get_first_cluster(obj)
-        self.cluster_list = partition.resolve_cluster_list(self.first_cluster)\
-                            if not self.is_directory else ()
+        self.cluster_list = partition.resolve_cluster_list(self.first_cluster)
 
         try:
             name, ext = self._get_names(obj, state_mgr, current_obj)
@@ -115,7 +127,8 @@ class FAT32DirectoryTableEntry:
                                  obj[k_create_time_10ms])
         y, m_, d = self._get_date(obj[k_create_date])
         try:
-            self.create_time = datetime(y, m_, d, h, m, int(s))
+            self.create_time = datetime(y, m_, d, h, m, int(s),
+                                        int((s - int(s))) * 100)
             self.create_timestamp = (self.create_time.
                                      replace(tzinfo=timezone.utc).
                                      timestamp()
@@ -348,23 +361,24 @@ class FAT32(Partition):
         __tasks__ = [(root_dir_name,
                       self.resolve_cluster_list(2))]
 
-        files = {}
-        directories = {}
+        entries, create_time_indices = [], []
 
         while __tasks__:
             dir_name, cluster_list = __tasks__.pop(0)
 
-            directories[dir_name] = cluster_list
-
             if dir_name.startswith(u'\u00e5'):
                 continue
 
-            files.update(self._discover(__tasks__, dir_name, cluster_list))
+            _e, _ct = self._discover(__tasks__, dir_name, cluster_list)
 
-        self.logger.info('found %s files and dirs in total', len(files) +
-                                                             len(directories))
+            entries.extend(_e)
+            create_time_indices.extend(_ct)
 
-        return files, directories
+        self.logger.info('found %s files and dirs in total', len(entries))
+
+        return DataFrame(entries,
+                         index=create_time_indices,
+                         columns=FAT32DirectoryTableEntry.__attr__)
 
     def resolve_cluster_list(self, first_cluster, fat=None):
         fat = fat or self.fat1
@@ -379,14 +393,14 @@ class FAT32(Partition):
 
     def _discover(self, tasks, dir_name, cluster_list):
         if 'System Volume Information' in dir_name:
-            return {}
+            return [], []
 
         __blank__ = b'\x00'
 
         __state__ = StateManager(STATE_START)
         __cur_obj__ = {'name': '', 'checksum': 0}
 
-        files = {}
+        entries, create_time_indices = [], []
 
         with BufferedClusterStream(self.stream,
                                    cluster_list,
@@ -424,12 +438,12 @@ class FAT32(Partition):
                     if entry.skip or entry.is_deleted:
                         continue
 
+                    entries.append(entry.to_tuple())
+                    create_time_indices.append(entry.create_time)
+
                     if entry.is_directory:
                         # append new directory task to tasks
                         tasks.append((entry.full_path,
                                       self.fat1[entry.first_cluster]))
-                    else:
-                        # regular 8.3 entry
-                        files[entry.full_path] = entry
 
-        return files
+        return entries, create_time_indices
