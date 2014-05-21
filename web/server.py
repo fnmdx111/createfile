@@ -27,18 +27,19 @@ def prepare_partitions(stream_uri):
     return partitions
 
 
-@lru_cache(maxsize=16)
 def get_cl(stream_uri):
     files = []
     fp_idx_table = defaultdict(dict)
     for partition in prepare_partitions(stream_uri):
-        fs, ds = partition.get_fdt()
-        for path, obj in fs.items():
-            js_timestamp = obj.create_time.timestamp() * 1000
+        entries = partition.get_fdt()
+        for ts, obj in entries.iterrows():
+            js_timestamp = ts.timestamp() * 1000
             l = [js_timestamp]
             l.extend(obj.cluster_list)
             files.append(l)
-            fp_idx_table[js_timestamp][obj.cluster_list[0][0]] = path
+            if obj.cluster_list:
+                fp_idx_table[js_timestamp][obj.cluster_list[0][0]] =\
+                    obj['full_path']
             # files ::= [
             #     [timestamp, [cl_seg_start, cl_seg_end], ...],
             #     ...

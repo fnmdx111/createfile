@@ -84,6 +84,7 @@ Flotr.addType 'ct_view',
     bottom = yScale ysValue
 
     bottom = 0 if bottom < 0
+    height = bottom - top
 
     lineWidth = options.lineWidth
 
@@ -95,7 +96,7 @@ Flotr.addType 'ct_view',
       top   : top
       left  : Math.min(left, right) - lineWidth / 2
       width : Math.abs(right - left) - lineWidth
-      height: bottom - top
+      height: if height > 0 then height else 0.7
     }
 
   hit: (options) ->
