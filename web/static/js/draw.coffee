@@ -1,5 +1,6 @@
 
 container = document.getElementById 'container'
+fc_container = document.getElementById 'fc-container'
 
 _show_loading = () ->
   $('#loading').show()
@@ -22,6 +23,9 @@ fire_post = () ->
 
       data = result['files']
       idx_table = result['idx_table']
+
+      _cl_fc = _.map data, (l) -> [l[0], if l[1]? then l[1][0] else 0]
+      _cl_fc = _.sortBy _cl_fc, (i) -> i[0]
 
       # data ::= [[path, ts, [cl_seg_s, cl_seg_e], ...] ...]
       _cl_flattened = _.flatten(_.map(data, (l) -> l[1..]))
@@ -49,7 +53,7 @@ fire_post = () ->
           margin: true
         selection:
           mode: 'xy'
-        title: "CT View - #{stream_title}"
+        title: "CT Plot - #{stream_title}"
         mouse:
           track: on
           relative: yes
@@ -57,12 +61,31 @@ fire_post = () ->
             date = moment(Math.floor obj.x).format 'YYYY/MM/DD HH:mm:ss'
             path = idx_table[obj.x.toString()][obj.y[0].toString()]
             "#{path} ::= cl: #{obj.y}, ts: #{date}"
+      fc_options =
+        line:
+          show: yes
+        xaxis:
+          mode: 'time'
+          labelsAngle: 45
+          autoscale: on
+        yaxis:
+          autoscale: on
+          min: _c_min
+          max: _c_max
+          margin: true
+        selection:
+          mode: 'xy'
+        title: "FC Plot - #{stream_title}"
 
       draw_graph = (opts) ->
-        Flotr.draw container, [data], Flotr._.extend(Flotr._.clone(options),
-                                                   opts || {})
+        Flotr.draw container, [data],
+                   Flotr._.extend(Flotr._.clone(options), opts || {})
+      draw_fc_graph = (opts) ->
+        Flotr.draw fc_container, [_cl_fc],
+                   Flotr._.extend(Flotr._.clone(fc_options), opts || {})
 
       graph = draw_graph()
+      fc_graph = draw_fc_graph()
 
       Flotr.EventAdapter.observe container, 'flotr:select', (area) ->
         graph = draw_graph
@@ -75,8 +98,19 @@ fire_post = () ->
             min: area.y1
             max: area.y2
 
+        fc_graph = draw_fc_graph
+          xaxis:
+            min: area.x1
+            max: area.x2
+            mode: 'time'
+            labelsAngle: 45
+          yaxis:
+            min: area.y1
+            max: area.y2
+
       Flotr.EventAdapter.observe container, 'flotr:click', () ->
         graph = draw_graph()
+        fc_graph = draw_fc_graph()
 
 $('#fire_post').click fire_post
 

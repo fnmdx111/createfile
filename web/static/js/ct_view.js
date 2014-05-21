@@ -80,7 +80,7 @@
       }
     },
     getBarGeometry: function(x, y, options) {
-      var barWidth, bisection, bottom, horizontal, left, lineWidth, right, scaled_x, top, xScale, xValue, yScale, yValue, yeValue, ysValue;
+      var barWidth, bisection, bottom, height, horizontal, left, lineWidth, right, scaled_x, top, xScale, xValue, yScale, yValue, yeValue, ysValue;
       barWidth = options.barWidth;
       bisection = options.centered ? barWidth / 2 : 0;
       horizontal = options.horizontal;
@@ -97,6 +97,7 @@
       if (bottom < 0) {
         bottom = 0;
       }
+      height = bottom - top;
       lineWidth = options.lineWidth;
       if (x === null || y === null) {
         return null;
@@ -109,7 +110,7 @@
           top: top,
           left: Math.min(left, right) - lineWidth / 2,
           width: Math.abs(right - left) - lineWidth,
-          height: bottom - top
+          height: height > 0 ? height : 0.7
         };
       }
     },
