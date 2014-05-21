@@ -2,8 +2,9 @@
 Web Interface for createfile
 ====
 
-Currently this includes only cluster - time view which displays cluster
-distribution over time.
+Currently this includes cluster - time plot which displays cluster
+distribution over time and first cluster - time plot which displays the
+distribution of first cluster number over time.
 
 Configuring
 ----
