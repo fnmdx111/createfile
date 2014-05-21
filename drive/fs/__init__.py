@@ -1,6 +1,11 @@
 # encoding: utf-8
 import logging
+from misc import SimpleCounter
 
+counters = {
+    'FAT32': SimpleCounter(),
+    'NTFS': SimpleCounter()
+}
 
 class Partition:
     def __init__(self, type_, stream, preceding_bytes, boot_sector_parser):
@@ -17,7 +22,10 @@ class Partition:
         self.boot_sector = boot_sector_parser(stream)
 
     def setup_logger(self):
-        self.logger = logging.getLogger(self.type)
+        self.logger = logging.getLogger('%s|%s' % (self.type,
+                                                     counters[self.type]))
+        counters[self.type].inc()
+
         self.logger.setLevel(logging.DEBUG)
         handler = logging.StreamHandler()
         handler.setLevel(logging.DEBUG)
