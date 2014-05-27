@@ -86,7 +86,6 @@ class FAT32DirectoryTableEntry:
 
     __attr__ = __slots__[:]
     __attr__.remove('skip')
-    __attr__.remove('is_deleted')
 
     def to_dict(self):
         return {key: getattr(self, key) for key in self.__attr__
