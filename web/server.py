@@ -1,6 +1,5 @@
 # encoding: utf-8
 from collections import defaultdict
-from functools import lru_cache
 import os
 from flask import jsonify, Flask, render_template, request
 from drive.disk import get_drive_obj
