@@ -27,12 +27,16 @@ def prepare_partitions(stream_uri):
     return partitions
 
 
-def get_cl(stream_uri):
+def get_cl(stream_uri, hide_deleted=False):
     files = []
     fp_idx_table = defaultdict(dict)
     for partition in prepare_partitions(stream_uri):
         entries = partition.get_fdt()
         for ts, obj in entries.iterrows():
+            if obj.is_deleted:
+                if hide_deleted:
+                    continue
+
             js_timestamp = ts.timestamp() * 1000
             l = [js_timestamp]
             l.extend(obj.cluster_list)
@@ -53,14 +57,16 @@ def get_cl(stream_uri):
 def get_cluster_lists(fn=''):
     if request.method == 'POST':
         fn = request.form['stream_uri']
+        hide_deleted = request.form['hide_deleted']
     else:
         if 'favicon.ico' in fn:
             return b''
         if fn:
             ns = fn.split('/')
             fn = os.path.join(ns[0] + ':/', *ns[1:])
+        hide_deleted = False
 
-    files, fp_idx_table = get_cl(fn)
+    files, fp_idx_table = get_cl(fn, hide_deleted)
 
     return jsonify(files=files, idx_table=fp_idx_table)
 
