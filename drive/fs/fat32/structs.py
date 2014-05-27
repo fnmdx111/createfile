@@ -165,12 +165,14 @@ class FAT32DirectoryTableEntry:
         else:
             name = obj[k_short_file_name].strip()
             if self.is_deleted:
-                name = '(deleted) ' + str(name[1:], encoding='ascii')
+                # TODO add a function which tries both gbk and unicode to decode
+                # TODO the file names
+                name = '(deleted) ' + str(name[1:], encoding='gbk')
             else:
-                name = str(name, encoding='ascii')
+                name = str(name, encoding='gbk')
 
             if not self.is_directory:
-                ext = str(obj[k_short_extension].strip(), encoding='ascii')
+                ext = str(obj[k_short_extension].strip(), encoding='gbk')
                 name = '.'.join((name, ext)).strip('.')
             name = name.lower()
             ext = ext.lower()
@@ -410,8 +412,7 @@ class FAT32(Partition):
                 try:
                     raw = stream.read(32)
                 except StopIteration:
-                    self.logger.warning('cluster list exhausted at %s',
-                                        dir_name)
+                    # we just ran out of clusters, simply do a break here
                     break
 
                 if len(raw) < 32:
