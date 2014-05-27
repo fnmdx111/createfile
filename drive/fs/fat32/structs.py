@@ -113,17 +113,15 @@ class FAT32DirectoryTableEntry:
                 self.skip = True
                 return
         except UnicodeDecodeError:
-            name, ext = (str((obj[k_short_file_name]
-                                 [1 if self.is_deleted else 0:]),
-                             encoding='raw_unicode_escape'),
-                         str(obj[k_short_extension]))
             partition.logger.warning('%s unicode decode error, '
                                      'first cluster: %s, '
                                      'byte address: %s',
                                      dir_name, hex(self.first_cluster),
                                      hex(partition.abs_c2b(self.first_cluster)))
-            self.skip = True
-            return
+            name, ext = (str((obj[k_short_file_name]
+                                 [1 if self.is_deleted else 0:]),
+                             encoding='raw_unicode_escape'),
+                         str(obj[k_short_extension]))
 
         self.full_path = os.path.join(dir_name, name)
 
