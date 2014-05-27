@@ -113,6 +113,10 @@ class FAT32DirectoryTableEntry:
                 self.skip = True
                 return
         except UnicodeDecodeError:
+            name, ext = (str((obj[k_short_file_name]
+                                 [1 if self.is_deleted else 0:]),
+                             encoding='raw_unicode_escape'),
+                         str(obj[k_short_extension]))
             partition.logger.warning('%s unicode decode error, '
                                      'first cluster: %s, '
                                      'byte address: %s',
@@ -165,12 +169,14 @@ class FAT32DirectoryTableEntry:
         else:
             name = obj[k_short_file_name].strip()
             if self.is_deleted:
-                name = '(deleted) ' + str(name[1:], encoding='ascii')
+                # TODO add a function which tries both gbk and unicode to decode
+                # TODO the file names
+                name = '(deleted) ' + str(name[1:], encoding='gbk')
             else:
-                name = str(name, encoding='ascii')
+                name = str(name, encoding='gbk')
 
             if not self.is_directory:
-                ext = str(obj[k_short_extension].strip(), encoding='ascii')
+                ext = str(obj[k_short_extension].strip(), encoding='gbk')
                 name = '.'.join((name, ext)).strip('.')
             name = name.lower()
             ext = ext.lower()
@@ -345,7 +351,8 @@ class FAT32(Partition):
         _0 = self._next_ul_int32()
         _1 = self._next_ul_int32()
         assert _0 == self._eoc_magic
-        assert _1 == 0xffffffff or _1 == 0xfffffff
+        # assert _1 == 0xffffffff or _1 == 0xfffffff
+        # due to some un-standard implementations
 
         number_of_fat_items = self.bytes_per_fat // 4
 
@@ -410,8 +417,7 @@ class FAT32(Partition):
                 try:
                     raw = stream.read(32)
                 except StopIteration:
-                    self.logger.warning('cluster list exhausted at %s',
-                                        dir_name)
+                    # we just ran out of clusters, simply do a break here
                     break
 
                 if len(raw) < 32:
