@@ -130,7 +130,8 @@ class Attribute:
 
     def _finish(self):
         self.stream.seek(self.abs_pos, os.SEEK_SET)
-        self.stream.seek(self.attribute_header[k_size_of_attribute], os.SEEK_CUR)
+        self.stream.seek(self.attribute_header[k_size_of_attribute],
+                         os.SEEK_CUR)
         del self.stream
 
 
