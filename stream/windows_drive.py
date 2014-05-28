@@ -56,7 +56,7 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
                 # |-----^----------|
                 #       |
                 #       +- self._buffer.tell()
-                # what we'd better do is add 500 and pointer of self._buffer
+                # what we'd better do is adding 500 and pointer of self._buffer
                 # together, thus the actual offset will be
                 # pos = +(2 * buf_size + 500 + self._buffer.tell()) relative to
                 # the start of the buffer, like this
