@@ -9,6 +9,7 @@ from drive.fs.ntfs.attributes import attributes
 from drive.fs.ntfs.misc import StrictlyUnused, Unused
 from drive.keys import *
 from misc import MAGIC_END_SECTION
+from stream.ntfs_cluster_stream import NTFSClusterStream
 
 
 def _sl_int8_entry(c, key):
@@ -75,30 +76,40 @@ FileRecordHeader = Struct(k_FileRecordHeader,
 
 
 class MFTRecord:
-    def __init__(self, stream):
+    def __init__(self, parent, stream):
         """
         The stream here must be a BytesIO which contains the MFT record. Since
         we've already had the size of an MFT record from boot sector, this can
         be easily done.
         """
+        self.stop = False
+
         assert isinstance(stream, BytesIO)
         self.stream = stream
+        self.parent = parent
 
-        self.attributes = []
+        self.attributes = {}
 
         signature = stream.read(4)
+        if signature == b'\x00\x00\x00\x00':
+            self.stop = True
+            return
+
         {b'FILE': self.do_file,
          b'BAAD': self.do_bad}[signature]()
 
     def do_file(self):
         header = FileRecordHeader.parse_stream(self.stream)
         self.stream.seek(header[k_offset_to_update_sequence])
-        # update_seq = self.stream.read(header[k_size_of_update_sequence])
-        # TODO implement update_seq check whenever possible
+        update_seq = self.stream.read(header[k_size_of_update_sequence] * 2)
 
-        self.stream.seek(header[k_offset_to_first_attribute])
-        for attribute in attributes(self.stream):
-            self.attributes.append(attribute)
+        ntfs_stream = NTFSClusterStream(self.stream.getvalue(),
+                                        self.parent.bytes_per_sector,
+                                        update_seq)
+
+        ntfs_stream.seek(header[k_offset_to_first_attribute])
+        for attribute in attributes(ntfs_stream):
+            self.attributes[attribute.type] = attribute
 
     def do_bad(self):
         pass
@@ -129,8 +140,16 @@ class NTFS(Partition):
                          hex(mft_abs_pos))
         self.mft_records = []
         while True:
-            record = MFTRecord(BytesIO(
-                self.stream.read(self.bytes_per_mft_record)))
+            number = len(self.mft_records)
+            self.logger.debug('reading MFT record %s at %s' %
+                              (number,
+                               hex(mft_abs_pos + number *
+                                   self.bytes_per_mft_record)))
+            record = MFTRecord(self,
+                               BytesIO(self.stream.read(
+                                   self.bytes_per_mft_record)))
+            if record.stop:
+                break
             self.mft_records.append(record)
 
     def lcn2b(self, lcn):

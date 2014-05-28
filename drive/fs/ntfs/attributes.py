@@ -104,7 +104,9 @@ class AttributeHeader:
     def _read_name(self):
         size_of_name = self._common_header[k_length_of_name] * 2
         if self._common_header[k_length_of_name]:
-            self._stream.seek(size_of_name, os.SEEK_SET)
+            self._stream.seek(self._abs_pos +
+                              self._common_header[k_offset_to_name],
+                              os.SEEK_SET)
             self.name = str(self._stream.read(size_of_name),
                             encoding='utf-16')
 
