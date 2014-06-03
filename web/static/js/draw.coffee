@@ -3,6 +3,7 @@ container = document.getElementById 'container'
 fc_container = document.getElementById 'fc-container'
 
 _show_loading = () ->
+  $('ct-text').text('')
   $('#loading').show()
   $('#ct-view').hide()
 
@@ -36,13 +37,24 @@ fire_post = () ->
 
       _cl_fc = _.map data, (l) -> [l[0], if l[1]? then l[1][0] else 0]
       _cl_fc = _.sortBy _cl_fc, (i) -> i[0]
+      data = _.sortBy data, (i) -> i[0]
 
-      # data ::= [[path, ts, [cl_seg_s, cl_seg_e], ...] ...]
+      # data ::= [[ts, [cl_seg_s, cl_seg_e], ...] ...]
       _cl_flattened = _.flatten(_.map(data, (l) -> l[1..]))
       _c_min = _.min(_cl_flattened)
       _c_max = _.max(_cl_flattened)
 
       stream_title = if stream_uri is '' then 'default stream' else stream_uri
+
+      texts = (for d in data
+                 [t, segments...] = d
+                 if segments.length == 0
+                   continue
+
+                 tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
+                 p = idx_table[t.toString() + '.0'][segments[0][0].toString()]
+                 "<li>#{tf} #{p}: #{segments}</li>").join('')
+      $('#ct-text').text("<ul>#{texts}</ul>")
 
       options =
         ct_view:
