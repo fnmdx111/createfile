@@ -41,6 +41,7 @@ class AttributeHeader:
         self.is_end_of_attributes = False
 
         self._stream = stream
+        self.name = ''
 
         self.size, self._abs_pos = 0, 0
         with self:
@@ -60,7 +61,6 @@ class AttributeHeader:
                     self._non_resident_header.parse_stream(stream)
                 self.data_runs = self._read_data_runs()
 
-            self.name = ''
             self._read_name()
 
     def __enter__(self):
@@ -80,8 +80,9 @@ class AttributeHeader:
         return chars + b'\x00' * (8 - len(chars))
 
     def _read_data_runs(self):
-        # self._stream.seek(self._rest_header[k_offset_to_data_runs],
-        #                   os.SEEK_CUR)
+        self._stream.seek(self._abs_pos +
+                          self._rest_header[k_offset_to_data_runs],
+                          os.SEEK_SET)
         ret = []
         while True:
             sizes = unpack('B', self._stream.read(1))[0]

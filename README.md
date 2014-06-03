@@ -57,6 +57,16 @@ with ImageStream(path_to_disk_image) as stream:
 the parameter of the `with` statement. Make sure the argument to
 `WindowsPhyscialDriveStream` represent the hard disk you want to read.
 
+* To get filename and data runs from an MFT record:
+```python
+FILENAME_ATTR_TYPE = 0x30
+DATA_ATTR_TYPE = 0x80
+if FILENAME_ATTR_TYPE in mft.attributes:
+    print('filename: %s' % mft.attributes[FILENAME_ATTR_TYPE].filename)
+if DATA_ATTR_TYPE in mft.attributes:
+    print('data runs: %s' % mft.attributes[DATA_ATTR_TYPE].data_runs)
+```
+
 
 Licensing
 ====

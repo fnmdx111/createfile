@@ -91,7 +91,7 @@ class MFTRecord:
         self.attributes = {}
 
         signature = stream.read(4)
-        if signature == b'\x00\x00\x00\x00':
+        if signature != b'FILE' and signature != b'BAAD':
             self.stop = True
             return
 
@@ -109,6 +109,9 @@ class MFTRecord:
 
         ntfs_stream.seek(header[k_offset_to_first_attribute])
         for attribute in attributes(ntfs_stream):
+            # this may not be appropriate, there are times that multiple
+            # instances of attributes of the same type exist
+            # what are the relationships about them?
             self.attributes[attribute.type] = attribute
 
     def do_bad(self):
@@ -140,11 +143,6 @@ class NTFS(Partition):
                          hex(mft_abs_pos))
         self.mft_records = []
         while True:
-            number = len(self.mft_records)
-            self.logger.debug('reading MFT record %s at %s' %
-                              (number,
-                               hex(mft_abs_pos + number *
-                                   self.bytes_per_mft_record)))
             record = MFTRecord(self,
                                BytesIO(self.stream.read(
                                    self.bytes_per_mft_record)))
