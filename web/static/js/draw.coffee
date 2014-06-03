@@ -54,7 +54,7 @@ fire_post = () ->
                  tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
                  p = idx_table[t.toString() + '.0'][segments[0][0].toString()]
                  "<li>#{tf} #{p}: #{segments}</li>").join('')
-      $('#ct-text').text("<ul>#{texts}</ul>")
+      $('#ct-text').html("<ul>#{texts}</ul>")
 
       options =
         ct_view:

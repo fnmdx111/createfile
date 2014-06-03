@@ -66,7 +66,7 @@
         }
         return _results;
       })()).join('');
-      $('#ct-text').text("<ul>" + texts + "</ul>");
+      $('#ct-text').html("<ul>" + texts + "</ul>");
       options = {
         ct_view: {
           show: true,
