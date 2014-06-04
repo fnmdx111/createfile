@@ -1,8 +1,12 @@
 # encoding: utf-8
 import os
-from drive.fs.ntfs.structs import NTFS
+from .structs import NTFS
 from drive.keys import *
+from drive.types import register
 
+__all__ = ['get_ntfs_obj', 'get_ntfs_partition']
+
+@register(k_NTFS)
 def get_ntfs_obj(entry, stream):
     first_byte_addr = entry[k_first_byte_address]
 

@@ -1,11 +1,13 @@
 # encoding: utf-8
-from drive.fs.fat32.structs import FAT32
+from drive.types import register
+from .structs import FAT32
 from drive.keys import *
 import os
 
 __all__ = ['get_fat32_obj', 'get_fat32_partition']
 
 
+@register(k_FAT32)
 def get_fat32_obj(entry, stream):
     first_byte_addr = entry[k_first_byte_address]
 
