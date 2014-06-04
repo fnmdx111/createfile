@@ -78,6 +78,7 @@
         },
         xaxis: {
           mode: 'time',
+          noTicks: 12,
           labelsAngle: 45,
           autoscale: true
         },
@@ -108,6 +109,7 @@
         },
         xaxis: {
           mode: 'time',
+          noTicks: 12,
           labelsAngle: 45,
           autoscale: true
         },

@@ -66,6 +66,7 @@ fire_post = () ->
           topPadding: 10
         xaxis:
           mode: 'time'
+          noTicks: 12 # automatically set this number against the data
           labelsAngle: 45
           autoscale: on
         yaxis:
@@ -88,6 +89,7 @@ fire_post = () ->
           show: yes
         xaxis:
           mode: 'time'
+          noTicks: 12
           labelsAngle: 45
           autoscale: on
         yaxis:
