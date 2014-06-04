@@ -5,12 +5,12 @@ from struct import unpack
 from construct import *
 from datetime import datetime, timezone
 from pandas import DataFrame
-from drive.fs import Partition
-from drive.fs.fat32.speedup._op import find_cluster_lists
+from .. import Partition
+from .speedup._op import find_cluster_lists
 from drive.keys import *
 from misc import STATE_LFN_ENTRY, STATE_DOS_ENTRY, MAGIC_END_SECTION, \
     clear_cur_obj, time_it, StateManager, STATE_START
-from stream.buffered_cluster_stream import BufferedClusterStream
+from stream.auxiliary import BufferedClusterStream
 
 FAT32BootSector = Struct(k_FAT32BootSector,
     Bytes       (k_jump_instruction, 3),

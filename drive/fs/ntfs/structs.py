@@ -5,11 +5,11 @@ import os
 from construct import Struct, Bytes, String, ULInt16, ULInt8, ULInt64, SLInt8,\
     Magic, Value, ULInt32
 from drive.fs import Partition
-from drive.fs.ntfs.attributes import attributes
-from drive.fs.ntfs.misc import StrictlyUnused, Unused
+from .attributes import attributes
+from .misc import StrictlyUnused, Unused
 from drive.keys import *
 from misc import MAGIC_END_SECTION
-from stream.ntfs_cluster_stream import NTFSClusterStream
+from stream.auxiliary import NTFSClusterStream
 
 
 def _sl_int8_entry(c, key):
