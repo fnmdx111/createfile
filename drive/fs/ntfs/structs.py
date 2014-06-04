@@ -142,13 +142,19 @@ class NTFS(Partition):
         self.logger.info('stream jumped to %s and ready to read MFT records',
                          hex(mft_abs_pos))
         self.mft_records = []
+
+    def get_mft_records(self):
+        self.mft_records = list(iter(self))
+        self.logger.info('read %s mft record(s)' % len(self.mft_records))
+
+    def __iter__(self):
         while True:
             record = MFTRecord(self,
                                BytesIO(self.stream.read(
                                    self.bytes_per_mft_record)))
             if record.stop:
                 break
-            self.mft_records.append(record)
+            yield record
 
     def lcn2b(self, lcn):
         return self.bytes_per_cluster * lcn
