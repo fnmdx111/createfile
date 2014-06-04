@@ -3,7 +3,7 @@ from collections import defaultdict
 import os
 from struct import unpack
 from construct import Struct, ULInt32, ULInt8, ULInt16, ULInt64, Bytes
-from drive.fs.ntfs.misc import Unused, _local_timestamp
+from .misc import Unused, _local_timestamp
 from drive.keys import *
 
 

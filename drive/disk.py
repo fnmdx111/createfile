@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-from drive.fs.fat32 import get_fat32_obj
-from drive.fs.ntfs import get_ntfs_obj
-from drive.keys import *
-from drive.mbr import ClassicalMBR
+from .fs.fat32 import get_fat32_obj
+from .fs.ntfs import get_ntfs_obj
+from .keys import *
+from .mbr import ClassicalMBR
 from stream import ImageStream
 
 

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from construct import *
-from drive.keys import *
+from .keys import *
 from misc import MAGIC_END_SECTION
 
 
