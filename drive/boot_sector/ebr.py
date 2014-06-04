@@ -16,4 +16,7 @@ def get_ext_partition_obj(entry, stream):
 
         yield registry[real_entry[k_partition_type]](real_entry, stream)
 
+        if next_ebr_entry[k_partition_type] == k_ignored:
+            break
         first_byte_addr = next_ebr_entry[k_first_byte_address]
+

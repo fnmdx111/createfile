@@ -13,10 +13,17 @@ def get_drive_obj(stream):
         return registry[partition_entry[k_partition_type]](partition_entry,
                                                            stream)
 
-    partitions = (get_partition_obj(entry, stream)
-                  for entry in mbr[k_PartitionEntries])
+    for entry in mbr[k_PartitionEntries]:
+        if entry[k_partition_type] == k_ignored:
+            break
 
-    return partitions
+        p = get_partition_obj(entry, stream)
+        if entry[k_partition_type] == k_ExtendedPartition:
+            for partition in p:
+                yield partition
+        else:
+            yield p
+
 
 
 if __name__ == '__main__':
