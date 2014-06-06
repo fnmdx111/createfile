@@ -99,7 +99,7 @@ class FAT32DirectoryTableEntry:
         obj = self.__struct__.parse(raw)
 
         self.skip = False
-        self.is_deleted = obj[k_short_file_name][0] == b'\xe5'
+        self.is_deleted = obj[k_short_file_name].startswith(b'\xe5')
 
         self.is_directory = bool(obj[k_attribute] & 0x10)
 
