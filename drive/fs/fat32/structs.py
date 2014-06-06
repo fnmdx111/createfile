@@ -99,7 +99,7 @@ class FAT32DirectoryTableEntry:
         obj = self.__struct__.parse(raw)
 
         self.skip = False
-        self.is_deleted = b'\xe5' in obj[k_short_file_name]
+        self.is_deleted = obj[k_short_file_name][0] == b'\xe5'
 
         self.is_directory = bool(obj[k_attribute] & 0x10)
 
@@ -157,6 +157,8 @@ class FAT32DirectoryTableEntry:
         ext = ''
         if state_mgr.is_(STATE_LFN_ENTRY):
             name = current_obj['name']
+            if self.is_deleted:
+                name = '(deleted) ' + name
             if not self.is_directory:
                 ext = name.rsplit('.')[-1] if '.' in name else ''
 
