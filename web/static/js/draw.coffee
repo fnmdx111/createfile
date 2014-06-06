@@ -2,6 +2,9 @@
 container = document.getElementById 'container'
 fc_container = document.getElementById 'fc-container'
 
+_data = []
+_idx_table = []
+
 _show_loading = () ->
   $('ct-text').text('')
   $('#loading').show()
@@ -13,16 +16,33 @@ _hide_loading = () ->
 
 _hide_loading()
 
+fill_ct_text = (method) ->
+  if method is 'time'
+    _d = _.sortBy _data, (i) -> i[0]
+  else if method is 'fc'
+    _d = _.sortBy _data, (i) ->
+      if i.length > 1
+        parseInt i[1][0]
+      else
+        0
+
+  texts = (for d in _d
+    [t, segments...] = d
+    if segments.length == 0
+      continue
+
+    tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
+    p = _idx_table[t.toString() + '.0'][segments[0][0].toString()]
+    "<li>#{tf} #{p}: #{segments}</li>").join('')
+  $('#ct-text').html("<ul>#{texts}</ul>")
+
+$('#ctc-time').click () -> fill_ct_text 'time'
+$('#ctc-fc').click () -> fill_ct_text 'fc'
+
 fire_post = () ->
   stream_uri = $('#stream_uri').val()
   _show_loading()
 
-  console.log {
-    stream_uri:
-      stream_uri
-    hide_deleted:
-      $('#hide_deleted').prop('checked')
-  }
   $.post '/cl', {
       stream_uri:
         stream_uri
@@ -35,6 +55,9 @@ fire_post = () ->
       data = result['files']
       idx_table = result['idx_table']
 
+      _data = data
+      _idx_table = idx_table
+
       _cl_fc = _.map data, (l) -> [l[0], if l[1]? then l[1][0] else 0]
       _cl_fc = _.sortBy _cl_fc, (i) -> i[0]
       data = _.sortBy data, (i) -> i[0]
@@ -46,15 +69,6 @@ fire_post = () ->
 
       stream_title = if stream_uri is '' then 'default stream' else stream_uri
 
-      texts = (for d in data
-                 [t, segments...] = d
-                 if segments.length == 0
-                   continue
-
-                 tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
-                 p = idx_table[t.toString() + '.0'][segments[0][0].toString()]
-                 "<li>#{tf} #{p}: #{segments}</li>").join('')
-      $('#ct-text').html("<ul>#{texts}</ul>")
 
       options =
         ct_view:
