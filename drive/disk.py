@@ -15,7 +15,7 @@ def get_drive_obj(stream):
 
     for entry in mbr[k_PartitionEntries]:
         if entry[k_partition_type] == k_ignored:
-            break
+            continue
 
         p = get_partition_obj(entry, stream)
         if entry[k_partition_type] == k_ExtendedPartition:
