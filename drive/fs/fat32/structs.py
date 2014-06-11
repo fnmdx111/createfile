@@ -348,7 +348,7 @@ class FAT32(Partition):
         returns the table represented in dict and number of EOCs
         """
         _0 = self._next_ul_int32()
-        _1 = self._next_ul_int32()
+        # _1 = self._next_ul_int32()
         assert _0 == self._eoc_magic
         # assert _1 == 0xffffffff or _1 == 0xfffffff
         # due to some un-standard implementations
@@ -447,6 +447,8 @@ class FAT32(Partition):
                     create_time_indices.append(entry.create_time)
 
                     if entry.is_directory:
+                        if entry.is_deleted:
+                            continue
                         # append new directory task to tasks
                         if entry.first_cluster in self.fat1:
                             tasks.append((entry.full_path,
