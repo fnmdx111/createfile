@@ -56,7 +56,8 @@ def get_cl(stream_uri, hide_deleted=False):
 def get_cluster_lists(fn=''):
     if request.method == 'POST':
         fn = request.form['stream_uri']
-        hide_deleted = request.form['hide_deleted']
+        hide_deleted = (False if request.form['hide_deleted'] == 'false'
+                        else True)
     else:
         if 'favicon.ico' in fn:
             return b''

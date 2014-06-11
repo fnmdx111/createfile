@@ -440,7 +440,7 @@ class FAT32(Partition):
                     if attribute == 0xb:
                         print('label: %s' % entry.full_path[1:])
 
-                    if entry.skip or entry.is_deleted:
+                    if entry.skip:
                         continue
 
                     entries.append(entry.to_tuple())
@@ -448,7 +448,11 @@ class FAT32(Partition):
 
                     if entry.is_directory:
                         # append new directory task to tasks
-                        tasks.append((entry.full_path,
-                                      self.fat1[entry.first_cluster]))
+                        if entry.first_cluster in self.fat1:
+                            tasks.append((entry.full_path,
+                                          self.fat1[entry.first_cluster]))
+                        else:
+                            self.logger.warning('found deleted directory at'
+                                                ' %s' % entry.first_cluster)
 
         return entries, create_time_indices
