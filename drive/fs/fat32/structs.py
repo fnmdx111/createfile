@@ -1,4 +1,5 @@
 # encoding: utf-8
+import codecs
 from functools import reduce
 import os
 from struct import unpack
@@ -152,6 +153,17 @@ class FAT32DirectoryTableEntry:
                                      dir_name, name, y, m_, d)
             self.skip = True
             return
+
+        partition.logger.debug('found FDT entry:\n'
+                               '\tfc: %s\tfp: %s\n'
+                               '\tcr: %s\n'
+                               '\tmd: %s\n'
+                               '\t%s' % (self.first_cluster,
+                                         self.full_path,
+                                         self.create_time,
+                                         self.modify_time,
+                                         codecs.encode(raw[:11],
+                                                       'hex_codec')))
 
     def _get_names(self, obj, state_mgr, current_obj):
         ext = ''
