@@ -31,22 +31,25 @@ def get_cl(stream_uri, hide_deleted=False):
     fp_idx_table = defaultdict(dict)
     for partition in prepare_partitions(stream_uri):
         entries = partition.get_fdt()
+
         for ts, obj in entries.iterrows():
             if obj.is_deleted:
                 if hide_deleted:
                     continue
 
             js_timestamp = ts.timestamp() * 1000
-            l = [js_timestamp]
+            l = [obj.full_path, js_timestamp]
             l.extend(obj.cluster_list)
             files.append(l)
             if obj.cluster_list:
+                # fp_idx_table is reserved due to compatibility reasons
                 fp_idx_table[js_timestamp][obj.cluster_list[0][0]] =\
-                    obj['full_path']
+                    obj.full_path
             # files ::= [
-            #     [timestamp, [cl_seg_start, cl_seg_end], ...],
+            #     [fp, timestamp, [cl_seg_start, cl_seg_end], ...],
             #     ...
             # ]
+
     return files, fp_idx_table
 
 

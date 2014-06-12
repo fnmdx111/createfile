@@ -3,7 +3,6 @@ container = document.getElementById 'container'
 fc_container = document.getElementById 'fc-container'
 
 _data = []
-_idx_table = []
 
 _show_loading = () ->
   $('ct-text').text('')
@@ -18,23 +17,23 @@ _hide_loading()
 
 fill_ct_text = (method) ->
   if method is 'time'
-    _d = _.sortBy _data, (i) -> i[0]
+    _d = _.sortBy _data, (i) -> i[1]
   else if method is 'fc'
     _d = _.sortBy _data, (i) ->
-      if i.length > 1
-        parseInt i[1][0]
+      if i.length > 2
+        parseInt i[2][0]
       else
         0
 
   texts = (for d in _d
-    [t, segments...] = d
+    [fp, t, segments...] = d
     if segments.length == 0
-      continue
+      segments = 'empty cluster list'
 
     tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
-    p = _idx_table[t.toString() + '.0'][segments[0][0].toString()]
-    "<li>#{tf} #{p}: #{segments}</li>").join('')
-  $('#ct-text').html("<ul>#{texts}</ul>")
+    "<li>#{tf} #{fp}: #{segments}</li>").join('')
+  $('#ct-text').html("<p>#{_d.length} file(s) in total.</p>" +
+                     "<ul>#{texts}</ul>")
 
 $('#ctc-time').click () -> fill_ct_text 'time'
 $('#ctc-fc').click () -> fill_ct_text 'fc'
@@ -55,8 +54,9 @@ fire_post = () ->
       data = result['files']
       idx_table = result['idx_table']
 
-      _data = data
-      _idx_table = idx_table
+      _data = $.extend {}, data
+
+      data = _.map data, (l) -> l[1..]
 
       _cl_fc = _.map data, (l) -> [l[0], if l[1]? then l[1][0] else 0]
       _cl_fc = _.sortBy _cl_fc, (i) -> i[0]
