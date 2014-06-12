@@ -4,6 +4,9 @@ cdef inline void operate(object c,
                          dict cluster_head,
                          dict obj,
                          object i):
+    if c == 0:
+        return
+
     cdef Py_ssize_t neg_one = -1
 
     head = cluster_head.pop(i, i)
