@@ -68,7 +68,8 @@
     _show_loading();
     return $.post('/cl', {
       stream_uri: stream_uri,
-      hide_deleted: $('#hide_deleted').prop('checked')
+      deleted: $('#deleted').prop('checked'),
+      regular: $('#regular').prop('checked')
     }, function(result) {
       var data, draw_fc_graph, draw_graph, fc_graph, fc_options, graph, idx_table, options, stream_title, _c_max, _c_min, _cl_fc, _cl_flattened;
       _hide_loading();

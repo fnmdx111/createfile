@@ -45,8 +45,10 @@ fire_post = () ->
   $.post '/cl', {
       stream_uri:
         stream_uri
-      hide_deleted:
-        $('#hide_deleted').prop('checked')
+      deleted:
+        $('#deleted').prop('checked')
+      regular:
+        $('#regular').prop('checked')
     },
     (result) ->
       _hide_loading()
