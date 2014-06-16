@@ -361,7 +361,7 @@ class FAT32(Partition):
         """
         _0 = self._next_ul_int32()
         _1 = self._next_ul_int32()
-        assert _0 == self._eoc_magic
+        assert _0 & self._eoc_magic == self._eoc_magic
         # assert _1 == 0xffffffff or _1 == 0xfffffff
         # due to some un-standard implementations
 
