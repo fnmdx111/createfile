@@ -2,6 +2,8 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link type="text/css" rel="stylesheet"
+          href="{{ url_for('static', filename='css/timepicker.css') }}" />
     <title></title>
 </head>
 <body>
@@ -12,18 +14,38 @@
         <div>
             <form>
                 <label>Stream uri:
-                    <input type="text" id="stream_uri" />
+                    <input type="text" id="stream-uri" />
                 </label>
-                <div>
-                    Show:
-                    <label>
-                        <input type="checkbox" id="deleted" checked />
-                        Deleted
-                    </label>
-                    <label>
-                        <input type="checkbox" id="regular" checked />
-                        Regular
-                    </label>
+                <div id="filters">
+                    <div>
+                        Show:
+                        <label>
+                            <input type="checkbox" id="deleted" checked />
+                            Deleted
+                        </label>
+                        <label>
+                            <input type="checkbox" id="regular" checked />
+                            Regular
+                        </label>
+                    </div>
+                    <div>
+                        <div>Date:
+                            <label>Start
+                                <input type="text" id="dt-start" />
+                            </label>
+                            <label>End
+                                <input type="text" id="dt-end" />
+                            </label>
+                        </div>
+                        <div>Cluster:
+                            <label>Start
+                                <input type="text" id="cluster-start" />
+                            </label>
+                            <label>End
+                                <input type="text" id="cluster-end" />
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <br />
                 <input type="button" id="fire_post" value="Fire" />
@@ -45,6 +67,18 @@
     </script>
     <script type="text/javascript"
             src="{{ url_for('static', filename='js/jquery-2.1.1.min.js') }}">
+    </script>
+    <script type="text/javascript"
+            src="{{ url_for('static',
+                            filename='js/jquery-ui-1.10.4.min.js') }}">
+    </script>
+    <script type="text/javascript"
+            src="{{ url_for('static',
+                            filename='js/jquery-ui-timepicker-addon.js') }}">
+    </script>
+    <script type="text/javascript"
+            src="{{ url_for('static',
+                            filename='js/spinner_dt_picker.js') }}">
     </script>
     <script type="text/javascript"
             src="{{ url_for('static', filename='js/flotr2.min.js') }}">

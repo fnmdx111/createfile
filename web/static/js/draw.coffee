@@ -38,8 +38,11 @@ fill_ct_text = (method) ->
 $('#ctc-time').click () -> fill_ct_text 'time'
 $('#ctc-fc').click () -> fill_ct_text 'fc'
 
+maybe = (n) ->
+  if n == '' then 0 else n
+
 fire_post = () ->
-  stream_uri = $('#stream_uri').val()
+  stream_uri = $('#stream-uri').val()
   _show_loading()
 
   $.post '/cl', {
@@ -49,6 +52,14 @@ fire_post = () ->
         $('#deleted').prop('checked')
       regular:
         $('#regular').prop('checked')
+      datetime_start:
+        maybe moment($('#dt-start').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+      datetime_end:
+        maybe moment($('#dt-end').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+      cluster_start:
+        maybe $('#cluster-start').val()
+      cluster_end:
+        maybe $('#cluster-end').val()
     },
     (result) ->
       _hide_loading()
