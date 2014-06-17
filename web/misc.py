@@ -6,8 +6,8 @@ def _filter(entry,
             dts, dte,
             cs, ce):
     if entry.cluster_list:
-        if cs < entry.cluster_list[0][0] < entry.cluster_list[-1][-1] < ce:
-            return dts < entry.create_time.timestamp() < dte
+        if cs <= entry.cluster_list[0][0] <= entry.cluster_list[-1][-1] <= ce:
+            return dts <= entry.create_time.timestamp() <= dte
         else:
             return False
     else:

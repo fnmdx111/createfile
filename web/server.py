@@ -9,6 +9,7 @@ from stream import ImageStream, WindowsPhysicalDriveStream
 from web import config
 from web.config import partition_log_level
 from web.misc import from_js_bool, is_displayable
+import numpy as np
 
 app = Flask(__name__)
 
@@ -60,10 +61,12 @@ def get_cl(stream_uri, show_deleted, show_regular,
     return files, fp_idx_table
 
 
-@app.route('/')
 @app.route('/<path:fn>')
 @app.route('/cl', methods=['POST'])
 def get_cluster_lists(fn=''):
+    show_deleted = True
+    show_regular = True
+
     if request.method == 'POST':
         fn = request.form['stream_uri']
         show_deleted = from_js_bool(request.form['deleted'])
@@ -73,17 +76,19 @@ def get_cluster_lists(fn=''):
         datetime_end = int(request.form['datetime_end']) / 1000
         cluster_start = int(request.form['cluster_start'])
         cluster_end = int(request.form['cluster_end'])
+
+        if cluster_end == 0:
+            cluster_end = 2 ** 32
     else:
         if 'favicon.ico' in fn:
             return b''
         if fn:
             ns = fn.split('/')
             fn = os.path.join(ns[0] + ':/', *ns[1:])
-        show_deleted = True
-        show_regular = True
 
-        datetime_start = datetime.min.timestamp()
-        datetime_end = datetime.max.timestamp()
+        epoch = datetime.fromtimestamp(0)
+        datetime_start = (datetime.min - epoch).total_seconds()
+        datetime_end = (datetime.max - epoch).total_seconds()
         cluster_start = 0
         cluster_end = 2 ** 32
 
@@ -94,6 +99,7 @@ def get_cluster_lists(fn=''):
     return jsonify(files=files, idx_table=fp_idx_table)
 
 
+@app.route('/')
 @app.route('/index')
 def index():
     return render_template('index.html')

@@ -62,9 +62,12 @@
     return fill_ct_text('fc');
   });
 
-  maybe = function(n) {
+  maybe = function(n, d) {
+    if (d == null) {
+      d = 0;
+    }
     if (n === '') {
-      return 0;
+      return d;
     } else {
       return n;
     }
@@ -78,8 +81,8 @@
       stream_uri: stream_uri,
       deleted: $('#deleted').prop('checked'),
       regular: $('#regular').prop('checked'),
-      datetime_start: maybe(moment($('#dt-start').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()),
-      datetime_end: maybe(moment($('#dt-end').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()),
+      datetime_start: moment(maybe($('#dt-start').val(), '0001-01-01 00:00:00:000'), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf(),
+      datetime_end: moment(maybe($('#dt-end').val(), '9999-12-31 23:59:59:999'), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf(),
       cluster_start: maybe($('#cluster-start').val()),
       cluster_end: maybe($('#cluster-end').val())
     }, function(result) {

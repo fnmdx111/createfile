@@ -38,8 +38,8 @@ fill_ct_text = (method) ->
 $('#ctc-time').click () -> fill_ct_text 'time'
 $('#ctc-fc').click () -> fill_ct_text 'fc'
 
-maybe = (n) ->
-  if n == '' then 0 else n
+maybe = (n, d=0) ->
+  if n == '' then d else n
 
 fire_post = () ->
   stream_uri = $('#stream-uri').val()
@@ -53,9 +53,13 @@ fire_post = () ->
       regular:
         $('#regular').prop('checked')
       datetime_start:
-        maybe moment($('#dt-start').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+        moment(maybe($('#dt-start').val(),
+                     '0001-01-01 00:00:00:000'),
+               'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
       datetime_end:
-        maybe moment($('#dt-end').val(), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+        moment(maybe($('#dt-end').val(),
+                     '9999-12-31 23:59:59:999'),
+               'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
       cluster_start:
         maybe $('#cluster-start').val()
       cluster_end:
