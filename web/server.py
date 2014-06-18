@@ -9,7 +9,6 @@ from stream import ImageStream, WindowsPhysicalDriveStream
 from web import config
 from web.config import partition_log_level
 from web.misc import from_js_bool, is_displayable
-import numpy as np
 
 app = Flask(__name__)
 
