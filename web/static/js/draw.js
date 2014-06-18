@@ -84,7 +84,8 @@
       datetime_start: moment(maybe($('#dt-start').val(), '0001-01-01 00:00:00:000'), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf(),
       datetime_end: moment(maybe($('#dt-end').val(), '9999-12-31 23:59:59:999'), 'YYYY-MM-DD HH:mm:ss:SSS').valueOf(),
       cluster_start: maybe($('#cluster-start').val()),
-      cluster_end: maybe($('#cluster-end').val())
+      cluster_end: maybe($('#cluster-end').val(), Math.pow(2, 32)),
+      use_cache: $('#use-cache').prop('checked')
     }, function(result) {
       var data, draw_fc_graph, draw_graph, fc_graph, fc_options, graph, idx_table, options, stream_title, _c_max, _c_min, _cl_fc, _cl_flattened;
       _hide_loading();

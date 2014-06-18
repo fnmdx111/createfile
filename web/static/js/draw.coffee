@@ -63,7 +63,9 @@ fire_post = () ->
       cluster_start:
         maybe $('#cluster-start').val()
       cluster_end:
-        maybe $('#cluster-end').val()
+        maybe $('#cluster-end').val(), 2 ** 32
+      use_cache:
+        $('#use-cache').prop('checked')
     },
     (result) ->
       _hide_loading()
