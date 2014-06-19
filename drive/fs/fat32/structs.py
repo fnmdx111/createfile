@@ -130,7 +130,7 @@ class FAT32DirectoryTableEntry:
         y, m_, d = self._get_date(obj[k_create_date])
         try:
             self.create_time = datetime(y, m_, d, h, m, int(s),
-                                        int((s - int(s))) * 100)
+                                        int((s - int(s)) * 1000 * 1000))
             self.create_timestamp = (self.create_time.
                                      replace(tzinfo=timezone.utc).
                                      timestamp()
