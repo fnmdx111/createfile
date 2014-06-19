@@ -2,6 +2,8 @@
 container = document.getElementById 'container'
 fc_container = document.getElementById 'fc-container'
 
+_canonical_time_format = 'YYYY/MM/DD HH:mm:ss.SSS'
+
 _data = []
 
 _show_loading = () ->
@@ -30,7 +32,7 @@ fill_ct_text = (method) ->
     if segments.length == 0
       segments = 'empty cluster list'
 
-    tf = moment(Math.floor t).format 'YYYY/MM/DD HH:mm:ss'
+    tf = moment(Math.floor t).format _canonical_time_format
     "<li>#{tf} #{fp}: #{segments}</li>").join('')
   $('#ct-text').html("<p>#{_d.length} file(s) in total.</p>" +
                      "<ul>#{texts}</ul>")
@@ -54,12 +56,12 @@ fire_post = () ->
         $('#regular').prop('checked')
       datetime_start:
         moment(maybe($('#dt-start').val(),
-                     '0001-01-01 00:00:00:000'),
-               'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+                     '0001-01-01 00:00:00.000'),
+               _canonical_time_format).valueOf()
       datetime_end:
         moment(maybe($('#dt-end').val(),
-                     '9999-12-31 23:59:59:999'),
-               'YYYY-MM-DD HH:mm:ss:SSS').valueOf()
+                     '9999-12-31 23:59:59.999'),
+               _canonical_time_format).valueOf()
       cluster_start:
         maybe $('#cluster-start').val()
       cluster_end:
@@ -114,7 +116,7 @@ fire_post = () ->
           track: on
           relative: yes
           trackFormatter: (obj) ->
-            date = moment(Math.floor obj.x).format 'YYYY/MM/DD HH:mm:ss'
+            date = moment(Math.floor obj.x).format _canonical_time_format
             path = idx_table[obj.x.toString()][obj.y[0].toString()]
             "#{path} ::= cl: #{obj.y}, ts: #{date}"
       fc_options =
