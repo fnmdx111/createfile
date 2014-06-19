@@ -433,9 +433,9 @@ class FAT32(Partition):
                     break
 
                 if len(raw) < 32:
-                    break
+                    continue
                 elif raw.startswith(__blank__):
-                    break
+                    continue
 
                 attribute = raw[0xb]
                 if attribute == 0xf:
