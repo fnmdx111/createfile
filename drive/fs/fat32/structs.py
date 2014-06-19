@@ -1,10 +1,11 @@
 # encoding: utf-8
 import codecs
+from decimal import Decimal
 from functools import reduce
 import os
 from struct import unpack
 from construct import *
-from datetime import datetime, timezone
+from datetime import datetime
 from pandas import DataFrame
 from .. import Partition
 from .speedup._op import find_cluster_lists
@@ -81,8 +82,8 @@ class FAT32DirectoryTableEntry:
                         ULInt16(k_lower_cluster),
                         ULInt32(k_file_length))
     __slots__ = ['is_directory', 'cluster_list', 'full_path', 'first_cluster',
-                 'create_time', 'create_timestamp',
-                 'modify_time', 'modify_timestamp',
+                 'create_time',
+                 'modify_time',
                  'skip', 'is_deleted']
 
     __attr__ = __slots__[:]
@@ -130,11 +131,9 @@ class FAT32DirectoryTableEntry:
         y, m_, d = self._get_date(obj[k_create_date])
         try:
             self.create_time = datetime(y, m_, d, h, m, int(s),
-                                        int((s - int(s)) * 1000 * 1000))
-            self.create_timestamp = (self.create_time.
-                                     replace(tzinfo=timezone.utc).
-                                     timestamp()
-                                     + s - int(s))
+                                        int((Decimal(str(s)) - int(s))
+                                            * 1000000))
+            # TODO implement customizable timezone
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
                                      dir_name, name, y, m_, d)
@@ -145,9 +144,7 @@ class FAT32DirectoryTableEntry:
         y, m_, d = self._get_date(obj[k_modify_date])
         try:
             self.modify_time = datetime(y, m_, d, h, m, int(s))
-            self.modify_timestamp = (self.modify_time.
-                                     replace(tzinfo=timezone.utc).
-                                     timestamp())
+            # TODO implement customizable timezone
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
                                      dir_name, name, y, m_, d)
