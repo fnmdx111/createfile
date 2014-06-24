@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    misc
+    ~~~~
+
+    Miscellaneous functions used by `createfile`.
+"""
 import os
 from construct import Construct
 import time
@@ -11,11 +17,21 @@ STATE_START = 0b11
 
 
 def clear_cur_obj(obj):
+    """Clear contents of the state machine.
+
+    :param obj: the state machine contents holder.
+    """
+
     obj['name'] = ''
     obj['checksum'] = 0
 
 
 def time_it(f):
+    """A decorator which times the decorated function.
+
+    :param f: function to time.
+    """
+
     def wrapper(*args, **kwargs):
         t1 = time.time()
         ret = f(*args, **kwargs)
@@ -29,16 +45,32 @@ def time_it(f):
 
 
 class SimpleCounter:
-
+    """
+    A simple counter.
+    """
     __slots__ = ['counter']
 
     def __init__(self, initial=0):
+        """
+        :param initial: initial value of the counter.
+        """
+
         self.counter = initial
 
     def inc(self, n=1):
+        """Increase the counter by n.
+
+        :param n: optional, value to add.
+        """
+
         self.counter += n
 
     def dec(self, n=1):
+        """Decrease the counter by n.
+
+        :param n: optional, value to substract.
+        """
+
         self.counter -= n
 
     def __str__(self):
@@ -62,38 +94,29 @@ class SimpleCounter:
         return self.counter
 
 
-class Skip(Construct):
-
-    __slots__ = ['length', 'length_func', 'cons']
-
-    def __init__(self, length=None, length_func=None, cons=None):
-        Construct.__init__(self, None)
-        self.length_func = length_func
-        self.length = length
-        self.cons = cons
-
-    def _parse(self, stream, context):
-        func_mode = self.length_func and self.length_func(context)
-        cons_mode = self.cons and sum(map(lambda con:
-                                              con(None)._sizeof(object()),
-                                          self.cons))
-
-        length = self.length or func_mode or cons_mode
-
-        if not length:
-            raise ValueError('invalid Skip construct')
-        if length < 0:
-            raise ValueError('skipping negative number of bytes')
-
-        stream.seek(length, os.SEEK_CUR)
-
-
 class StateManager:
+    """
+    Class that manages the states of the LFN state machine.
+    """
     def __init__(self, init_state):
+        """
+        :param init_state: initial state.
+        """
+
         self._state = init_state
 
     def transit_to(self, state):
+        """Transit to specified state.
+
+        :param state: the specified state to transit to.
+        """
+
         self._state = state
 
     def is_(self, state):
+        """Tests if current state is the same as the given state.
+
+        :param state: state to test against.
+        """
+
         return self._state == state

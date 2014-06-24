@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    drive.fs.ntfs.structs
+    ~~~~~~~~~~~~~~~~~~~~~
+
+    This module implements the structs used when parsing NTFS partition and class
+    :class:`NTFS`.
+"""
 from functools import partial
 from io import BytesIO
 import os
@@ -13,6 +20,12 @@ from stream.auxiliary import NTFSClusterStream
 
 
 def _sl_int8_entry(c, key):
+    """Calculate certain entry values specially.
+
+    :param c: the context object.
+    :param key: the key of the value to be calculated.
+    """
+
     val = c[key]
 
     if val < 0:
@@ -76,12 +89,17 @@ FileRecordHeader = Struct(k_FileRecordHeader,
 
 
 class MFTRecord:
+    """
+    Class which represents MFT records.
+    """
     def __init__(self, parent, stream):
         """
-        The stream here must be a BytesIO which contains the MFT record. Since
-        we've already had the size of an MFT record from boot sector, this can
-        be easily done.
+        :param parent: the partition which this MFT record resides on.
+        :param stream: a `BytesIO` object which contains the MFT record. Since
+                       we've already had the size of an MFT record from boot
+                       sector, this can be easily done.
         """
+
         self.stop = False
 
         assert isinstance(stream, BytesIO)
@@ -99,6 +117,8 @@ class MFTRecord:
          b'BAAD': self.do_bad}[signature]()
 
     def do_file(self):
+        """Parse `FILE` records."""
+
         header = FileRecordHeader.parse_stream(self.stream)
         self.stream.seek(header[k_offset_to_update_sequence])
         update_seq = self.stream.read(header[k_size_of_update_sequence] * 2)
@@ -111,18 +131,27 @@ class MFTRecord:
         for attribute in attributes(ntfs_stream):
             # this may not be appropriate, there are times that multiple
             # instances of attributes of the same type exist
-            # what are the relationships about them?
+            # what are the relationships between them?
             self.attributes[attribute.type] = attribute
 
     def do_bad(self):
+        """Parse `BAAD` records, which are simply ignored."""
+
         pass
 
 
 class NTFS(Partition):
-
+    """
+    Class that represents NTFS partitions.
+    """
     type = 'NTFS'
 
     def __init__(self, stream, preceding_bytes):
+        """
+        :param stream: the stream to parse.
+        :param preceding_bytes: bytes preceding this partition.
+        """
+
         super(NTFS, self).__init__(self.type, stream, preceding_bytes,
                                    lambda s: NTFSBootSector.parse_stream(s))
 
@@ -144,10 +173,14 @@ class NTFS(Partition):
         self.mft_records = []
 
     def get_mft_records(self):
+        """Parse the MFT records residing on this partition."""
+
         self.mft_records = list(iter(self))
         self.logger.info('read %s mft record(s)' % len(self.mft_records))
 
     def __iter__(self):
+        """Implement iterator protocol for pythonicness."""
+
         while True:
             record = MFTRecord(self,
                                BytesIO(self.stream.read(
@@ -157,7 +190,18 @@ class NTFS(Partition):
             yield record
 
     def lcn2b(self, lcn):
+        """Convert logical cluster number to offset in bytes.
+
+        :param lcn: logical cluster number.
+        """
+
         return self.bytes_per_cluster * lcn
 
     def abs_lcn2b(self, lcn):
+        """Convert logical cluster number to offset relative to the hard disk
+        in bytes, i.e. absolute offset.
+
+        :param lcn: logical cluster number.
+        """
+
         return self.lcn2b(lcn) + self.preceding_bytes

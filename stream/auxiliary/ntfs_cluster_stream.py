@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    stream.auxiliary.ntfs_cluster_stream
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This module implements the convenience stream :class:`NTFSClusterStream` used
+    in NTFS parsing.
+"""
 from io import BytesIO
 import os
 from struct import pack
@@ -9,7 +16,17 @@ class CorruptedSector(BaseException):
 
 
 class NTFSClusterStream(ReadOnlyStream):
+    """
+    NTFS cluster streams, which is mostly used in attribute discovery, modify the
+    last two bytes (fixup) to real values according to the update sequence.
+    """
     def __init__(self, raw, sector_size, update_seq):
+        """
+        :param raw: raw bytes read from real stream.
+        :param sector_size: size of sectors.
+        :param update_seq: update sequence.
+        """
+
         super(NTFSClusterStream, self).__init__()
 
         fix_up, updates = update_seq[:2],\

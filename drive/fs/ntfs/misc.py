@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    drive.fs.ntfs.misc
+    ~~~~~~~~~~~~~~~~~~
+
+    This module implements miscellaneous functions useful for
+    :package:`drive.fs.ntfs`.
+"""
 from datetime import datetime
 from construct import Const, Bytes
 

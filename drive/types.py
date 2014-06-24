@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    drive.types
+    ~~~~~~~~~~~
+
+    This module implements the type registration mechanism.
+"""
 
 def _make_registry():
     _registry = {}

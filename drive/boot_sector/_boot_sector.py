@@ -1,12 +1,28 @@
 # encoding: utf-8
+"""
+    drive.boot_sector._boot_sector
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    This module implements the meta struct of the various boot sectors.
+"""
 from construct import *
 from ..keys import *
 from misc import MAGIC_END_SECTION
 
 
 def calc_chs_address(key):
+    """Return a function that calculates the cluster-head-sector address
+    (CHS address).
+
+    :param key: key of the value to calculate against.
+    """
+
     def _(context):
+        """Calculate the CHS address.
+
+        :param context: the context object.
+        """
+
         h, s, c = context[key]
 
         head = h
@@ -18,6 +34,12 @@ def calc_chs_address(key):
 
 
 def _partition_entry_template(abs_pos):
+    """Generate a generic template for partition entry.
+
+    :param abs_pos: absolute position of the boot sector where this entry
+                    resides.
+    """
+
     return Struct(k_PartitionEntry,
         # status is not needed so we don't parse this attribute
         Byte(k_status),
@@ -51,6 +73,11 @@ def _partition_entry_template(abs_pos):
     )
 
 def boot_sector_template(abs_pos):
+    """Generate a generic template for other boot sectors.
+
+    :param abs_pos: absolute position of the boot sector.
+    """
+
     return Struct(k_MBR,
         # bootstrap code is not parsed for its less importance
         Bytes(None, 0x1be),

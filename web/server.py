@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    web.server
+    ~~~~~~~~~~
+
+    This module implement the routes and actually server reactions of the web
+    interface.
+"""
 from datetime import datetime
 import os
 from flask import jsonify, Flask, render_template, request
@@ -9,6 +16,11 @@ app = Flask(__name__)
 @app.route('/<path:fn>')
 @app.route('/cl', methods=['POST'])
 def get_cluster_lists(fn=''):
+    """Get cluster lists. Handler function for request `cl`.
+
+    :param fn: optional, image path used by :class:`ImageStream`.
+    """
+
     show_deleted = True
     show_regular = True
 
@@ -52,4 +64,6 @@ def get_cluster_lists(fn=''):
 @app.route('/')
 @app.route('/index')
 def index():
+    """Handler function for request `/` and `index`."""
+
     return render_template('index.html')

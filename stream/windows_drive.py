@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    stream.windows_drive
+    ~~~~~~~~~~~~~~~~~~~~
+
+    This module implements the commonly used class
+    :class:`WindowsPhysicalDriveStream`.
+"""
 import os
 
 from win32file import *
@@ -7,12 +14,19 @@ from io import BytesIO
 
 
 class WindowsPhysicalDriveStream(ReadOnlyStream):
-
+    """
+    Stream that reads from windows physical drive.
+    """
     BYTES_PER_SECTOR = 512
 
     def __init__(self,
                  number,
                  default_buffer_size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+        """
+        :param number: number of the device to open.
+        :param default_buffer_size: optional, default buffer size.
+        """
+
         super(WindowsPhysicalDriveStream, self).__init__()
 
         self._dev = self._create_file(r'\\.\PhysicalDrive%s' % number)
@@ -22,6 +36,11 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
 
     @staticmethod
     def _create_file(path):
+        """CreateFile wrapper.
+
+        :param path: path of the file to open.
+        """
+
         return CreateFile(path,
                           GENERIC_READ,
                           FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -31,9 +50,20 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
                           None)
 
     def _set_file_pointer(self, pos, whence):
+        """SetFilePointer wrapper.
+
+        :param pos: position to be set.
+        :param whence: set mode.
+        """
+
         return SetFilePointer(self._dev, pos, whence)
 
     def _read_file(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+        """ReadFile wrapper.
+
+        :param size: optional, size to read.
+        """
+
         err, _buf = ReadFile(self._dev, size)
         if err:
             raise IOError('Error reading disk when utilizing ReadFile.')

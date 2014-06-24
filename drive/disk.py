@@ -1,12 +1,23 @@
 # encoding: utf-8
+"""
+    drive,disk
+    ~~~~~~~~~~
+
+    This module implements :func:`get_drive_obj` which parses the given stream to
+    :class:`Partition` objects.
+"""
 
 from .keys import *
 from .boot_sector import ClassicalMBR
-from stream import ImageStream
 from .types import registry
 
 
 def get_drive_obj(stream):
+    """Parse the given stream as a whole hard drive.
+
+    :param stream: the stream containing the bytes of the hard drive.
+    """
+
     mbr = ClassicalMBR.parse_stream(stream)
 
     def get_partition_obj(partition_entry, stream):
@@ -23,9 +34,3 @@ def get_drive_obj(stream):
                 yield partition
         else:
             yield p
-
-
-
-if __name__ == '__main__':
-    with ImageStream('d:/edt.raw') as f:
-        partitions = get_drive_obj(f)

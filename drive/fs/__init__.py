@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    drive.fs.__init__
+    ~~~~~~~~~~~~~~~~~
+
+    This module implements the abstract class :class:`Partition`.
+"""
 import logging
 from misc import SimpleCounter
 
@@ -8,7 +14,18 @@ counters = {
 }
 
 class Partition:
+    """
+    Abstract class which represents partitions.
+    """
     def __init__(self, type_, stream, preceding_bytes, boot_sector_parser):
+        """
+        :param type_: type of the partition, e.g. FAT32.
+        :param stream: stream to parse against.
+        :param preceding_bytes: starting position of this partition,
+        :param boot_sector_parser: parser which parses the boot sector of this
+                                   partition.
+        """
+
         self.type = type_
 
         self.preceding_bytes = preceding_bytes

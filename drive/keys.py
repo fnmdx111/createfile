@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    drive.keys
+    ~~~~~~~~~~
+
+    This file contains the keys used by :package:`drive`.
+"""
 
 k_bootstrap_code = 'bootstrap_code'
 k_MBR = 'MBR'

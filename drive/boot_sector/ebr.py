@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    drive.boot_sector.ebr
+    ~~~~~~~~~~~~~~~~~~~~~
+
+    This module implements the discovery of extended partitions.
+"""
 import os
 from drive.types import register, registry
 from ..keys import *
@@ -7,6 +13,12 @@ from ._boot_sector import boot_sector_template
 
 @register(k_ExtendedPartition)
 def get_ext_partition_obj(entry, stream):
+    """Get extended partitions.
+
+    :param entry: entry representing the extended partitions.
+    :param stream: stream to parse against.
+    """
+
     first_byte_addr = entry[k_first_byte_address]
     while True:
         stream.seek(first_byte_addr, os.SEEK_SET)

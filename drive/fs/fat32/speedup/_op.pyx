@@ -1,9 +1,23 @@
 # encoding: utf-8
+"""
+    drive.fs.fat32.speedup._op
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    This is a cython module for speeding up the process of cluster list
+    discovery.
+"""
 cdef inline void operate(object c,
                          dict cluster_head,
                          dict obj,
                          object i):
+    """Operate with the integer just read.
+
+    :param c: the integer just read.
+    :param cluster_head: head cluster numbers of the cluster lists.
+    :param obj: a dict storing the cluster lists found.
+    :param i: the number of the integer just read.
+    """
+
     if c == 0:
         return
 
@@ -29,6 +43,14 @@ cpdef find_cluster_lists(object self,
                          dict cluster_head,
                          dict obj,
                          Py_ssize_t number_of_fat_items):
+    """Find the cluster lists.
+
+    :param self: the partition object.
+    :param cluster_head: head cluster numbers of the cluster lists.
+    :param obj: a dict storing the cluster lists found.
+    :param number_of_fat_items: the number of the integers in FAT.
+    """
+
     cdef Py_ssize_t i
     for i from 2 <= i < number_of_fat_items:
         operate(self._next_ul_int32(),

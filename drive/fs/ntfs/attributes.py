@@ -1,4 +1,10 @@
 # encoding: utf-8
+"""
+    drive.fs.ntfs.attributes
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This module implements attribute parsers for NTFS.
+"""
 from collections import defaultdict
 import os
 from struct import unpack
@@ -8,7 +14,9 @@ from drive.keys import *
 
 
 class AttributeHeader:
-
+    """
+    Class that parses and represents attribute headers.
+    """
     _common_header = Struct(k_common_header,
         # ULInt32(k_attribute_type),
         ULInt32(k_size_of_attribute),
@@ -38,6 +46,10 @@ class AttributeHeader:
     )
 
     def __init__(self, stream):
+        """
+        :param stream: the stream to be parsed with.
+        """
+
         self.is_end_of_attributes = False
 
         self._stream = stream
@@ -64,12 +76,21 @@ class AttributeHeader:
             self._read_name()
 
     def __enter__(self):
+        """Preserve the starting offset of the attribute."""
+
         self._abs_pos = self._stream.tell()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Calculate the size of the attribute header."""
+
         self.size = self._stream.tell() - self._abs_pos
 
     def __getitem__(self, item):
+        """Override `__getitem__` for convenience reasons.
+
+        :param item: the name of the item to get.
+        """
+
         if item in self._common_header:
             return self._common_header[item]
         else:
@@ -77,9 +98,16 @@ class AttributeHeader:
 
     @staticmethod
     def _pad_to_uint64(chars):
+        """Pad the chars to an `bytes` object of length 8 with `b'\x00'`.
+
+        :param chars: chars to be padded.
+        """
+
         return chars + b'\x00' * (8 - len(chars))
 
     def _read_data_runs(self):
+        """Read the data runs of this attribute."""
+
         self._stream.seek(self._abs_pos +
                           self._rest_header[k_offset_to_data_runs],
                           os.SEEK_SET)
@@ -103,6 +131,8 @@ class AttributeHeader:
             ret.append([starting_vcn, length])
 
     def _read_name(self):
+        """Read the name of this attribute if exists."""
+
         size_of_name = self._common_header[k_length_of_name] * 2
         if self._common_header[k_length_of_name]:
             self._stream.seek(self._abs_pos +
@@ -113,10 +143,17 @@ class AttributeHeader:
 
 
 class Attribute:
-
+    """
+    Class representing attributes.
+    """
     __registry__ = {}
 
     def __init__(self, attribute_header, stream):
+        """
+        :param attribute_header: attribute header of this attribute.
+        :param stream: the stream to parse against.
+        """
+
         self.attribute_header = attribute_header
         self.stream = stream
 
@@ -126,12 +163,15 @@ class Attribute:
         self.is_resident = attribute_header.is_resident
 
     def __enter__(self):
+        """Record the actual starting position of this attribute."""
+
         self.abs_pos = self.stream.tell() - self.attribute_header.size
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._finish()
 
     def _finish(self):
+        """Do some cleaning."""
         self.stream.seek(self.abs_pos, os.SEEK_SET)
         self.stream.seek(self.attribute_header[k_size_of_attribute],
                          os.SEEK_CUR)
@@ -139,7 +179,12 @@ class Attribute:
 
 
 def _make_registry():
+    """Implement attribute registration mechanism."""
+
     class UnusedAttribute(Attribute):
+        """
+        Class represents attributes that aren't important.
+        """
         type = 0xff
         def __init__(self, _1, _2):
             super(UnusedAttribute, self).__init__(_1, _2)
@@ -263,6 +308,11 @@ class Data(Attribute):
 
 
 def attributes(stream):
+    """Generator that yields the attributes in the order they are stored.
+
+    :param stream: stream to parse against.
+    """
+
     while True:
         header = AttributeHeader(stream)
         if header.is_end_of_attributes:

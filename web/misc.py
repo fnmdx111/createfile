@@ -1,4 +1,11 @@
 # encoding: utf-8
+"""
+    web.misc
+    ~~~~~~~~
+
+    This module implements several miscellaneous classes and functions important
+    for the web interface.
+"""
 from collections import defaultdict
 from drive.fs.fat32 import FAT32
 from drive.disk import get_drive_obj
@@ -10,6 +17,14 @@ from_js_bool = lambda b: b == 'true'
 def _filter(entry,
             dts, dte,
             cs, ce):
+    """Predicate for determining whether an entry is visible. It only considers
+    time and cluster.
+
+    :param entry: the entry to be determined.
+    :param dts, dte: starting and ending date times.
+    :param cs, ce: starting and ending clusters.
+    """
+
     if entry.cluster_list:
         if cs <= entry.cluster_list[0][0] <= entry.cluster_list[-1][-1] <= ce:
             return dts <= entry.create_time.timestamp() <= dte
@@ -23,6 +38,16 @@ def is_displayable(entry,
                    sd, sr,
                    dts, dte,
                    cs, ce):
+    """Predicate for determining whether an entry is visible. It filters deleted
+    files on demand.
+
+    :param entry: entry to be determined.
+    :param sd, sr: bool values representing showing deleted and showing regular
+                   files.
+    :param dts, dte: starting and ending date times.
+    :param cs, ce: starting and ending clusters.
+    """
+
     if entry.is_deleted:
         if sd:
             return _filter(entry, dts, dte, cs, ce)
@@ -34,6 +59,9 @@ def is_displayable(entry,
 
 
 def prepare_partitions(stream_uri):
+    """Prepare partitions according to the URI representing which stream to
+    use."""
+
     if stream_uri:
         stream_type = (WindowsPhysicalDriveStream if stream_uri.startswith('W:')
                        else ImageStream)
@@ -51,7 +79,9 @@ def prepare_partitions(stream_uri):
 
 
 class FakeFAT32:
-
+    """
+    A mocking of the FAT32 class.
+    """
     type = FAT32.type
 
     def __init__(self, entries):
@@ -66,6 +96,18 @@ def get_cl(stream_uri, show_deleted, show_regular,
                        datetime_start, datetime_end,
                        cluster_start, cluster_end,
                        use_cache):
+    """Get result for `cl` requests.
+
+    :param stream_uri: URI of stream to use.
+    :param show_deleted: whether to show deleted files.
+    :param show_regular: whether to show regular files.
+    :param datetime_start: starting date time.
+    :param datetime_end: ending date time.
+    :param cluster_start: starting cluster.
+    :param cluster_end: ending cluster.
+    :param use_cache: whether to use results from cache.
+    """
+
     files = []
     fp_idx_table = defaultdict(dict)
 
