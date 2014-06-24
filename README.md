@@ -67,6 +67,11 @@ if DATA_ATTR_TYPE in mft.attributes:
     print('data runs: %s' % mft.attributes[DATA_ATTR_TYPE].data_runs)
 ```
 
+Statistical metrics
+----
+Recently a new branch `statistics` is merged into `master`, which contains
+new method using normalized Kendall's tau score and Spearman's rho score to
+help accomplishing the project's goal.
 
 Licensing
 ====
