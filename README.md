@@ -67,6 +67,15 @@ if DATA_ATTR_TYPE in mft.attributes:
     print('data runs: %s' % mft.attributes[DATA_ATTR_TYPE].data_runs)
 ```
 
+* To plot an FAT32 partition:
+```python
+from drive.fs.fat32 import plot_fat32
+
+entries = filter_entries() # filter the entries per your will
+
+plot_fat32(entries)
+```
+
 Statistical metrics
 ----
 Recently a new branch `statistics` is merged into `master`, which contains

@@ -86,7 +86,8 @@ class FAT32DirectoryTableEntry:
                         ULInt16(k_modify_date),
                         ULInt16(k_lower_cluster),
                         ULInt32(k_file_length))
-    __slots__ = ['is_directory', 'cluster_list', 'full_path', 'first_cluster',
+    __slots__ = ['is_directory', 'cluster_list', 'avg_cluster',
+                 'full_path', 'first_cluster',
                  'create_time',
                  'modify_time',
                  'skip', 'is_deleted']
@@ -120,7 +121,8 @@ class FAT32DirectoryTableEntry:
         self.is_directory = bool(obj[k_attribute] & 0x10)
 
         self.first_cluster = self._get_first_cluster(obj)
-        self.cluster_list = partition.resolve_cluster_list(self.first_cluster)
+        self.cluster_list, self.avg_cluster =\
+            partition.resolve_cluster_list(self.first_cluster)
 
         try:
             name, ext = self._get_names(obj, state_mgr, current_obj)
@@ -455,7 +457,7 @@ class FAT32(Partition):
 
         # task := (directory_name, fdt_abs_start_byte_pos)
         __tasks__ = [(root_dir_name,
-                      self.resolve_cluster_list(2))]
+                      self.resolve_cluster_list(2)[0])]
 
         entries, create_time_indices = [], []
 
@@ -488,9 +490,13 @@ class FAT32(Partition):
         fat = fat or self.fat1
 
         if first_cluster in fat:
-            return fat[first_cluster]
+            cl = fat[first_cluster]
+            total_sum = sum((e - s + 1) * (e + s) / 2 for s, e in cl)
+            total_n = sum(e - s + 1 for s, e, in cl)
+
+            return cl, total_sum / total_n
         else:
-            return ()
+            return (), 0
 
     def abs_c2b(self, cluster):
         """Cluster to absolute position in stream.
