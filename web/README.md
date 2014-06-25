@@ -8,9 +8,18 @@ distribution of first cluster number over time.
 
 Configuring
 ----
-There's nothing much to be configured, however if you want to use default
-stream or modify server address and port, go to `config.py` and modify them
-respectively.
+Please create a file named `config.py` although there's nothing much to be
+configured. Following is the default configuration:
+```python
+# encoding: utf-8
+import logging
+from stream import ImageStream, WindowsPhysicalDriveStream
+
+stream = ImageStream('d:/flash.raw')
+address, port = '127.0.0.1', 8000
+
+partition_log_level = logging.INFO
+```
 
 Run
 ----
