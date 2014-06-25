@@ -475,7 +475,7 @@ class FAT32(Partition):
         self.logger.info('found %s files and dirs in total', len(entries))
 
         return DataFrame(entries if entries else
-                         [(None,)* 9],
+                         [(None,) * len(FAT32DirectoryTableEntry.__attr__)],
                          index=create_time_indices,
                          columns=FAT32DirectoryTableEntry.__attr__)
 
