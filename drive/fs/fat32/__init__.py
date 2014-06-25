@@ -71,12 +71,13 @@ def plot_fat32(entries, log_info=True,
         if log_info:
             print('found FDT entry %s:\n'
                   '\tfp: %s\n'
-                  '\tfc: %s\tac: %s\n'
+                  '\tfc: %s\tac: %s\toc: %s\n'
                   '\tcr: %s\n'
                   '\tmd: %s\n' % (i,
                                   obj.full_path,
                                   obj.first_cluster,
                                   obj.avg_cluster,
+                                  sum(e - s + 1 for s, e in obj.cluster_list),
                                   obj.create_time,
                                   obj.modify_time))
 
