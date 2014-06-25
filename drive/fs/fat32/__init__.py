@@ -41,11 +41,17 @@ def get_fat32_partition(stream):
     return FAT32(stream, preceding_bytes=0)
 
 
-def plot_fat32(entries):
+def plot_fat32(entries, log_info=True,
+               plot_average_cluster=True,
+               plot_first_cluster=True):
     """Plot the status of the entries with matplotlib. You may want to filter
     the entries according to your will before call this function.
 
     :param entries: entries to plot against.
+    :param log_info: optional, whether to log file information during preparing
+                     the plot.
+    :param plot_average_cluster: optional, plot average cluster.
+    :param plot_first_cluster: optional, plot first cluster.
     """
 
     # TODO use date time as x coordinates
@@ -54,16 +60,31 @@ def plot_fat32(entries):
     for i, (_, obj) in enumerate(entries.iterrows()):
         x.append(i)
 
-        y.append(obj.avg_cluster)
-        y_prime.append(obj.first_cluster)
+        if plot_first_cluster:
+            y_prime.append(obj.first_cluster)
 
-        y_err[0].append(y[-1] - obj.cluster_list[0][0])
-        y_err[1].append(obj.cluster_list[-1][-1] - y[-1])
+        if plot_average_cluster:
+            y.append(obj.avg_cluster)
+            y_err[0].append(y[-1] - obj.cluster_list[0][0])
+            y_err[1].append(obj.cluster_list[-1][-1] - y[-1])
+
+        if log_info:
+            print('found FDT entry %s:\n'
+                  '\tfp: %s\n'
+                  '\tfc: %s\tac: %s\n'
+                  '\tcr: %s\n'
+                  '\tmd: %s\n' % (i,
+                                  obj.full_path,
+                                  obj.first_cluster,
+                                  obj.avg_cluster,
+                                  obj.create_time,
+                                  obj.modify_time))
 
     # there isn't error bar support in prettyplotlib
-    plt.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
-    plt.plot(x, y_prime, 'gx', linestyle='dashed', label='first cluster')
+    if plot_average_cluster:
+        plt.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
+    if plot_first_cluster:
+        plt.plot(x, y_prime, 'gx', linestyle='dashed', label='first cluster')
     ppl.legend()
 
     plt.show()
-
