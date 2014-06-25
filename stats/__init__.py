@@ -24,7 +24,8 @@ def get_windowed_metrics(fs, entries,
                          fn=None, echo=True, plot=True,
                          window_size=5,
                          window_step=1):
-    """Calculates metrics within the sliding windows.
+    """Calculates metrics within the sliding windows. You may want to clean your
+    DataFrame first.
 
     :param fs: a list of functions used to calculate the metrics.
     :param entries: a pandas `DataFrame` object containing all the file
