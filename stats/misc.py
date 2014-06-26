@@ -15,6 +15,8 @@ def windowed(l, size=5, step=1):
         ...                     size=3, step=1)))
         [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
 
+    Note that step larger than size may result in unwanted error.
+
     :param l: the sequence to be windowed, which must support
              slicing protocol.
     :param size: the size of the window.
@@ -25,4 +27,5 @@ def windowed(l, size=5, step=1):
         yield islice(l, size)
         del l[:step]
     else:
-        yield l
+        if len(l) > 1:
+            yield l
