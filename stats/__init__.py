@@ -20,19 +20,22 @@ except ImportError:
 __all__ = ['get_windowed_metrics']
 
 
-def get_windowed_metrics(fs, entries,
-                         fn=None, echo=True, plot=True,
-                         window_size=5,
-                         window_step=1):
+def plot_windowed_metrics(fs, entries,
+                          figure=None, subplot_n=111,
+                          fn=None, echo=True, show=False,
+                          window_size=5,
+                          window_step=1):
     """Calculates metrics within the sliding windows. You may want to clean your
     DataFrame first.
 
     :param fs: a list of functions used to calculate the metrics.
     :param entries: a pandas `DataFrame` object containing all the file
                     entries.
+    :param figure: optional, a figure object to plot on.
+    :param subplot_n: optional, subplot number.
     :param fn: optional, the function's names.
     :param echo: optional, if true, window information is printed.
-    :param plot: optional, if true, the metric will be plotted and shown.
+    :param show: optional, if true, the plot will be shown.
     :param window_size: optional, the size of the windows.
     :param window_step: optional, the step between the windows.
     """
@@ -79,11 +82,17 @@ def get_windowed_metrics(fs, entries,
 
         w_cnt += 1
 
-    if plot:
-        plots = []
-        for n, v in zip(fn, values):
-            plots.append(ppl.plot(v, label=n)[0])
-        ppl.legend(plots, fn)
-        plt.show()
+    figure = figure or plt.figure()
+    ax = figure.add_subplot(subplot_n)
+
+    plots = []
+    for n, v in zip(fn, values):
+        plots.append(ppl.plot(ax,
+                              range(w_cnt), v, 'D-',
+                              label=n)[0])
+    ppl.legend(ax, plots, fn)
+
+    if show:
+        plt.show(figure)
 
     return values

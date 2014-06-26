@@ -41,20 +41,25 @@ def get_fat32_partition(stream):
     return FAT32(stream, preceding_bytes=0)
 
 
-def plot_fat32(entries, log_info=True,
+def plot_fat32(entries,
+               figure=None, subplot_n=111,
+               log_info=True,
                plot_average_cluster=True,
-               plot_first_cluster=True):
+               plot_first_cluster=True,
+               show=False):
     """Plot the status of the entries with matplotlib. You may want to filter
     the entries according to your will before call this function.
 
     :param entries: entries to plot against.
+    :param figure: optional, a figure object to plot on.
+    :param subplot_n: optional, subplot number.
     :param log_info: optional, whether to log file information during preparing
                      the plot.
     :param plot_average_cluster: optional, plot average cluster.
     :param plot_first_cluster: optional, plot first cluster.
+    :param show: whether showing the graph after plotting.
     """
 
-    # TODO use date time as x coordinates
     x, y, y_prime, y_err = [], [], [], [[], []],
 
     for i, (_, obj) in enumerate(entries.iterrows()):
@@ -81,11 +86,16 @@ def plot_fat32(entries, log_info=True,
                                   obj.create_time,
                                   obj.modify_time))
 
-    # there isn't error bar support in prettyplotlib
-    if plot_average_cluster:
-        plt.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
-    if plot_first_cluster:
-        plt.plot(x, y_prime, 'gx', linestyle='dashed', label='first cluster')
-    ppl.legend()
+    figure = figure or plt.figure()
+    ax = figure.add_subplot(subplot_n)
 
-    plt.show()
+    if plot_average_cluster:
+        # there isn't error bar support in prettyplotlib
+        ax.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
+    if plot_first_cluster:
+        ppl.plot(ax, x, y_prime, 'gx',
+                 linestyle='dashed', label='first cluster')
+    ppl.legend(ax)
+
+    if show:
+        plt.show(figure)
