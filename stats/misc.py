@@ -24,3 +24,5 @@ def windowed(l, size=5, step=1):
     while len(l) >= size:
         yield islice(l, size)
         del l[:step]
+    else:
+        yield l

@@ -51,6 +51,7 @@ def plot_windowed_metrics(fs, entries,
                       size=window_size,
                       step=window_step):
         w = tuple(w)
+        print(w)
 
         for i, f in enumerate(fs):
             # calculate each metric according to `fs`
@@ -70,8 +71,8 @@ def plot_windowed_metrics(fs, entries,
             # '{1[0]}\n\t{1[1]}\n'
             # '{...[0]}\n\t{...[1]}\n'
             # '{n[0]}\n\t{n[1]}'
-            print('\n'.join('{{{0}[0]}}\n\t{{{0}[1]}}'.format(i)
-                            for i in range(window_size))
+            print('\n'.join('{{{0}[0]}}\n\t{{{0}[1]}}'.format(_)
+                            for _ in range(len(w)))
                   .format(*map(lambda x: (x[1].full_path,
                                           x[1].first_cluster),
                                w)))
