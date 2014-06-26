@@ -11,14 +11,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-__all__ = ['get_windowed_metrics']
+__all__ = ['plot_windowed_metrics']
 
 
 def plot_windowed_metrics(fs, entries,
                           figure=None, subplot_n=111,
-                          fn=None, echo=True, show=False,
-                          window_size=5,
-                          window_step=1):
+                          fn=None,
+                          echo=True,
+                          log_fmt='{{{0}.full_path}}\n\t{{{0}.first_cluster}}\t'
+                                  '{{{0}.create_time}}',
+                          show=False,
+                          window_size=5, window_step=1):
     """Calculates metrics within the sliding windows. You may want to clean your
     DataFrame first.
 
@@ -29,6 +32,9 @@ def plot_windowed_metrics(fs, entries,
     :param subplot_n: optional, subplot number.
     :param fn: optional, the function's names.
     :param echo: optional, if true, window information is printed.
+    :param log_fmt: optional, format string for file information logging, please
+                    follow the default value as an example when customizing this
+                    parameter.
     :param show: optional, if true, the plot will be shown.
     :param window_size: optional, the size of the windows.
     :param window_step: optional, the step between the windows.
@@ -59,16 +65,9 @@ def plot_windowed_metrics(fs, entries,
         if echo:
             print('window %s:' % w_cnt)
             # this will form the following format string according to
-            # `window_size`:
-            # '{0[0]}\n\t{0[1]}\n'
-            # '{1[0]}\n\t{1[1]}\n'
-            # '{...[0]}\n\t{...[1]}\n'
-            # '{n[0]}\n\t{n[1]}'
-            print('\n'.join('{{{0}[0]}}\n\t{{{0}[1]}}'.format(_)
-                            for _ in range(len(w)))
-                  .format(*map(lambda x: (x[1].full_path,
-                                          x[1].first_cluster),
-                               w)))
+            # `window_size`
+            print('\n'.join(log_fmt.format(_) for _ in range(len(w)))
+                  .format(*map(lambda x: x[1], w)))
             for n, v in zip(fn, values):
                 # print the metrics with their names
                 print('%s: %s' % (n, v[w_cnt]))
