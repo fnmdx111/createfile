@@ -21,7 +21,7 @@ To compile the speedup module from source, you need cython.
 
 Run
 ----
-This module provides one single function `get_windowed_metrics` which
+This module provides one single function `plot_windowed_metrics` which
 takes a list of functions which calculate the desired metrics and uses
 matplotlib to plot.
 
