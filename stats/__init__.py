@@ -9,12 +9,6 @@
 from stats.misc import windowed
 import numpy as np
 import matplotlib.pyplot as plt
-try:
-    # try import this lib to prettify the original plots
-    # if it is not installed, fallback to plt
-    import prettyplotlib as ppl
-except ImportError:
-    ppl = plt
 
 
 __all__ = ['get_windowed_metrics']
@@ -51,7 +45,6 @@ def plot_windowed_metrics(fs, entries,
                       size=window_size,
                       step=window_step):
         w = tuple(w)
-        print(w)
 
         for i, f in enumerate(fs):
             # calculate each metric according to `fs`
@@ -88,10 +81,9 @@ def plot_windowed_metrics(fs, entries,
 
     plots = []
     for n, v in zip(fn, values):
-        plots.append(ppl.plot(ax,
-                              range(w_cnt), v, 'D-',
-                              label=n)[0])
-    ppl.legend(ax, plots, fn)
+        plots.append(ax.plot(range(w_cnt), v, 'D-',
+                             label=n)[0])
+    ax.legend(plots, fn)
 
     if show:
         plt.show(figure)

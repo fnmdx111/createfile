@@ -10,10 +10,6 @@ from .structs import FAT32
 from drive.keys import *
 import os
 import matplotlib.pyplot as plt
-try:
-    import prettyplotlib as ppl
-except ImportError:
-    ppl = plt
 
 __all__ = ['get_fat32_obj', 'get_fat32_partition']
 
@@ -93,9 +89,9 @@ def plot_fat32(entries,
         # there isn't error bar support in prettyplotlib
         ax.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
     if plot_first_cluster:
-        ppl.plot(ax, x, y_prime, 'gx',
+        ax.plot(x, y_prime, 'gx',
                  linestyle='dashed', label='first cluster')
-    ppl.legend(ax)
+    ax.legend()
 
     if show:
         plt.show(figure)

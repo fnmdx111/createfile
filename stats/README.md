@@ -13,10 +13,6 @@ This module now depends on the following libraries:
 * numpy
 * matplotlib
 
-For better color scheme of the plots, you need prettyplotlib. If
-prettyplotlib is not installed, it will simply fallback to the old
-matplotlib color scheme.
-
 To compile the speedup module from source, you need cython.
 
 Run
