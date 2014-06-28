@@ -21,7 +21,7 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
 
     def __init__(self,
                  number,
-                 default_buffer_size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+                 default_buffer_size=4 * 1024):
         """
         :param number: number of the device to open.
         :param default_buffer_size: optional, default buffer size.
@@ -58,11 +58,13 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
 
         return SetFilePointer(self._dev, pos, whence)
 
-    def _read_file(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+    def _read_file(self, size=None):
         """ReadFile wrapper.
 
         :param size: optional, size to read.
         """
+
+        size = size or self.default_read_buffer_size
 
         err, _buf = ReadFile(self._dev, size)
         if err:
@@ -104,7 +106,7 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
                 # then use self._set_file_pointer to set fp
                 # note that it's also possible to support negative offset, but
                 # the case is so rare that I think it's a waste of time
-                buffer_size = ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE
+                buffer_size = self.default_read_buffer_size
 
                 pos += self._buffer.tell()
                 inter_buffer_offset = (pos // buffer_size - 1) * buffer_size
@@ -116,7 +118,9 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
             else:
                 raise ValueError('Negative offset not supported.')
 
-    def read(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+    def read(self, size=None):
+        size = size or self.default_read_buffer_size
+
         buf = self._buffer.read(size)
 
         buf_len = len(buf)

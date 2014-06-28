@@ -32,6 +32,8 @@ class BufferedClusterStream(ReadOnlyStream):
         super(BufferedClusterStream, self).__init__()
 
         self._stream = origin_stream
+        self._stream.set_default_read_buffer_size(bytes_per_cluster)
+
         self.clusters = chain.from_iterable(map(lambda args: range(args[0],
                                                                    args[1] + 1),
                                                 cluster_list))
@@ -47,7 +49,9 @@ class BufferedClusterStream(ReadOnlyStream):
         self._stream.seek(self._abs_c2b(next(self.clusters)), os.SEEK_SET)
         self._buffer = BytesIO(self._stream.read(size=self.bytes_per_cluster))
 
-    def read(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+    def read(self, size=None):
+        size = size or self.bytes_per_cluster
+
         buf = self._buffer.read(size)
         buf_len = len(buf)
 

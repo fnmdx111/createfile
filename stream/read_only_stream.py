@@ -12,15 +12,24 @@ class ReadOnlyStream:
     """
     Abstract class for read-only streams.
     """
-    DEFAULT_READ_BUFFER_SIZE = 1024 * 4
-
     def __init__(self):
-        pass
+        self.default_read_buffer_size = 1024 * 4
 
-    def read(self, size=DEFAULT_READ_BUFFER_SIZE):
+    def set_default_read_buffer_size(self, size):
+        """Set default read buffer size.
+
+        :param size: default read buffer size to set.
+        """
+
+        self.default_read_buffer_size = size
+
+    def read(self, size=None):
         """Read specified size from the image.
 
-        :param size: optional, size to read."""
+        :param size: optional, size to read.
+        """
+
+        size = size or self.default_read_buffer_size
 
         raise NotImplementedError
 

@@ -49,8 +49,8 @@ class NTFSClusterStream(ReadOnlyStream):
 
         self._stream = BytesIO(wr.getvalue())
 
-    def read(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
-            return self._stream.read(size)
+    def read(self, size=None):
+        return self._stream.read(size or self.default_read_buffer_size)
 
     def tell(self):
         return self._stream.tell()

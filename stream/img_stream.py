@@ -24,7 +24,9 @@ class ImageStream(ReadOnlyStream):
         self.img_path = img_path
         self.img = open(img_path, 'rb')
 
-    def read(self, size=ReadOnlyStream.DEFAULT_READ_BUFFER_SIZE):
+    def read(self, size=None):
+        size = size or self.default_read_buffer_size
+
         return self.img.read(size)
 
     def seek(self, pos, whence=os.SEEK_SET):
