@@ -6,36 +6,32 @@
     This module implements the :func:`get_windowed_metrics` function which is
     the only public interface of this package.
 """
-from stats.misc import windowed
+from .misc import windowed, segmented
 import numpy as np
-import matplotlib.pyplot as plt
+from .validate import validate_metrics
+from .plot import plot_windowed_metrics
+
+__all__ = ['plot_windowed_metrics',
+           'calc_windowed_metrics',
+           'validate_metrics']
 
 
-__all__ = ['plot_windowed_metrics']
-
-
-def plot_windowed_metrics(fs, entries,
-                          figure=None, subplot_n=111,
-                          fn=None,
-                          echo=True,
+def calc_windowed_metrics(fs, entries,
+                          fn=None, echo=True,
                           log_fmt='{{{0}.full_path}}\n\t{{{0}.first_cluster}}\t'
                                   '{{{0}.create_time}}',
-                          show=False,
                           window_size=5, window_step=1):
-    """Calculates metrics within the sliding windows. You may want to clean your
+    """Calculate metrics within given window. You may want to clean your
     DataFrame first.
 
     :param fs: a list of functions used to calculate the metrics.
     :param entries: a pandas `DataFrame` object containing all the file
                     entries.
-    :param figure: optional, a figure object to plot on.
-    :param subplot_n: optional, subplot number.
     :param fn: optional, the function's names.
     :param echo: optional, if true, window information is printed.
     :param log_fmt: optional, format string for file information logging, please
                     follow the default value as an example when customizing this
                     parameter.
-    :param show: optional, if true, the plot will be shown.
     :param window_size: optional, the size of the windows.
     :param window_step: optional, the step between the windows.
     """
@@ -74,17 +70,5 @@ def plot_windowed_metrics(fs, entries,
             print('----------------')
 
         w_cnt += 1
-
-    figure = figure or plt.figure()
-    ax = figure.add_subplot(subplot_n)
-
-    plots = []
-    for n, v in zip(fn, values):
-        plots.append(ax.plot(range(w_cnt), v, 'D-',
-                             label=n)[0])
-    ax.legend(plots, fn)
-
-    if show:
-        plt.show(figure)
 
     return values

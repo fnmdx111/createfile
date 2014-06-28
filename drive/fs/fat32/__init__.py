@@ -37,6 +37,16 @@ def get_fat32_partition(stream):
     return FAT32(stream, preceding_bytes=0)
 
 
+def first_clusters_of_fat32(entries):
+    """Get the first cluster numbers of the entries representing an FAT32
+    partition.
+
+    :param entries: entries to get first clusters from.
+    """
+
+    return entries['first_cluster'].tolist()
+
+
 def plot_fat32(entries,
                figure=None, subplot_n=111,
                log_info=True,
