@@ -33,19 +33,21 @@ def plot_windowed_metrics(normal_data, abnormal_data,
     for n, vs, fmt in zip(fn,
                           zip(line_data, normal_data, abnormal_data),
                           dot_formats):
-        names.extend([n,
-                      '%s - %s' % (n, 'normal'),
-                      '%s - %s' % (n, 'abnormal')])
 
         # plot background line
+        names.append(n)
         plots.append(ax.plot(vs[0][0], vs[0][1], fmt[2:],
-                             label=names[-3])[0])
+                             label=names[-1])[0])
         if plot_normal:
             # plot normal dots
+            names.append('%s - %s' % (n, 'normal'))
+
             plots.append(ax.plot(vs[1][0], vs[1][1], 'g%s' % fmt[0],
-                                 label=names[-2])[0])
+                                 label=names[-1])[0])
         if plot_abnormal:
             # plot abnormal dots
+            names.append('%s - %s' % (n, 'abnormal'))
+
             plots.append(ax.plot(vs[2][0], vs[2][1], 'r%s' % fmt[1],
                                  label=names[-1])[0])
     ax.legend(plots, names)
