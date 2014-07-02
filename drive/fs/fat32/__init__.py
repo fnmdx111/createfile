@@ -47,6 +47,16 @@ def first_clusters_of_fat32(entries):
     return entries['first_cluster'].tolist()
 
 
+def last_clusters_of_fat32(entries):
+    """Get the last cluster numbers of the entries representing an FAT32
+    partition.
+
+    :param entries: entries to get last clusters from.
+    """
+
+    return map(lambda l: l[-1][-1], entries['cluster_list'].tolist())
+
+
 def plot_fat32(entries,
                figure=None, subplot_n=111,
                log_info=True,
