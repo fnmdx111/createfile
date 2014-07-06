@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-    drive,disk
+    drive.disk
     ~~~~~~~~~~
 
     This module implements :func:`get_drive_obj` which parses the given stream to
