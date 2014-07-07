@@ -29,8 +29,8 @@ def get_fat32_obj(entry, stream):
 
 
 def get_fat32_partition(stream):
-    """Create FAT32 object from the starting position of the stream, useful for
-    partition streams instead of hard disk streams.
+    """Create FAT32 object from the very beginning position of the stream,
+    useful for reading partition streams instead of hard disk streams.
 
     :param stream: stream to parse against.
     """
