@@ -14,6 +14,8 @@ entries;
 
 Examples
 ----
+See [this gist](https://gist.github.com/mad4alcohol/dbbe26984fe5536b5aaf ).
+
 If we have the following rule:
 
     For any random file, if its creation time is greater than 10 or its

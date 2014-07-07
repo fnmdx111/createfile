@@ -1,20 +1,36 @@
 # encoding: utf-8
 
-from .wrappers import AttributeWrapper
+from .wrappers import AttributeWrapper, AttributeWrapperEx,\
+                      all_, any_, every, some
 from .misc import id_
 
-__all__ = ['If', '_', 'DummyEntry']
+__all__ = ['If', '_', '_1', '_2', 'DummyEntry',
+           'all_', 'any_', 'every', 'some']
 
 
 class DummyEntry:
     """
     A dummy entry class for rule definition mechanism.
     """
+    def __init__(self, name='_'):
+        self.name = name
+
     def __getattr__(self, item):
         return AttributeWrapper(item, self)
 
 # universal dummy entry
 _ = DummyEntry()
+
+
+class DummyEntryEx:
+    def __init__(self, name):
+        self.name = name
+
+    def __getattr__(self, item):
+        return AttributeWrapperEx(item, self)
+
+_1, _2 = DummyEntryEx('_1'), DummyEntryEx('_2')
+
 
 class Rule:
     def __init__(self, predicate, name=''):
