@@ -5,7 +5,7 @@ from .misc import id_
 
 class AbstractWrapper:
     def __init__(self):
-        for kw in ['lt', 'le', 'eq', 'ne', 'gt', 'ge']:
+        for kw in ['lt', 'le', 'eq', 'ne', 'gt', 'ge', 'add', 'sub']:
             self.install_binary('__%s__' % kw, getattr(operator, kw))
         self.install_binary('__and__', operator.and_)
         self.install_binary('__or__', operator.or_)
@@ -40,6 +40,9 @@ class PredicateWrapper(AbstractWrapper):
     def __neg__(self):
         return PredicateWrapper(lambda x: not self.predicate(x))
 
+    def __getitem__(self, item):
+        return PredicateWrapper(lambda x: self.predicate(x)[item])
+
     def __call__(self, *args, **kwargs):
         return self.predicate(*args, **kwargs)
 
@@ -65,3 +68,6 @@ class AttributeWrapper(AbstractWrapper):
 
     def __neg__(self):
         return PredicateWrapper(lambda x: not getattr(x, self.name))
+
+    def __getitem__(self, item):
+        return PredicateWrapper(lambda x: getattr(x, self.name)[item])
