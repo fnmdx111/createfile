@@ -576,3 +576,6 @@ class FAT32(Partition):
                                                 ' %s' % entry.first_cluster)
 
         return entries, create_time_indices
+
+    def get_entries(self):
+        return self.get_fdt()
