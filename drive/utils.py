@@ -1,13 +1,11 @@
 # encoding: utf-8
 import os
 import pywintypes
-from drive import get_fat32_partition, get_ntfs_partition
-from drive.boot_sector.ebr import get_ext_partition_entries
-from drive.fs.fat32.structs import FAT32BootSector
-from drive.fs.ntfs.structs import NTFSBootSector
-from drive.types import registry
-from .keys import k_PartitionEntries, k_partition_type, k_ExtendedPartition, \
-    k_first_byte_address
+from .boot_sector.ebr import get_ext_partition_entries
+from .fs.fat32.structs import FAT32BootSector
+from .fs.ntfs.structs import NTFSBootSector
+from .types import registry
+from .keys import k_PartitionEntries, k_partition_type, k_ExtendedPartition
 from .boot_sector import ClassicalMBR
 from stream import WindowsPhysicalDriveStream
 
