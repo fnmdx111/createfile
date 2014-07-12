@@ -343,7 +343,7 @@ class FAT32(Partition):
     _ul_int32 = ULInt32(None)
 
     def __init__(self, stream, preceding_bytes,
-                 read_fat2=False):
+                 read_fat2=False, ui_handler=None):
         """
         :param stream: stream to parse against.
         :param preceding_bytes: absolute position of this partition.
@@ -351,7 +351,8 @@ class FAT32(Partition):
         """
 
         super(FAT32, self).__init__(FAT32.type, stream, preceding_bytes,
-                                    lambda s: FAT32BootSector.parse_stream(s))
+                                    lambda s: FAT32BootSector.parse_stream(s),
+                                    ui_handler=ui_handler)
 
         self.bytes_per_sector = self.boot_sector[k_bytes_per_sector]
         self.bytes_per_cluster = self.bytes_per_sector *\

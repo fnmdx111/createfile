@@ -17,7 +17,8 @@ class Partition:
     """
     Abstract class which represents partitions.
     """
-    def __init__(self, type_, stream, preceding_bytes, boot_sector_parser):
+    def __init__(self, type_, stream, preceding_bytes, boot_sector_parser,
+                 ui_handler=None):
         """
         :param type_: type of the partition, e.g. FAT32.
         :param stream: stream to parse against.
@@ -33,6 +34,7 @@ class Partition:
         self.stream = stream
 
         self.logger = None
+        self.ui_handler = ui_handler
         self.setup_logger()
 
         self.logger.info('reading boot sector')
@@ -50,3 +52,6 @@ class Partition:
             '%(asctime)s - %(name)s - %(levelname)s: %(message)s'
         ))
         self.logger.addHandler(handler)
+
+        if self.ui_handler:
+            self.logger.addHandler(self.ui_handler)

@@ -15,7 +15,7 @@ __all__ = ['get_fat32_obj', 'get_fat32_partition']
 
 
 @register(k_FAT32)
-def get_fat32_obj(entry, stream):
+def get_fat32_obj(entry, stream, ui_handler=None):
     """Create FAT32 object according to a partition entry.
 
     :param entry: the entry used to locate the partition.
@@ -25,7 +25,7 @@ def get_fat32_obj(entry, stream):
 
     stream.seek(first_byte_addr, os.SEEK_SET)
 
-    return FAT32(stream, preceding_bytes=first_byte_addr)
+    return FAT32(stream, preceding_bytes=first_byte_addr, ui_handler=ui_handler)
 
 
 def get_fat32_partition(stream):
