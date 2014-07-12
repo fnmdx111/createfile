@@ -15,6 +15,8 @@ class SettingsDialog(QDialog):
         self.attr_sort = False
         self.attr_sort_by = ''
         self.attr_display_entry_log = False
+        self.attr_plot_first_cluster = True
+        self.attr_plot_avg_cluster = True
         self.attr_window_size = 5
         self.attr_window_step = 1
 
@@ -274,11 +276,18 @@ class SettingsDialog(QDialog):
                     else self.parent().log_dialog.show()
         )
 
+        cb_plot_first_cluster = new_checkbox('plot_first_cluster',
+                                             'Plot first cluster')
+        cb_plot_avg_cluster = new_checkbox('plot_avg_cluster',
+                                           'Plot average cluster')
+
         vl = QVBoxLayout()
         vl.addWidget(cb_include_deleted_files)
         vl.addLayout(l_sort)
         vl.addWidget(cb_display_entry_log)
         vl.addWidget(btn_show_hide_log_dialog)
+        vl.addWidget(cb_plot_first_cluster)
+        vl.addWidget(cb_plot_avg_cluster)
 
         general_plot_settings_group_box = QGroupBox('General plot settings')
         general_plot_settings_group_box.setLayout(vl)
@@ -288,6 +297,9 @@ class SettingsDialog(QDialog):
         layout.addWidget(metrics_plot_settings_group_box)
 
         self.setLayout(layout)
+
+    def __getattr__(self, item):
+        return self.__getattribute__('attr_%s' % item)
 
 
 class LogDialog(QDialog):

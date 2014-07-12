@@ -2,6 +2,7 @@
 import logging
 from PySide.QtGui import *
 from PySide.QtCore import *
+from drive.fs.fat32 import FAT32, plot_fat32
 from drive.boot_sector.misc import supported_partition_types
 from drive.keys import k_partition_type, k_first_sector_address,\
     k_number_of_sectors, k_ignored, k_OEM_name, k_bytes_per_sector
@@ -13,13 +14,12 @@ from stream import ImageStream, WindowsPhysicalDriveStream
 
 class MainWindow(QMainWindow):
 
-    USE_GREENLET = True
-
     signal_title_changed = Signal(str)
     signal_title_restored = Signal()
     signal_loaded_windows_physical_drives = Signal(list)
     signal_partition_read = Signal(int, str, object)
     signal_partition_loaded = Signal(object)
+    signal_partition_parsed = Signal(object)
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -27,10 +27,11 @@ class MainWindow(QMainWindow):
         self.lw_wpd = QListWidget()
         self.tv_partitions = QTreeView()
         self.tv_partitions_model = QStandardItemModel(self)
+        self.tv_partitions_selection_model = None
         self.setup_partitions_view()
         self.lv_rules = QListView()
 
-        self.settings_dialog = SettingsDialog(self)
+        self.settings_dialog = self.settings = SettingsDialog(self)
         self.log_dialog = LogDialog(self)
 
         self.setup_layout()
@@ -38,6 +39,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
 
         self.load_windows_physical_drives()
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(self.log_dialog.handler)
 
         self.current_stream = None
         self.current_partition = None
@@ -53,6 +57,7 @@ class MainWindow(QMainWindow):
         self.signal_title_restored.connect(self.restore_title)
         self.signal_partition_read.connect(self.append_partition_row)
         self.signal_partition_loaded.connect(self.set_current_partition)
+        self.signal_partition_parsed.connect(self.gen_plot_partition_slot())
 
     def set_current_partition(self, partition):
         self.current_partition = partition
@@ -69,6 +74,14 @@ class MainWindow(QMainWindow):
         self.tv_partitions.header().setResizeMode(QHeaderView.ResizeToContents)
 
         self.tv_partitions.setModel(self.tv_partitions_model)
+
+        self.tv_partitions.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        self.tv_partitions_selection_model = self.tv_partitions.selectionModel()
+        self.tv_partitions_selection_model.currentChanged.connect(
+            self.load_partition
+        )
+
         self.setup_partitions_model()
 
     def setup_partitions_model(self):
@@ -202,8 +215,39 @@ class MainWindow(QMainWindow):
     def plot_metrics(self):
         pass
 
+    def gen_plot_partition_slot(self):
+        def _slot(entries):
+            if self.current_partition.type == FAT32.type:
+                if not self.settings.include_deleted_files:
+                    entries = entries[(entries.is_deleted == False) &
+                                      entries.cluster_list]
+                if self.settings_dialog.attr_sort:
+                    sort_key = self.settings.sort_by
+                    if sort_key:
+                        entries = entries.sort_index(by=sort_key)
+
+                plot_fat32(
+                    entries,
+                    log_info=self.settings.display_entry_log,
+                    logger=self.logger,
+                    plot_first_cluster=self.settings.plot_first_cluster,
+                    plot_average_cluster=self.settings.plot_avg_cluster,
+                    show=True
+                )
+
+        return _slot
+
     def plot_partition(self):
-        self.load_partition()
+        if not self.current_partition:
+            QMessageBox.warning(self,
+                                'Warning',
+                                'Please wait till the partition is loaded.',
+                                QMessageBox.Ok)
+            return
+
+        self.do_async_action(lambda: self.current_partition.get_entries(),
+                             signal_after=self.signal_partition_parsed,
+                             title_before='parsing partition')
 
     def show_timeline(self):
         pass
@@ -267,8 +311,8 @@ class MainWindow(QMainWindow):
              self.non_editable_standard_item(str(p[k_number_of_sectors]))]
         )
 
-    def load_partition(self):
-        row = self.tv_partitions.currentIndex().row()
+    def load_partition(self, current_idx, _):
+        row = current_idx.row()
         if not -1 < row < len(self.partition_table):
             QMessageBox.warning(self,
                                 'Warning',
@@ -278,7 +322,8 @@ class MainWindow(QMainWindow):
 
         entry = self.partition_table[self.tv_partitions.currentIndex().row()]
 
-        if entry[k_partition_type] not in supported_partition_types:
+        if isinstance(entry[k_partition_type], int) and\
+           entry[k_partition_type] not in supported_partition_types:
             QMessageBox.critical(self,
                                  'Error',
                                  'Selected partition (partition type %s) is '
@@ -286,7 +331,7 @@ class MainWindow(QMainWindow):
                                  QMessageBox.Ok)
             return
 
-        def _():
+        def target():
             partition = get_partition_obj(entry,
                                           self.current_stream,
                                           self.log_dialog.handler)
@@ -298,7 +343,7 @@ class MainWindow(QMainWindow):
 
             self.signal_partition_loaded.emit(partition)
 
-        self.do_async_action(_, title_before='loading partition...')
+        self.do_async_action(target, title_before='loading partition...')
 
     A_MILLION_BYTE = 1024 * 1024
     def to_human_readable(self, size):
@@ -323,12 +368,19 @@ class MainWindow(QMainWindow):
             self.target()
 
     def do_async_action(self, target,
+                        signal_before=None, signal_after=None,
                         title_before='', title_after=''):
         def _():
             if title_before:
                 self.signal_title_changed.emit(title_before)
 
-            target()
+            if signal_before:
+                signal_before.emit()
+
+            ret = target()
+
+            if signal_after:
+                signal_after.emit(ret)
 
             self.signal_title_restored.emit()
 
