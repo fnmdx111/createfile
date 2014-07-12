@@ -13,6 +13,15 @@ from ._boot_sector import boot_sector_template
 
 @register(k_ExtendedPartition)
 def get_ext_partition_obj(entry, stream):
+    return _get_ext_partition_obj(
+        entry, stream,
+        lambda e, s: registry[e[k_partition_type]](e, s)
+    )
+
+def get_ext_partition_entries(entry, stream):
+    return _get_ext_partition_obj(entry, stream, lambda _, __: _)
+
+def _get_ext_partition_obj(entry, stream, f):
     """Get extended partitions.
 
     :param entry: entry representing the extended partitions.
@@ -26,7 +35,7 @@ def get_ext_partition_obj(entry, stream):
 
         real_entry, next_ebr_entry = ebr[k_PartitionEntries][:2]
 
-        yield registry[real_entry[k_partition_type]](real_entry, stream)
+        yield f(real_entry, stream)
 
         if next_ebr_entry[k_partition_type] == k_ignored:
             break
