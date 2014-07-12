@@ -2,6 +2,7 @@
 import logging
 from PySide.QtGui import *
 from PySide.QtCore import *
+from drive.boot_sector.misc import supported_partition_types
 from drive.keys import k_partition_type, k_first_sector_address,\
     k_number_of_sectors, k_ignored, k_OEM_name, k_bytes_per_sector
 from drive.utils import discover_physical_drives, get_partition_table, \
@@ -276,6 +277,14 @@ class MainWindow(QMainWindow):
             return
 
         entry = self.partition_table[self.tv_partitions.currentIndex().row()]
+
+        if entry[k_partition_type] not in supported_partition_types:
+            QMessageBox.critical(self,
+                                 'Error',
+                                 'Selected partition (partition type %s) is '
+                                 'not supported.' % entry[k_partition_type],
+                                 QMessageBox.Ok)
+            return
 
         def _():
             partition = get_partition_obj(entry,
