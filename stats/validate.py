@@ -34,7 +34,8 @@ def _check_series(series,
     # it's not important if y values are integers or not
     sh = rect_size[1] / 2
     for (x, y), (segment_x, segment_y) in segmented(series,
-                                                    width=rect_size[0]):
+                                                    width=rect_size[0],
+                                                    strict=False):
         if check_clusters:
             yl, yh = y
         else:
@@ -44,9 +45,13 @@ def _check_series(series,
         _count = 0
         for sx, sy in zip(segment_x, segment_y):
             if sx != x:
-                canonical_sy = canonicalize(sy)
-                if _y_min <= canonical_sy <= _y_max:
-                    _count += 1
+                if check_clusters:
+                    if (_y_min <= y[0] <= _y_max
+                     or _y_min <= y[1] <= _y_max):
+                        _count += 1
+                else:
+                    if _y_min <= y <= _y_max:
+                        _count += 1
 
         canonical_y = canonicalize(y)
 
