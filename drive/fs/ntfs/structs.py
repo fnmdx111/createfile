@@ -146,14 +146,15 @@ class NTFS(Partition):
     """
     type = 'NTFS'
 
-    def __init__(self, stream, preceding_bytes):
+    def __init__(self, stream, preceding_bytes, ui_handler=None):
         """
         :param stream: the stream to parse.
         :param preceding_bytes: bytes preceding this partition.
         """
 
         super(NTFS, self).__init__(self.type, stream, preceding_bytes,
-                                   lambda s: NTFSBootSector.parse_stream(s))
+                                   lambda s: NTFSBootSector.parse_stream(s),
+                                   ui_handler=ui_handler)
 
         self.bytes_per_sector = self.boot_sector[k_bytes_per_sector]
         self.bytes_per_cluster = (self.boot_sector[k_sectors_per_cluster] *

@@ -13,7 +13,7 @@ from drive.types import register
 __all__ = ['get_ntfs_obj', 'get_ntfs_partition']
 
 @register(k_NTFS)
-def get_ntfs_obj(entry, stream):
+def get_ntfs_obj(entry, stream, ui_handler=None):
     """Create NTFS object according to a partition entry.
 
     :param entry: the entry used to locate the partition.
@@ -24,7 +24,7 @@ def get_ntfs_obj(entry, stream):
 
     stream.seek(first_byte_addr, os.SEEK_SET)
 
-    return NTFS(stream, preceding_bytes=first_byte_addr)
+    return NTFS(stream, preceding_bytes=first_byte_addr, ui_handler=ui_handler)
 
 
 def get_ntfs_partition(stream):

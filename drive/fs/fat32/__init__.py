@@ -15,7 +15,7 @@ __all__ = ['get_fat32_obj', 'get_fat32_partition']
 
 
 @register(k_FAT32)
-def get_fat32_obj(entry, stream):
+def get_fat32_obj(entry, stream, ui_handler=None):
     """Create FAT32 object according to a partition entry.
 
     :param entry: the entry used to locate the partition.
@@ -25,7 +25,7 @@ def get_fat32_obj(entry, stream):
 
     stream.seek(first_byte_addr, os.SEEK_SET)
 
-    return FAT32(stream, preceding_bytes=first_byte_addr)
+    return FAT32(stream, preceding_bytes=first_byte_addr, ui_handler=ui_handler)
 
 
 def get_fat32_partition(stream):
@@ -59,7 +59,7 @@ def last_clusters_of_fat32(entries):
 
 def plot_fat32(entries,
                figure=None, subplot_n=111,
-               log_info=True,
+               log_info=True, logger=None,
                plot_average_cluster=True,
                plot_first_cluster=True,
                show=False):
@@ -78,6 +78,8 @@ def plot_fat32(entries,
 
     x, y, y_prime, y_err = [], [], [], [[], []],
 
+    _p = logger.info if logger else print
+
     for i, (_, obj) in enumerate(entries.iterrows()):
         x.append(i)
 
@@ -90,17 +92,17 @@ def plot_fat32(entries,
             y_err[1].append(obj.cluster_list[-1][-1] - y[-1])
 
         if log_info:
-            print('found FDT entry %s:\n'
-                  '\tfp: %s\n'
-                  '\tfc: %s\tac: %s\toc: %s\n'
-                  '\tcr: %s\n'
-                  '\tmd: %s\n' % (i,
-                                  obj.full_path,
-                                  obj.first_cluster,
-                                  obj.avg_cluster,
-                                  sum(e - s + 1 for s, e in obj.cluster_list),
-                                  obj.create_time,
-                                  obj.modify_time))
+            _p('found FDT entry %s:\n'
+               '\tfp: %s\n'
+               '\tfc: %s\tac: %s\toc: %s\n'
+               '\tcr: %s\n'
+               '\tmd: %s\n' % (i,
+                               obj.full_path,
+                               obj.first_cluster,
+                               obj.avg_cluster,
+                               sum(e - s + 1 for s, e in obj.cluster_list),
+                               obj.create_time,
+                               obj.modify_time))
 
     figure = figure or plt.figure()
     ax = figure.add_subplot(subplot_n)

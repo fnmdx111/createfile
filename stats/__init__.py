@@ -17,7 +17,7 @@ __all__ = ['plot_windowed_metrics',
 
 
 def calc_windowed_metrics(fs, entries,
-                          fn=None, echo=True,
+                          fn=None, echo=True, logger=None,
                           log_fmt='{{{0}.full_path}}\n\t{{{0}.first_cluster}}\t'
                                   '{{{0}.create_time}}',
                           window_size=5, window_step=1):
@@ -37,6 +37,7 @@ def calc_windowed_metrics(fs, entries,
     """
 
     fn = fn or [f.__name__ for f in fs]
+    _p = logger.info if logger else print
 
     # values ::= [[f1_0, f1_1, f1_2, ..., f1_n],
     #             [f2_0, f2_1, f2_2, ..., f2_n],
@@ -59,15 +60,15 @@ def calc_windowed_metrics(fs, entries,
             values[i].append(v)
 
         if echo:
-            print('window %s:' % w_cnt)
+            _p('window %s:' % w_cnt)
             # this will form the following format string according to
             # `window_size`
-            print('\n'.join(log_fmt.format(_) for _ in range(len(w)))
+            _p('\n'.join(log_fmt.format(_) for _ in range(len(w)))
                   .format(*map(lambda x: x[1], w)))
             for n, v in zip(fn, values):
                 # print the metrics with their names
-                print('%s: %s' % (n, v[w_cnt]))
-            print('----------------')
+                _p('%s: %s' % (n, v[w_cnt]))
+            _p('----------------')
 
         w_cnt += 1
 
