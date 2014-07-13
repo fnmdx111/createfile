@@ -92,17 +92,17 @@ def plot_fat32(entries,
             y_err[1].append(obj.cluster_list[-1][-1] - y[-1])
 
         if log_info:
-            _p.info('found FDT entry %s:\n'
-                    '\tfp: %s\n'
-                    '\tfc: %s\tac: %s\toc: %s\n'
-                    '\tcr: %s\n'
-                    '\tmd: %s\n' % (i,
-                                    obj.full_path,
-                                    obj.first_cluster,
-                                    obj.avg_cluster,
-                                    sum(e - s + 1 for s, e in obj.cluster_list),
-                                    obj.create_time,
-                                    obj.modify_time))
+            _p('found FDT entry %s:\n'
+               '\tfp: %s\n'
+               '\tfc: %s\tac: %s\toc: %s\n'
+               '\tcr: %s\n'
+               '\tmd: %s\n' % (i,
+                               obj.full_path,
+                               obj.first_cluster,
+                               obj.avg_cluster,
+                               sum(e - s + 1 for s, e in obj.cluster_list),
+                               obj.create_time,
+                               obj.modify_time))
 
     figure = figure or plt.figure()
     ax = figure.add_subplot(subplot_n)
