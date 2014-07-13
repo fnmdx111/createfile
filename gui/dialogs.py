@@ -172,6 +172,9 @@ class SettingsDialog(QDialog):
             group_box.setCheckable(True)
             group_box.setChecked(getattr(self, attr_name('')[:-1]))
             group_box.setLayout(grid_layout)
+            group_box.toggled.connect(lambda on: setattr(self,
+                                                         attr_name('')[:-1],
+                                                         on))
 
             return group_box
 
@@ -327,5 +330,8 @@ class LogDialog(QDialog):
 
         self.signal_new_log.connect(self.log_widget.append)
 
-        self.handler = LoggerHandler(self)
-        self.handler.setFormatter(self.colored_formatter)
+    def new_handler(self):
+        handler = LoggerHandler(self)
+        handler.setFormatter(self.colored_formatter)
+
+        return handler
