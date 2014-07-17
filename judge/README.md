@@ -25,8 +25,8 @@ If we have the following rule:
 We can write:
 ```python
 rule = If(_.create_time > 10
-       or _.modify_time < 5
-       or _.cluster_list[-1][-1] > 100).then(conclusion='xxx')
+        | _.modify_time < 5
+        | _.cluster_list[-1][-1] > 100).then(conclusion='xxx')
 
 print(rule.apply(entry))
 ```
