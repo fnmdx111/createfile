@@ -9,7 +9,7 @@ from collections import defaultdict
 import os
 from struct import unpack
 from construct import Struct, ULInt32, ULInt8, ULInt16, ULInt64, Bytes
-from .misc import Unused, _local_timestamp
+from .misc import Unused, _local_datetime
 from drive.keys import *
 
 
@@ -224,10 +224,10 @@ class StandardInformation(Attribute):
         with self:
             self.body = self.__struct__.parse_stream(stream)
 
-            self.create_time = _local_timestamp(self.body[k_create_time])
-            self.modify_time = _local_timestamp(self.body[k_modify_time])
-            self.access_time = _local_timestamp(self.body[k_access_time])
-            self.mft_change_time = _local_timestamp(self.body[k_MFT_change_time])
+            self.create_time = _local_datetime(self.body[k_create_time])
+            self.modify_time = _local_datetime(self.body[k_modify_time])
+            self.access_time = _local_datetime(self.body[k_access_time])
+            self.mft_change_time = _local_datetime(self.body[k_MFT_change_time])
 
 
 @register
@@ -254,10 +254,10 @@ class FileName(Attribute):
         with self:
             self.body = self.__struct__.parse_stream(stream)
 
-            self.create_time = _local_timestamp(self.body[k_create_time])
-            self.modify_time = _local_timestamp(self.body[k_modify_time])
-            self.access_time = _local_timestamp(self.body[k_access_time])
-            self.mft_change_time = _local_timestamp(self.body[k_MFT_change_time])
+            self.create_time = _local_datetime(self.body[k_create_time])
+            self.modify_time = _local_datetime(self.body[k_modify_time])
+            self.access_time = _local_datetime(self.body[k_access_time])
+            self.mft_change_time = _local_datetime(self.body[k_MFT_change_time])
 
             self.filename = str(stream.read(self.body[k_length_of_name] * 2),
                                 encoding='utf-16')
