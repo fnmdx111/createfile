@@ -119,7 +119,8 @@ class WindowsPhysicalDriveStream(ReadOnlyStream):
                 raise ValueError('Negative offset not supported.')
 
     def read(self, size=None):
-        size = size or self.default_read_buffer_size
+        if size is None:
+            size = self.default_read_buffer_size
 
         buf = self._buffer.read(size)
 
