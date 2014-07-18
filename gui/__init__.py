@@ -8,6 +8,7 @@ from PySide.QtWebKit import QWebView
 from jinja2 import Environment, PackageLoader
 from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
     last_clusters_of_fat32, FAT32
+from drive.fs.ntfs import NTFS
 from .dialogs import SettingsDialog, LogDialog, PartitionDialog, FigureDialog
 from gui.misc import AsyncTaskMixin, human_readable, new_button
 from gui.widgets import RulesWidget, ColumnListView
@@ -98,6 +99,10 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                     self.partition_dialog.current_partition_address_text()
                 )
                 self.filtered_entries = None
+                if self.partition_dialog.current_partition().type == FAT32.type:
+                    self.rw_rules.inflate_with_fat32_rules()
+                elif self.partition_dialog.current_partition().type == NTFS.type:
+                    self.rw_rules.inflate_with_ntfs_rules()
             else:
                 btn_select.setText(select_partition_label)
         btn_select.clicked.connect(select_partition)

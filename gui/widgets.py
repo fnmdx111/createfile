@@ -58,14 +58,29 @@ class ColumnListView(QTreeView):
 
 
 class RulesWidget(QWidget):
+
+    _fat32_rules = [['_.create_time > _.modify_time', '复制']]
+    _ntfs_rules = []
+
     def __init__(self, parent):
         super(RulesWidget, self).__init__(parent=parent)
 
         self._clv = ColumnListView(['已启用', '规则', '结论'], parent)
-        self._clv.append(['', '_.create_time < _.modify_time', '复制'],
-                         checkable=True)
 
         self._setup_layout()
+
+    def _inflate_rules(self, which_rules, clear):
+        if clear:
+            self._clv.clear()
+
+        for r, c in which_rules:
+            self._clv.append(['', r, c], checkable=True)
+
+    def inflate_with_fat32_rules(self, clear=True):
+        self._inflate_rules(self._fat32_rules, clear)
+
+    def inflate_with_ntfs_rules(self, clear=True):
+        self._inflate_rules(self._ntfs_rules, clear)
 
     def _setup_layout(self):
         btn_add = QPushButton('添加')
