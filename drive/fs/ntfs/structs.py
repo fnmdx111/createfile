@@ -11,8 +11,9 @@ from io import BytesIO
 import os
 from construct import Struct, Bytes, String, ULInt16, ULInt8, ULInt64, SLInt8,\
     Magic, Value, ULInt32
-from drive.fs import Partition
-from .attributes import attributes
+from pandas import DataFrame
+from drive.fs import Partition, EntryMixin
+from .attributes import attributes, Data, StandardInformation, FileName
 from .misc import StrictlyUnused, Unused
 from drive.keys import *
 from misc import MAGIC_END_SECTION
@@ -88,11 +89,21 @@ FileRecordHeader = Struct(k_FileRecordHeader,
 )
 
 
-class MFTRecord:
+class MFTRecord(EntryMixin):
     """
     Class which represents MFT records.
     """
-    def __init__(self, parent, stream):
+
+    __attr__ = ['lsn', 'sn',
+                'si_modify_time', 'si_access_time',
+                'si_create_time', 'si_mft_time',
+                'fn_modify_time', 'fn_access_time',
+                'fn_create_time', 'fn_mft_time',
+                'first_cluster',
+                'full_path',
+                'order_number']
+
+    def __init__(self, parent, stream, order_number):
         """
         :param parent: the partition which this MFT record resides on.
         :param stream: a `BytesIO` object which contains the MFT record. Since
@@ -101,6 +112,8 @@ class MFTRecord:
         """
 
         self.stop = False
+
+        self.order_number = order_number
 
         assert isinstance(stream, BytesIO)
         self.stream = stream
@@ -120,6 +133,10 @@ class MFTRecord:
         """Parse `FILE` records."""
 
         header = FileRecordHeader.parse_stream(self.stream)
+
+        self.lsn = header[k_logfile_sequence_number]
+        self.sn = header[k_sequence_number]
+
         self.stream.seek(header[k_offset_to_update_sequence])
         update_seq = self.stream.read(header[k_size_of_update_sequence] * 2)
 
@@ -132,6 +149,23 @@ class MFTRecord:
             # this may not be appropriate, there are times that multiple
             # instances of attributes of the same type exist
             # what are the relationships between them?
+            if attribute.type == Data.type:
+                if attribute.data_runs:
+                    self.first_cluster = attribute.data_runs[0][0]
+                else:
+                    self.first_cluster = -1
+            elif attribute.type == StandardInformation.type:
+                self.si_create_time = attribute.create_time
+                self.si_modify_time = attribute.modify_time
+                self.si_access_time = attribute.access_time
+                self.si_mft_time = attribute.mft_change_time
+            elif attribute.type == FileName.type:
+                self.fn_create_time = attribute.create_time
+                self.fn_modify_time = attribute.modify_time
+                self.fn_access_time = attribute.access_time
+                self.fn_mft_time = attribute.mft_change_time
+                self.full_path = attribute.filename
+
             self.attributes[attribute.type] = attribute
 
     def do_bad(self):
@@ -179,16 +213,23 @@ class NTFS(Partition):
         self.mft_records = list(iter(self))
         self.logger.info('read %s mft record(s)' % len(self.mft_records))
 
+        return self.mft_records
+
     def __iter__(self):
         """Implement iterator protocol for pythonicness."""
 
+        cnt = 0
         while True:
             record = MFTRecord(self,
                                BytesIO(self.stream.read(
-                                   self.bytes_per_mft_record)))
+                                   self.bytes_per_mft_record)),
+                               cnt)
             if record.stop:
                 break
-            yield record
+            if StandardInformation.type in record.attributes:
+                yield record
+
+            cnt += 1
 
     def lcn2b(self, lcn):
         """Convert logical cluster number to offset in bytes.
@@ -206,3 +247,12 @@ class NTFS(Partition):
         """
 
         return self.lcn2b(lcn) + self.preceding_bytes
+
+    def get_entries(self):
+        entries = self.get_mft_records()
+
+        return DataFrame(list(map(lambda x: x.to_tuple(), entries))
+                         if entries
+                         else [(None,) * len(MFTRecord.__attr__)],
+                         index=map(lambda x: x.si_create_time, entries),
+                         columns=MFTRecord.__attr__)

@@ -13,7 +13,7 @@ from struct import unpack
 from construct import *
 from datetime import datetime
 from pandas import DataFrame
-from .. import Partition
+from .. import Partition, EntryMixin
 from .speedup._op import find_cluster_lists
 from drive.keys import *
 from misc import STATE_LFN_ENTRY, STATE_DOS_ENTRY, MAGIC_END_SECTION, \
@@ -66,7 +66,7 @@ FAT32FSInformationSector = Struct(k_ignored,
     allow_overwrite=True
 )
 
-class FAT32DirectoryTableEntry:
+class FAT32DirectoryTableEntry(EntryMixin):
     """
     Represents the directory table entries (FDT).
     This class is a bit ugly due to the __slots__ mechanism, which, however, can
@@ -90,20 +90,14 @@ class FAT32DirectoryTableEntry:
                  'full_path', 'first_cluster',
                  'create_time',
                  'modify_time',
-                 'skip', 'is_deleted']
+                 'skip', 'is_deleted',
+                 'order_number']
 
     __attr__ = __slots__[:]
     __attr__.remove('skip')
 
-    def to_dict(self):
-        return {key: getattr(self, key) for key in self.__attr__
-                if hasattr(self, key)}
-
-    def to_tuple(self):
-        return tuple(getattr(self, key) for key in self.__attr__
-                     if hasattr(self, key))
-
-    def __init__(self, raw, dir_name, state_mgr, current_obj, partition):
+    def __init__(self, raw, dir_name, state_mgr, current_obj, partition,
+                 order_number):
         """
         :param raw: raw bytes read from stream.
         :param dir_name: parent path of the current entry.
@@ -114,6 +108,8 @@ class FAT32DirectoryTableEntry:
         """
 
         obj = self.__struct__.parse(raw)
+
+        self.order_number = order_number
 
         self.skip = False
         self.is_deleted = obj[k_short_file_name].startswith(b'\xe5')
@@ -382,6 +378,8 @@ class FAT32(Partition):
 
         self.fdt = {}
 
+        self.items_count = 0
+
     def read_fdt(self):
         """Read the FDT entries."""
 
@@ -549,7 +547,9 @@ class FAT32(Partition):
                     entry = FAT32DirectoryTableEntry(raw, dir_name,
                                                      __state__,
                                                      __cur_obj__,
-                                                     self)
+                                                     self,
+                                                     self.items_count)
+                    self.items_count += 1
                     if attribute == 0xb:
                         print('label: %s' % entry.full_path[1:])
 
