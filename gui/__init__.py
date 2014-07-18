@@ -310,7 +310,8 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                                               '路径',
                                               '首簇',
                                               '创建时间',
-                                              '修改时间'] +
+                                              '修改时间',
+                                              '访问时间'] +
                                              (additional_header or []))
 
             for i, (ts, row) in enumerate(
@@ -322,7 +323,8 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                          row.full_path,
                          row.cluster_list[0][0],
                          row.create_time,
-                         row.modify_time] + additional_info(i, row)
+                         row.modify_time,
+                         row.access_date] + additional_info(i, row)
                     )
 
             self.files_dialog.show()
