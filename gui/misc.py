@@ -1,5 +1,8 @@
 # encoding: utf-8
 from logging import Handler, Formatter, makeLogRecord
+import threading
+from PySide.QtCore import *
+from PySide.QtGui import *
 
 
 class ColoredFormatter(Formatter):
@@ -49,3 +52,91 @@ class LoggerHandler(Handler):
 
     def emit(self, record):
         self.parent.signal_new_log.emit(self.format(record))
+
+
+def error_box(parent, msg, title='错误', buttons=QMessageBox.Ok):
+    return QMessageBox.critical(parent, title, msg, buttons)
+
+
+def warning_box(parent, msg, title='警告', buttons=QMessageBox.Ok):
+    return QMessageBox.warning(parent, title, msg, buttons)
+
+
+def human_readable(size, a_million_byte=1024 * 1024):
+    if size > 1024 * a_million_byte:
+        human_readable_size = '%.2f GB' % (size / (a_million_byte * 1024))
+    elif size > a_million_byte:
+        human_readable_size = '%.2f MB' % (size / a_million_byte)
+    elif size > 1024:
+        human_readable_size = '%.2f KB' % (size / 1024)
+    else:
+        human_readable_size = '%.2f B' % size
+
+    return human_readable_size
+
+
+class AsyncTaskMixin(QObject):
+
+    signal_title_changed = Signal(str)
+    signal_title_restored = Signal()
+    signal_wait_dialog_show = Signal()
+    signal_wait_dialog_hide = Signal()
+
+    def setup_mixin(self, parent):
+        self.wait_dialog = QDialog(parent)
+        self.wait_dialog.setWindowTitle('请稍等')
+        label = QLabel('正在执行中...')
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        self.wait_dialog.setLayout(layout)
+        self.wait_dialog.setModal(True)
+
+        self.signal_wait_dialog_show.connect(self.wait_dialog.show)
+        self.signal_wait_dialog_hide.connect(self.wait_dialog.hide)
+
+        self.signal_title_changed.connect(
+            lambda t: self.setWindowTitle('%s | %s' % (self.windowTitle(),
+                                                       t))
+        )
+        self.signal_title_restored.connect(
+            lambda: self.setWindowTitle(self.original_title)
+        )
+
+    def do_async_task(self, target,
+                      signal_before=None, signal_after=None,
+                      title_before='', title_after='',
+                      block=True):
+        def _():
+            if title_before:
+                self.signal_title_changed.emit(title_before)
+
+            if block:
+                self.signal_wait_dialog_show.emit()
+
+            if signal_before:
+                signal_before.emit()
+
+            ret = target()
+
+            if signal_after:
+                signal_after.emit(ret)
+
+            if block:
+                self.signal_wait_dialog_hide.emit()
+
+            self.signal_title_restored.emit()
+
+            if title_after:
+                self.signal_title_changed.emit(title_after)
+
+        thread = threading.Thread(target=_)
+        thread.start()
+
+        return thread
+
+
+def new_button(text, slot):
+    btn = QPushButton(text)
+    btn.clicked.connect(slot)
+
+    return btn

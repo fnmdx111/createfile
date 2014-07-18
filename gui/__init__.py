@@ -1,75 +1,81 @@
 # encoding: utf-8
 import logging
+import os
+import webbrowser
 from PySide.QtGui import *
 from PySide.QtCore import *
-import matplotlib.pyplot as plt
-from drive.fs.fat32 import FAT32, plot_fat32, first_clusters_of_fat32, \
-    last_clusters_of_fat32
-from drive.boot_sector.misc import supported_partition_types
-from drive.keys import k_partition_type, k_first_sector_address,\
-    k_number_of_sectors, k_ignored, k_OEM_name, k_bytes_per_sector
-from drive.utils import discover_physical_drives, get_partition_table, \
-    get_partition_obj
-from .dialogs import SettingsDialog, LogDialog
+from PySide.QtNetwork import QNetworkAccessManager
+from PySide.QtWebKit import QWebView
+from jinja2 import Environment, PackageLoader
+from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
+    last_clusters_of_fat32, FAT32
+from .dialogs import SettingsDialog, LogDialog, PartitionDialog, FigureDialog
+from gui.misc import AsyncTaskMixin, human_readable, new_button
+from gui.widgets import RulesWidget, ColumnListView
 from stats import calc_windowed_metrics, validate_metrics, plot_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters
-from stream import ImageStream, WindowsPhysicalDriveStream
-import threading
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, AsyncTaskMixin):
 
-    signal_title_changed = Signal(str)
-    signal_title_restored = Signal()
-    signal_loaded_windows_physical_drives = Signal(list)
-    signal_partition_read = Signal(int, str, object)
-    signal_partition_loaded = Signal(object)
+    signal_partition_parsed = Signal(object)
+    signal_append_to_files_dialog = Signal(object)
+
+    USE_QT_WEBKIT = False
 
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super().__init__(parent=None)
 
-        self.lw_wpd = QListWidget()
-        self.tv_partitions = QTreeView()
-        self.tv_partitions_model = QStandardItemModel(self)
-        self.tv_partitions_selection_model = None
-        self.setup_partitions_view()
-        self.lv_rules = QListView()
-
+        self.setup_mixin(self)
+        self.partition_dialog = PartitionDialog(parent=self)
         self.settings_dialog = self.settings = SettingsDialog(self)
         self.log_dialog = LogDialog(self)
+        self.rw_rules = RulesWidget(self)
+        self.clv_files = ColumnListView(['', '路径'],
+                                        self)
+
+        self.files_dialog = QDialog(self)
+        self.files_dialog.setWindowTitle('文件列表')
+        self.files_dialog.setModal(False)
+
+        self.timeline_dialog = QDialog(self)
+        self.timeline_dialog.setWindowTitle('时间线')
+        self.timeline_dialog.setModal(False)
+        self.timeline_view = QWebView(self.timeline_dialog)
+        layout = QVBoxLayout()
+        layout.addWidget(self.timeline_view)
+        self.timeline_dialog.setLayout(layout)
+
+        self.template_path = os.path.join(os.getcwd(), 'gui', 'templates')
+        self.timeline_base_url = QUrl.fromLocalFile(self.template_path)
 
         self.setup_layout()
-        self.title = 'createfile - Integrated Time Authenticity Analyzer'
-        self.setWindowTitle(self.title)
-
-        self.load_windows_physical_drives()
+        self.original_title = ('createfile '
+                               ' - Integrated Time Authenticity Analyzer')
+        self.setWindowTitle(self.original_title)
 
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(self.log_dialog.new_handler())
         self.logger.info('logger ready')
 
-        self.current_stream = None
-        self.current_partition = None
-        self.partition_table = []
-
         self.connect_custom_signals()
 
         self.already_plotted = set()
         self.plotting_schedule = set()
+        self.metrics_figures = []
+        self.filtered_entries = None
+        self.partition_entries = None
+
+        jinja_env = Environment(loader=PackageLoader('gui'))
+        self.timeline_template = jinja_env.get_template('timeline.html')
 
     def connect_custom_signals(self):
-        self.signal_loaded_windows_physical_drives.connect(
-            self.fill_in_windows_physical_drives_view
-        )
-        self.signal_title_changed.connect(self.append_title)
-        self.signal_title_restored.connect(self.restore_title)
-        self.signal_partition_read.connect(self.append_partition_row)
-        self.signal_partition_loaded.connect(self.set_current_partition)
         self.signal_metrics_calculation_done.connect(self.check_plotting_status)
+        self.signal_append_to_files_dialog.connect(self.clv_files.append)
 
     def check_plotting_status(self, args):
-        plot_windowed_metrics(*args, show=False)
+        self.metrics_figures.append(plot_windowed_metrics(*args, show=False))
 
         fn = args[3]
         if len(fn) > 1:
@@ -78,168 +84,61 @@ class MainWindow(QMainWindow):
             self.already_plotted.add(fn[0])
 
         if self.already_plotted == self.plotting_schedule:
-            plt.show()
-
-    def set_current_partition(self, partition):
-        self.current_partition = partition
-
-    def append_title(self, title):
-        self.setWindowTitle('%s | %s' % (self.windowTitle(), title))
-
-    def restore_title(self):
-        self.setWindowTitle(self.title)
-
-    def setup_partitions_view(self):
-        self.tv_partitions.setItemsExpandable(False)
-        self.tv_partitions.setRootIsDecorated(False)
-        self.tv_partitions.header().setResizeMode(QHeaderView.ResizeToContents)
-
-        self.tv_partitions.setModel(self.tv_partitions_model)
-
-        self.tv_partitions.setSelectionMode(QAbstractItemView.SingleSelection)
-
-        self.tv_partitions_selection_model = self.tv_partitions.selectionModel()
-        self.tv_partitions_selection_model.currentChanged.connect(
-            self.load_partition
-        )
-
-        self.setup_partitions_model()
-
-    def setup_partitions_model(self):
-        self.tv_partitions_model.setHorizontalHeaderLabels(['',
-                                                            'Type',
-                                                            'Start sector',
-                                                            'Size',
-                                                            'Sectors'])
-
-    def load_windows_physical_drives(self):
-        self.lw_wpd.clear()
-
-        def _():
-            numbers = discover_physical_drives()
-            self.signal_loaded_windows_physical_drives.emit(numbers)
-
-        self.do_async_action(_, title_before='loading physical drives...')
-
-    def fill_in_windows_physical_drives_view(self, numbers):
-        for n in numbers:
-            QListWidgetItem(QFileIconProvider().icon(QFileIconProvider.Drive),
-                            r'\\.\PhysicalDrive\%s' % n,
-                            self.lw_wpd)
+            for figure in self.metrics_figures:
+                FigureDialog(self, figure).show()
 
     def setup_layout(self):
         widget = QWidget(self)
 
-        def new_button(text, slot):
-            btn = QPushButton(text)
-            btn.clicked.connect(slot)
-
-            return btn
-
-        # image path form
-        le_image_path = QLineEdit()
-
-        label = QLabel('Image path:')
-        label.setBuddy(le_image_path)
-        def open_image():
-            path, _ = QFileDialog.getOpenFileName(self,
-                                                  'Open image file',
-                                                  '.',
-                                                  'All files (*.*)')
-            le_image_path.setText(path if path else le_image_path.text())
-
-        def load_image():
-            if not le_image_path.text():
-                return
-
-            if self.current_stream:
-                self.current_stream.close()
-
-            self.current_stream = ImageStream(le_image_path.text())
-            self.load_partitions()
-
-        _l0 = QHBoxLayout()
-        _l0.addWidget(label)
-        _l0.addWidget(le_image_path)
-
-        _l1 = QHBoxLayout()
-        _l1.addWidget(new_button('Open...',
-                                 open_image))
-        _l1.addWidget(new_button('Load',
-                                 load_image))
-
-        _l2 = QVBoxLayout()
-        _l2.addLayout(_l0)
-        _l2.addLayout(_l1)
-
-        img_group_box = QGroupBox('Using an image')
-        img_group_box.setLayout(_l2)
-
-        # list of available windows physical drive
-        self.lw_wpd.currentItemChanged.connect(self.wpd_changed)
-
-        _l = QVBoxLayout()
-        _l.addWidget(new_button('Refresh', self.load_windows_physical_drives))
-        _l.addWidget(self.lw_wpd)
-
-        wpd_group_box = QGroupBox('Using a physical drive')
-        wpd_group_box.setLayout(_l)
+        select_partition_label = '选择分区...'
+        btn_select = QPushButton(select_partition_label)
+        def select_partition():
+            accepted = self.partition_dialog.exec_()
+            if accepted:
+                btn_select.setText('已选择%s' %
+                    self.partition_dialog.current_partition_address_text()
+                )
+                self.filtered_entries = None
+            else:
+                btn_select.setText(select_partition_label)
+        btn_select.clicked.connect(select_partition)
 
         # action buttons
         _l = QVBoxLayout()
-        _l.addWidget(new_button('Settings...',
+        _l.addWidget(btn_select)
+        _l.addWidget(new_button('设置...',
                                 lambda: self.settings_dialog.show()))
-        _l.addWidget(new_button('Plot metrics',
+        _l.addWidget(new_button('绘制参数图',
                                 self.plot_metrics))
-        _l.addWidget(new_button('Plot partition',
+        _l.addWidget(new_button('绘制时簇图',
                                 self.plot_partition))
-        _l.addWidget(new_button('Show timeline',
+        _l.addWidget(new_button('显示时间线',
                                 self.show_timeline))
 
-        buttons_group_box = QGroupBox('Analysis tools')
+        buttons_group_box = QGroupBox('分析工具箱')
         buttons_group_box.setLayout(_l)
 
-        # list of partitions
         _l = QVBoxLayout()
-        _l.addWidget(self.tv_partitions)
+        _l.addWidget(self.rw_rules)
 
-        partitions_group_box = QGroupBox('Partitions')
-        partitions_group_box.setLayout(_l)
-
-        # list of rules
-        le_rule = QLineEdit()
-        _l = QVBoxLayout()
-        _l.addWidget(le_rule)
-        _l.addWidget(new_button('Add rule',
-                                lambda: None))
-        _l.addWidget(self.lv_rules)
-
-        rules_group_box = QGroupBox('Rules to apply')
+        rules_group_box = QGroupBox('规则定义')
         rules_group_box.setLayout(_l)
 
-        # setup grid layout
-        vertical_line = QFrame(self)
-        vertical_line.setFrameShape(QFrame.VLine)
-        vertical_line.setFrameShadow(QFrame.Sunken)
+        layout = QVBoxLayout()
+        layout.addWidget(buttons_group_box)
+        layout.addWidget(rules_group_box)
 
-        grid_layout = QGridLayout()
-        grid_layout.addWidget(buttons_group_box, 0, 0, 1, 1)
-        grid_layout.addWidget(rules_group_box, 1, 0, 1, 1)
-        grid_layout.addWidget(vertical_line, 0, 1, 2, 1)
-        grid_layout.addWidget(img_group_box, 0, 2, 1, 1)
-        grid_layout.addWidget(wpd_group_box, 1, 2, 1, 1)
-        grid_layout.addWidget(partitions_group_box, 0, 3, 2, 1)
+        _l = QVBoxLayout()
+        _l.addWidget(self.clv_files)
+        self.files_dialog.setLayout(_l)
 
-        widget.setLayout(grid_layout)
+        widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    signal_begin_plotting_metrics = Signal(object)
     signal_metrics_calculation_done = Signal(list)
     def plot_metrics(self):
         self.already_plotted = set()
-
-        if not self.have_active_partition():
-            return
+        self.metrics_figures = []
 
         def _slot(entries):
             funcs = []
@@ -284,7 +183,7 @@ class MainWindow(QMainWindow):
                     n, a, l = validator(metrics_func(),
                                         vd, rs, t)
                     return n, a, l, fn, fmt, pn, pa
-                self.do_async_action(
+                self.do_async_task(
                     _,
                     title_before='calculating metrics',
                     signal_after=self.signal_metrics_calculation_done
@@ -354,189 +253,155 @@ class MainWindow(QMainWindow):
                         [self.settings.cluster_plot_plot_abnormal_points]
                 )
 
-            self.signal_begin_plotting_metrics.disconnect(_slot)
+        self.parse_partition(_slot)
 
-        self.signal_begin_plotting_metrics.connect(_slot)
+    def filter_entries(self, entries=None):
+        if entries is None:
+            if self.filtered_entries is not None:
+                return self.filtered_entries
+            else:
+                return None
 
-        self.do_async_action(lambda: self.current_partition.get_entries(),
-                             signal_after=self.signal_begin_plotting_metrics,
-                             title_before='parsing partition')
-
-    def have_active_partition(self):
-        if not self.current_partition:
-            QMessageBox.warning(self,
-                                'Warning',
-                                'Please wait till the partition is loaded.',
-                                QMessageBox.Ok)
-            return False
-
-        return True
-
-    def filter_entries(self, entries):
-        if self.current_partition.type == FAT32.type:
-            if not self.settings.include_deleted_files:
-                entries = entries[(entries.is_deleted == False) &
-                                  entries.cluster_list]
-            if self.settings_dialog.attr_sort:
-                sort_key = self.settings.sort_by
-                if sort_key:
-                    entries = entries.sort_index(by=sort_key)
+        if not self.settings.include_deleted_files:
+            entries = entries[(entries.is_deleted == False) &
+                              entries.cluster_list]
+        if not self.settings.include_folders:
+            entries = entries[entries.is_directory == False]
+        if self.settings_dialog.attr_sort:
+            sort_key = self.settings.sort_by
+            if sort_key:
+                entries = entries.sort_index(by=sort_key)
+        self.filtered_entries = entries
 
         return entries
 
-    signal_begin_plotting_partition = Signal(object)
     def plot_partition(self):
-        if not self.have_active_partition():
-            return
-
         def _slot(entries):
-            plot_fat32(
+            figure = plot_fat32(
                 self.filter_entries(entries),
                 log_info=self.settings.display_entry_log,
                 logger=self.logger,
                 plot_first_cluster=self.settings.plot_first_cluster,
                 plot_average_cluster=self.settings.plot_avg_cluster,
-                show=True
+                show=False
             )
-            self.signal_begin_plotting_partition.disconnect(_slot)
+            FigureDialog(self, figure, '时簇图').show()
 
-        self.signal_begin_plotting_partition.connect(_slot)
+        self.parse_partition(_slot)
 
-        self.do_async_action(lambda: self.current_partition.get_entries(),
-                             signal_after=self.signal_begin_plotting_partition,
-                             title_before='parsing partition')
+    def parse_partition(self, slot,
+                        additional_header=None,
+                        additional_info=lambda *_: []):
+        # remember to disconnect this signal in your slot
+        partition = self.partition_dialog.current_partition()
+        if not partition:
+            return
+
+        e = self.filter_entries()
+        if e is not None:
+            slot(e)
+            self.files_dialog.show()
+
+            return
+
+        def _slot(entries):
+            self.partition_entries = entries
+
+            slot(entries)
+
+            self.clv_files.clear()
+            if partition.type == FAT32.type:
+                self.clv_files.setup_headers(['',
+                                              '路径',
+                                              '首簇',
+                                              '创建时间',
+                                              '修改时间'] +
+                                             (additional_header or []))
+            for i, (ts, row) in enumerate(
+                    self.filter_entries(entries).iterrows()
+            ):
+                if partition.type == FAT32.type:
+                    self.signal_append_to_files_dialog.emit(
+                        [i,
+                         row.full_path,
+                         row.cluster_list[0][0],
+                         row.create_time,
+                         row.modify_time] + additional_info(i, row)
+                    )
+
+            self.files_dialog.show()
+
+            self.signal_partition_parsed.disconnect(_slot)
+
+        self.signal_partition_parsed.connect(_slot)
+        self.do_async_task(lambda: partition.get_entries(),
+                           signal_after=self.signal_partition_parsed,
+                           title_before='正在读取分区...')
+
+    def apply_rules(self, entries):
+        result = []
+        conclusions = []
+        for rule in self.rw_rules.rules():
+            conclusions.append(rule.conclusion)
+
+            self.logger.info('applying rule %s to all the entries' %
+                             rule.predicate.expr)
+            _result, positives = rule.apply_to(self.filter_entries(entries))
+
+            if result:
+                for _1, _2 in zip(result, _result):
+                    _1.merge(_2)
+            else:
+                result = _result
+
+        return conclusions, result
 
     def show_timeline(self):
-        pass
+        result = []
+        def _slot(entries):
+            conclusions, _result = self.apply_rules(entries)
+            result.extend(_result)
 
-    def wpd_changed(self, current, _):
-        if not current:
-            return
+            conclusions.append('无可用结论')
 
-        if self.current_stream:
-            self.current_stream.close()
+            groups, c_id = [], {}
+            for i, c in enumerate(conclusions):
+                groups.append({'id': i, 'content': c})
+                c_id[c]  = i
 
-        self.current_stream = WindowsPhysicalDriveStream(
-            current.text().lstrip(r'\\.\PhysicalDrive\ ')
-        )
-
-        self.load_partitions()
-
-    @staticmethod
-    def non_editable_standard_item(text):
-        _ = QStandardItem(text)
-        _.setFlags(_.flags() & ~Qt.ItemIsEditable)
-
-        return _
-
-    def load_partitions(self):
-        self.partition_table = []
-
-        self.tv_partitions_model.clear()
-        self.setup_partitions_model()
-
-        def _():
-            for i, p in enumerate(get_partition_table(self.current_stream)):
-                if k_partition_type in p:
-                    type_ = p[k_partition_type]
+            items = []
+            for i, item in enumerate(_result):
+                if item.conclusions:
+                    for c in item.conclusions:
+                        items.append({
+                            'start': item.entry.create_time.timestamp() * 1000,
+                            'content': '文件编号%s' % i,
+                            'group': c_id[c]
+                        })
                 else:
-                    type_ = str(p[k_OEM_name], 'ascii')
+                    items.append({
+                        'start': item.entry.create_time.timestamp() * 1000,
+                        'content': '文件编号%s' % i,
+                        'group': len(conclusions) - 1
+                    })
 
-                if 'NTFS' in type_:
-                    type_ = 'NTFS'
-                elif 'MSDOS' in type_:
-                    type_ = 'FAT32'
-                elif type_ == k_ignored:
-                    continue
+            html = self.timeline_template.render(groups=groups,
+                                                 items=items)
 
-                self.signal_partition_read.emit(i, type_, p)
-
-        self.do_async_action(_, title_before='loading partition table...')
-
-    def append_partition_row(self, i, type_, p):
-        self.partition_table.append(p)
-
-        size = p[k_number_of_sectors] * p.get(k_bytes_per_sector, 512)
-
-        self.tv_partitions_model.appendRow(
-            [self.non_editable_standard_item(str(i)),
-             self.non_editable_standard_item(type_),
-             self.non_editable_standard_item(
-                 str(p.get(k_first_sector_address, 0))
-             ),
-             self.non_editable_standard_item(self.to_human_readable(size)),
-             self.non_editable_standard_item(str(p[k_number_of_sectors]))]
-        )
-
-    def load_partition(self, current_idx, _):
-        row = current_idx.row()
-        if not -1 < row < len(self.partition_table):
-            QMessageBox.warning(self,
-                                'Warning',
-                                'No valid partition selected.',
-                                QMessageBox.Ok)
-            return
-
-        entry = self.partition_table[self.tv_partitions.currentIndex().row()]
-
-        if isinstance(entry[k_partition_type], int) and\
-           entry[k_partition_type] not in supported_partition_types:
-            QMessageBox.critical(self,
-                                 'Error',
-                                 'Selected partition (partition type %s) is '
-                                 'not supported.' % entry[k_partition_type],
-                                 QMessageBox.Ok)
-            return
-
-        def target():
-            partition = get_partition_obj(entry,
-                                          self.current_stream,
-                                          self.log_dialog.new_handler())
-
-            if not self.settings_dialog.attr_display_entry_log:
-                partition.logger.setLevel(logging.INFO)
+            if self.USE_QT_WEBKIT:
+                self.timeline_view.setHtml(html,
+                                           self.timeline_base_url)
+                self.timeline_dialog.show()
             else:
-                partition.logger.setLevel(logging.DEBUG)
+                path = os.path.join(self.template_path, 'r.html')
+                print(html, file=open(path, 'w', encoding='utf-8'))
+                webbrowser.open(QUrl.fromLocalFile(path).toString())
 
-            self.signal_partition_loaded.emit(partition)
+        def _ai(i, _):
+            if result:
+                _ = result[i]
+                return [_.conclusions]
 
-        self.do_async_action(target, title_before='loading partition...')
-
-    A_MILLION_BYTE = 1024 * 1024
-    def to_human_readable(self, size):
-        size_f = float(size)
-        if size > 1024 * 1024 * 1024:
-            human_readable_size = '%.2f GB' % (size_f /
-                                                  (self.A_MILLION_BYTE * 1024))
-        elif size > 1024 * 1024:
-            human_readable_size = '%.2f MB' % (size_f / self.A_MILLION_BYTE)
-        elif size > 1024:
-            human_readable_size = '%.2f KB' % (size_f / 1024)
-        else:
-            human_readable_size = '%.2f B' % size_f
-        return human_readable_size
-
-    def do_async_action(self, target,
-                        signal_before=None, signal_after=None,
-                        title_before='', title_after=''):
-        def _():
-            if title_before:
-                self.signal_title_changed.emit(title_before)
-
-            if signal_before:
-                signal_before.emit()
-
-            ret = target()
-
-            if signal_after:
-                signal_after.emit(ret)
-
-            self.signal_title_restored.emit()
-
-            if title_after:
-                self.signal_title_changed.emit(title_after)
-
-        thread = threading.Thread(target=_)
-        thread.start()
-
-        return thread
+        self.parse_partition(_slot,
+                             additional_header=['结论'],
+                             additional_info=_ai)

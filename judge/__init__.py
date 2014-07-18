@@ -32,6 +32,18 @@ class DummyEntryEx:
 _1, _2 = DummyEntryEx('_1'), DummyEntryEx('_2')
 
 
+class JudgedEntry:
+    def __init__(self, entry, conclusions=None):
+        self.entry = entry
+        self.conclusions = conclusions or []
+
+    def append_conclusion(self, conclusion):
+        self.conclusions.append(conclusion)
+
+    def merge(self, other):
+        self.conclusions.extend(other.conclusions)
+
+
 class Rule:
     def __init__(self, predicate, name=''):
         self.predicate = predicate
@@ -47,17 +59,15 @@ class Rule:
         return self
 
     def apply_to(self, entries):
-        conclusions, result = [], []
-        for ts, obj in entries.iterrows():
-            c, r = '', None
+        result, positives = [], []
+        for i, (ts, obj) in enumerate(entries.iterrows()):
             if self.predicate(obj):
-                c = self.conclusion
-                r = self.action(obj)
+                positives.append(i)
+                result.append(JudgedEntry(obj, [self.conclusion]))
+            else:
+                result.append(JudgedEntry(obj))
 
-            conclusions.append(c)
-            result.append(r)
-
-        return conclusions, result
+        return result, positives
 
     def apply(self, obj):
         if self.predicate(obj):
