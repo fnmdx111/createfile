@@ -31,6 +31,8 @@ class SettingsDialog(QDialog):
         self.attr_plot_avg_cluster = True
         self.attr_window_size = 5
         self.attr_window_step = 1
+        self.attr_attr1_expr = '_.create_time.timestamp()'
+        self.attr_attr2_expr = '_.first_cluster'
 
         self.attr_tau = True
         self.attr_tau_format = 'Dx--'
@@ -207,21 +209,22 @@ class SettingsDialog(QDialog):
 
             return _
 
-        def new_line_edit_with_layout(name, title):
+        def new_line_edit(name, title, integer=True):
             _ = QLineEdit(str(attr_value(name)))
-            _.setValidator(QIntValidator())
-            _.editingFinished.connect(lambda: setattr(self,
-                                                      attr_name(name),
-                                                      int(_.text())))
+
+            if integer:
+                _.setValidator(QIntValidator())
+
+            _.editingFinished.connect(
+                lambda: setattr(self,
+                                attr_name(name),
+                                (int if integer else str)(_.text()))
+            )
 
             label = QLabel(title)
             label.setBuddy(_)
 
-            l = QHBoxLayout()
-            l.addWidget(label)
-            l.addWidget(_)
-
-            return l
+            return label, _
 
         hb1 = QHBoxLayout()
         for group_name, group_title, value_domain_type in zip(
@@ -240,25 +243,34 @@ class SettingsDialog(QDialog):
             '将tau与rho绘制在同一张图上'
         )
 
-        l_window_size = new_line_edit_with_layout('window_size',
-                                                  '窗口大小:')
-        l_window_step = new_line_edit_with_layout('window_step',
-                                                  '窗口间隔:')
+        l_window_size, le_window_size = new_line_edit('window_size',
+                                                      '窗口大小:')
+        l_window_step, le_window_step = new_line_edit('window_step',
+                                      '窗口间隔:')
+        l_attr1_expr, le_attr1_expr = new_line_edit('attr1_expr',
+                                                    '参数1表达式:',
+                                                    integer=False)
+        l_attr2_expr, le_attr2_expr = new_line_edit('attr2_expr',
+                                                    '参数2表达式:',
+                                                    integer=False)
 
-        hb2 = QHBoxLayout()
-        hb2.addWidget(cb_plot_on_same_figure)
-        hb2.addStretch()
-        hb2.addLayout(l_window_size)
-        hb2.addStretch()
-        hb2.addLayout(l_window_step)
+        gl = QGridLayout()
+        gl.addWidget(l_window_size, 0, 0, 1, 1)
+        gl.addWidget(le_window_size, 0, 1, 1, 1)
+        gl.addWidget(l_window_step, 0, 2, 1, 1)
+        gl.addWidget(le_window_step, 0, 3, 1, 1)
+        gl.addWidget(l_attr1_expr, 1, 0, 1, 1)
+        gl.addWidget(le_attr1_expr, 1, 1, 1, 1)
+        gl.addWidget(l_attr2_expr, 1, 2, 1, 1)
+        gl.addWidget(le_attr2_expr, 1, 3, 1, 1)
 
         vb = QVBoxLayout()
         vb.addLayout(hb1)
-        vb.addLayout(hb2)
+        vb.addWidget(cb_plot_on_same_figure)
+        vb.addLayout(gl)
 
         metrics_plot_settings_group_box = QGroupBox('参数图设置')
         metrics_plot_settings_group_box.setLayout(vb)
-
 
         cb_include_deleted_files = new_checkbox('include_deleted_files',
                                                 '绘制标记为删除的项目')

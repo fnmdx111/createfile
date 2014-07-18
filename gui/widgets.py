@@ -124,5 +124,5 @@ class RulesWidget(QWidget):
                                     self._clv.model_.item(r, 1),
                                     self._clv.model_.item(r, 2))
 
-            if on:
+            if on.checkState() == Qt.Checked:
                 yield If(eval(rule.text())).then(conclusion=conclusion.text())

@@ -217,7 +217,9 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                             funcs,
                             filtered_entries,
                             echo=self.settings.display_entry_log,
-                            logger=self.logger
+                            logger=self.logger,
+                            attr1=lambda _: eval(self.settings.attr1_expr),
+                            attr2=lambda _: eval(self.settings.attr2_expr)
                         ),
                         value_domains, rect_sizes, thresholds,
                         func_names, formats, plot_normal, plot_abnormal)
@@ -301,18 +303,7 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         if not partition:
             return
 
-        e = self.filter_entries()
-        if e is not None:
-            slot(e)
-            self.files_dialog.show()
-
-            return
-
-        def _slot(entries):
-            self.partition_entries = entries
-
-            slot(entries)
-
+        def show_file_dialog(entries):
             self.clv_files.clear()
             if partition.type == FAT32.type:
                 self.clv_files.setup_headers(['',
@@ -321,6 +312,7 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                                               '创建时间',
                                               '修改时间'] +
                                              (additional_header or []))
+
             for i, (ts, row) in enumerate(
                     self.filter_entries(entries).iterrows()
             ):
@@ -334,6 +326,21 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                     )
 
             self.files_dialog.show()
+
+        e = self.filter_entries()
+        if e is not None:
+            slot(e)
+
+            show_file_dialog(e)
+
+            return
+
+        def _slot(entries):
+            self.partition_entries = entries
+
+            slot(entries)
+
+            show_file_dialog(e)
 
             self.signal_partition_parsed.disconnect(_slot)
 
