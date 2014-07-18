@@ -25,9 +25,9 @@ Making your own disk image
 Install VirtualBox and use
 `VBoxManage internalcommands converttoraw path/to/your/vdi.vdi output.raw`
 
-Configuring and using the web interface
+Using gui
 ----
-Go to subdirectory `web` and read the `README.md` there.
+Run `bootstrap.py` after you activate your virtualenv.
 
 Cookbook
 ----
@@ -81,6 +81,26 @@ Statistical metrics
 Recently a new branch `statistics` is merged into `master`, which contains
 new method using normalized Kendall's tau score and Spearman's rho score to
 help accomplishing the project's goal.
+
+
+Minimal dependencies
+----
+
+* scipy (mainly used in stats)
+* numpy (dependency of various libraries)
+* matplotlib (used in plotting)
+* pyparsing (dependency of matplotlib)
+* PySide (for gui)
+* Jinja2 (for timeline template rendering)
+* MarkupSafe (dependency of Jinja2)
+* constructs (mainly used in package drive for binary parsing)
+* PyWin32 (mainly used in streaming physical drive)
+* pandas (mainly used in encapsulating file entries of partitions)
+* python-dateutil (dependency of pandas)
+* pytz (dependency of pandas)
+* six (library providing compatibility, dependency of various libraries)
+* Cython (optional, used for compiling speed-up modules for various packages)
+
 
 Licensing
 ====
