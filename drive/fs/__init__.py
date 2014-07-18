@@ -58,3 +58,16 @@ class Partition:
 
     def get_entries(self):
         raise NotImplementedError
+
+
+class EntryMixin:
+    def setup_attrs(self, attrs):
+        self.__attr__ = attrs
+
+    def to_dict(self):
+        return {key: getattr(self, key) for key in self.__attr__
+                if hasattr(self, key)}
+
+    def to_tuple(self):
+        return tuple(getattr(self, key) for key in self.__attr__
+                     if hasattr(self, key))
