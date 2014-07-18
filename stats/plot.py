@@ -59,3 +59,5 @@ def plot_windowed_metrics(normal_data, abnormal_data,
 
     if show:
         plt.show(figure)
+
+    return figure

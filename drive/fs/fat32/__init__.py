@@ -117,3 +117,5 @@ def plot_fat32(entries,
 
     if show:
         plt.show(figure)
+
+    return figure
