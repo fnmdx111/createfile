@@ -122,18 +122,19 @@ install_misc(PredicateWrapper,
 
 
 class AttributeWrapper(AbstractWrapper):
-    def __init__(self, name, parent, expr=''):
+    def __init__(self, name, parent, obj=id_, expr=''):
         super(AttributeWrapper, self).__init__(expr)
 
         self.name = name
         self.parent = parent
+        self.obj = obj
 
         self.expr = expr or '%s.%s' % (self.parent.name, self.name)
 
     def gen_dummy(self, op):
         def dummy(self_, other):
             if type(other) == type(self_):
-                other_ = lambda x: getattr(x, other.name)
+                other_ = lambda x: getattr(other.obj(x), other.name)
                 other_expr = other.expr
             elif type(other) == type(id_):
                 other_ = other
@@ -145,13 +146,18 @@ class AttributeWrapper(AbstractWrapper):
                 other_ = lambda _: other
                 other_expr = other
 
-            return PredicateWrapper(lambda x: op(getattr(x, self_.name),
+            return PredicateWrapper(lambda x: op(getattr(self.obj(x),
+                                                         self_.name),
                                                  other_(x)),
                                     '%s(%s, %s)' % (op.__name__,
                                                     self_.expr,
                                                     other_expr))
 
         return dummy
+
+    def __getattr__(self, item):
+        return AttributeWrapper(item, self, obj=lambda x: getattr(self.obj(x),
+                                                                  self.name))
 
 install_misc(AttributeWrapper,
              PredicateWrapper,
