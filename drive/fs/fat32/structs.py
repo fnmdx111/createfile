@@ -90,6 +90,7 @@ class FAT32DirectoryTableEntry(EntryMixin):
                  'full_path', 'first_cluster',
                  'create_time',
                  'modify_time',
+                 'access_date',
                  'skip', 'is_deleted',
                  'order_number']
 
@@ -157,6 +158,15 @@ class FAT32DirectoryTableEntry(EntryMixin):
         try:
             self.modify_time = datetime(y, m_, d, h, m, int(s))
             # TODO implement customizable timezone
+        except ValueError:
+            partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
+                                     dir_name, name, y, m_, d)
+            self.skip = True
+            return
+
+        y, m_, d = self._get_date(obj[k_access_date])
+        try:
+            self.access_date = datetime(y, m_, d, 0, 0, 0)
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
                                      dir_name, name, y, m_, d)
