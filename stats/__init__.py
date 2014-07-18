@@ -18,6 +18,8 @@ __all__ = ['plot_windowed_metrics',
 
 def calc_windowed_metrics(fs, entries,
                           fn=None, echo=True, logger=None,
+                          attr1=lambda x: x.create_time.timestamp(),
+                          attr2=lambda x: x.first_cluster,
                           log_fmt='{{{0}.full_path}}\n\t{{{0}.first_cluster}}\t'
                                   '{{{0}.create_time}}',
                           window_size=5, window_step=1):
@@ -51,11 +53,10 @@ def calc_windowed_metrics(fs, entries,
 
         for i, f in enumerate(fs):
             # calculate each metric according to `fs`
-            v = f(np.array(list(map(lambda x: x[1].first_cluster,
+            v = f(np.array(list(map(lambda x: attr1(x[1]),
                                     w))),
-                  np.array(list(map(lambda x: x[1].create_time
+                  np.array(list(map(lambda x: attr2(x[1]),
                   # timestamps are multiplied by 1000 so that they are integers
-                                                  .timestamp() * 1000,
                                     w))))
             values[i].append(v)
 
