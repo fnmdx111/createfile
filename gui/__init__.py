@@ -4,7 +4,6 @@ import os
 import webbrowser
 from PySide.QtGui import *
 from PySide.QtCore import *
-from PySide.QtNetwork import QNetworkAccessManager
 from PySide.QtWebKit import QWebView
 from jinja2 import Environment, PackageLoader
 from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
