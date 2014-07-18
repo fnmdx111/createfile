@@ -367,23 +367,18 @@ class FAT32(Partition):
         self.logger.info('reading fs info sector')
         FAT32FSInformationSector.parse_stream(stream)
 
-        fat_abs_pos = self.s2b(self.boot_sector[k_number_of_reserved_sectors])
-        fat_abs_pos += preceding_bytes
-        stream.seek(fat_abs_pos, os.SEEK_SET)
-        self.logger.info('stream jumped to %d and ready to read FAT',
-                         fat_abs_pos)
+        self.read_fat2 = read_fat2
 
-        self.logger.info('reading FAT')
-        res1 = self.fat1, self.number_of_eoc_1 = self.get_fat()
-        self.logger.info('read FAT, size of FAT is %d, number of EOCs is %d',
-                         self.bytes_per_fat, self.number_of_eoc_1)
-        if not read_fat2:
-            self._jump(self.bytes_per_fat)
-            self.fat2, self.number_of_eoc_2 = res1
-        else:
-            self.fat2, self.number_of_eoc_2 = self.get_fat()
+        self.fat1, self.number_of_eoc_1, self.fat2, self.number_of_eoc_2 = (
+            {}, 0, {}, 0
+        )
 
-        self.data_section_offset = fat_abs_pos + 2 * self.bytes_per_fat
+        self.fat_abs_pos = self.s2b(
+            self.boot_sector[k_number_of_reserved_sectors]
+        )
+        self.fat_abs_pos += preceding_bytes
+
+        self.data_section_offset = self.fat_abs_pos + 2 * self.bytes_per_fat
 
         self.fdt = {}
 
@@ -577,5 +572,22 @@ class FAT32(Partition):
 
         return entries, create_time_indices
 
+    def read_fats(self):
+        self.stream.seek(self.fat_abs_pos, os.SEEK_SET)
+        self.logger.info('stream jumped to %d and ready to read FAT',
+                         self.fat_abs_pos)
+
+        self.logger.info('reading FAT')
+        res1 = self.fat1, self.number_of_eoc_1 = self.get_fat()
+        self.logger.info('read FAT, size of FAT is %d, number of EOCs is %d',
+                         self.bytes_per_fat, self.number_of_eoc_1)
+        if not self.read_fat2:
+            self._jump(self.bytes_per_fat)
+            self.fat2, self.number_of_eoc_2 = res1
+        else:
+            self.fat2, self.number_of_eoc_2 = self.get_fat()
+
     def get_entries(self):
+        self.read_fats()
+
         return self.get_fdt()
