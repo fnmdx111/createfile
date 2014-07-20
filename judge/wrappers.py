@@ -146,7 +146,7 @@ class AttributeWrapper(AbstractWrapper):
                 other_ = lambda _: other
                 other_expr = other
 
-            return PredicateWrapper(lambda x: op(getattr(self.obj(x),
+            return PredicateWrapper(lambda x: op(getattr(self_.obj(x),
                                                          self_.name),
                                                  other_(x)),
                                     '%s(%s, %s)' % (op.__name__,
