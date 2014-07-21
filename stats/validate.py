@@ -46,11 +46,11 @@ def _check_series(series,
         for sx, sy in zip(segment_x, segment_y):
             if sx != x:
                 if check_clusters:
-                    if (_y_min <= y[0] <= _y_max
-                     or _y_min <= y[1] <= _y_max):
+                    if (_y_min <= sy[0] <= _y_max
+                     or _y_min <= sy[1] <= _y_max):
                         _count += 1
                 else:
-                    if _y_min <= y <= _y_max:
+                    if _y_min <= sy <= _y_max:
                         _count += 1
 
         canonical_y = canonicalize(y)
