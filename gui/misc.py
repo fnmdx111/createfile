@@ -81,13 +81,15 @@ class AsyncTaskMixin(QObject):
     signal_title_restored = Signal()
     signal_wait_dialog_show = Signal()
     signal_wait_dialog_hide = Signal()
+    signal_label_changed = Signal(str)
+    signal_label_restored = Signal()
 
     def setup_mixin(self, parent):
         self.wait_dialog = QDialog(parent)
         self.wait_dialog.setWindowTitle('请稍等')
-        label = QLabel('正在执行中...')
+        self.wait_label = QLabel('正在执行中...')
         layout = QVBoxLayout()
-        layout.addWidget(label)
+        layout.addWidget(self.wait_label)
         self.wait_dialog.setLayout(layout)
         self.wait_dialog.setModal(True)
 
@@ -98,6 +100,12 @@ class AsyncTaskMixin(QObject):
             lambda t: self.setWindowTitle('%s | %s' % (self.windowTitle(),
                                                        t))
         )
+
+        self.signal_label_changed.connect(self.wait_label.setText)
+        self.signal_label_restored.connect(
+            lambda: self.wait_label.setText('正在执行中...')
+        )
+
         self.signal_title_restored.connect(
             lambda: self.setWindowTitle(self.original_title)
         )
@@ -109,6 +117,7 @@ class AsyncTaskMixin(QObject):
         def _():
             if title_before:
                 self.signal_title_changed.emit(title_before)
+                self.signal_label_changed.emit(title_before)
 
             if block:
                 self.signal_wait_dialog_show.emit()
@@ -125,6 +134,7 @@ class AsyncTaskMixin(QObject):
                 self.signal_wait_dialog_hide.emit()
 
             self.signal_title_restored.emit()
+            self.signal_label_restored.emit()
 
             if title_after:
                 self.signal_title_changed.emit(title_after)
