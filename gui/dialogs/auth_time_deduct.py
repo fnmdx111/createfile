@@ -1,5 +1,6 @@
 # encoding: utf-8
 from PySide.QtGui import *
+from PySide.QtCore import *
 from ..widgets import ColumnListView
 from stats import windowed
 
@@ -16,6 +17,9 @@ class AuthenticCreateTimeDeductionDialog(QDialog):
         _l = QVBoxLayout()
         _l.addWidget(self._clv)
         self.setLayout(_l)
+
+        self.setWindowFlags(self.windowFlags() |
+                            Qt.WindowMaximizeButtonHint)
 
         self.setModal(False)
 

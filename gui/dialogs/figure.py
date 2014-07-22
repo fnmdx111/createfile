@@ -1,4 +1,5 @@
 # encoding: utf-8
+from PySide.QtCore import *
 from PySide.QtGui import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, \
     NavigationToolbar2QTAgg
@@ -9,6 +10,8 @@ class FigureDialog(QDialog):
         super().__init__(parent=parent)
 
         self.setWindowTitle(title)
+        self.setWindowFlags(self.windowFlags() |
+                            Qt.WindowMaximizeButtonHint)
 
         self.setModal(False)
 

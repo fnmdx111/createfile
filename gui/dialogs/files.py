@@ -1,5 +1,6 @@
 # encoding: utf-8
 from PySide.QtGui import *
+from PySide.QtCore import *
 from ..widgets import ColumnListView
 from drive.fs.fat32 import FAT32
 from drive.fs.ntfs import NTFS
@@ -12,6 +13,9 @@ class FilesDialog(QDialog):
         self._title = '文件列表'
 
         self.setModal(False)
+
+        self.setWindowFlags(self.windowFlags() |
+                            Qt.WindowMaximizeButtonHint)
 
         self._clv = ColumnListView(['路径'],
                                    self,
