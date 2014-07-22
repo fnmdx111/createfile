@@ -9,9 +9,10 @@ from jinja2 import Environment, PackageLoader
 from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
     last_clusters_of_fat32, FAT32
 from drive.fs.ntfs import NTFS
-from .dialogs import SettingsDialog, LogDialog, PartitionDialog, FigureDialog
-from gui.misc import AsyncTaskMixin, human_readable, new_button
-from gui.widgets import RulesWidget, ColumnListView
+from .dialogs import SettingsDialog, LogDialog, PartitionsDialog, FigureDialog, \
+    FilesDialog, AuthenticCreateTimeDeductionDialog, SummaryDialog
+from .misc import AsyncTaskMixin, human_readable, new_button
+from .widgets import RulesWidget, ColumnListView
 from stats import calc_windowed_metrics, validate_metrics, plot_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters
@@ -28,16 +29,15 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         super().__init__(parent=None)
 
         self.setup_mixin(self)
-        self.partition_dialog = PartitionDialog(parent=self)
+
+        self.rw_rules = RulesWidget(self)
+
+        self.partition_dialog = PartitionsDialog(parent=self)
         self.settings_dialog = self.settings = SettingsDialog(self)
         self.log_dialog = LogDialog(self)
-        self.rw_rules = RulesWidget(self)
-        self.clv_files = ColumnListView(['', '路径'],
-                                        self)
-
-        self.files_dialog = QDialog(self)
-        self.files_dialog.setWindowTitle('文件列表')
-        self.files_dialog.setModal(False)
+        self.files_dialog = FilesDialog(self)
+        self.ct_deduction_dialog = AuthenticCreateTimeDeductionDialog(self)
+        self.summary_dialog = SummaryDialog(self)
 
         self.timeline_dialog = QDialog(self)
         self.timeline_dialog.setWindowTitle('时间线')
@@ -64,6 +64,7 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         self.already_plotted = set()
         self.plotting_schedule = set()
         self.metrics_figures = []
+        self.abnormal_file_numbers = set()
         self.filtered_entries = None
         self.partition_entries = None
 
@@ -72,18 +73,30 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
 
     def connect_custom_signals(self):
         self.signal_metrics_calculation_done.connect(self.check_plotting_status)
-        self.signal_append_to_files_dialog.connect(self.clv_files.append)
+        self.signal_append_to_files_dialog.connect(self.files_dialog.append)
 
     def check_plotting_status(self, args):
         self.metrics_figures.append(plot_windowed_metrics(*args, show=False))
 
+        abnormal_file_numbers = args[1]
+
         fn = args[3]
         if len(fn) > 1:
             self.already_plotted.add(tuple(fn))
+            for series in abnormal_file_numbers:
+                xs, _ = series
+                for x in xs:
+                    self.abnormal_file_numbers.add(x)
         else:
             self.already_plotted.add(fn[0])
+            xs, _ = abnormal_file_numbers[0]
+            for x in xs:
+                self.abnormal_file_numbers.add(x)
 
         if self.already_plotted == self.plotting_schedule:
+            self.ct_deduction_dialog.deduct()
+            self.ct_deduction_dialog.show()
+
             for figure in self.metrics_figures:
                 FigureDialog(self, figure).show()
 
@@ -103,6 +116,8 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                     self.rw_rules.inflate_with_fat32_rules()
                 elif self.partition_dialog.current_partition().type == NTFS.type:
                     self.rw_rules.inflate_with_ntfs_rules()
+
+                self.summary_dialog.show()
             else:
                 btn_select.setText(select_partition_label)
         btn_select.clicked.connect(select_partition)
@@ -131,10 +146,6 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         layout = QVBoxLayout()
         layout.addWidget(buttons_group_box)
         layout.addWidget(rules_group_box)
-
-        _l = QVBoxLayout()
-        _l.addWidget(self.clv_files)
-        self.files_dialog.setLayout(_l)
 
         widget.setLayout(layout)
         self.setCentralWidget(widget)
@@ -194,6 +205,7 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                 )
 
             self.plotting_schedule = set()
+            self.abnormal_file_numbers = set()
             if self.settings.plot_tau_and_rho_on_the_same_figure:
                 if self.settings.tau and self.settings.rho:
                     self.plotting_schedule = {('tau', 'rho')}
@@ -269,12 +281,18 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                 return None
 
         if not self.settings.include_deleted_files:
-            entries = entries[(entries.is_deleted == False) &
-                              entries.cluster_list]
+            if self.partition_dialog.current_partition().type == FAT32.type:
+                entries = entries[(entries.is_deleted == False) &
+                                  entries.cluster_list]
         if not self.settings.include_folders:
-            entries = entries[entries.is_directory == False]
-        if self.settings_dialog.attr_sort:
-            sort_key = self.settings.sort_by
+            if self.partition_dialog.current_partition().type == FAT32.type:
+                entries = entries[entries.is_directory == False]
+        if self.settings_dialog.sort_fat32:
+            sort_key = self.settings.sort_fat32_by
+            if sort_key:
+                entries = entries.sort_index(by=sort_key)
+        if self.settings_dialog.sort_ntfs:
+            sort_key = self.settings.sort_ntfs_by
             if sort_key:
                 entries = entries.sort_index(by=sort_key)
         self.filtered_entries = entries
@@ -296,35 +314,40 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         self.parse_partition(_slot)
 
     def parse_partition(self, slot,
-                        additional_header=None,
-                        additional_info=lambda *_: []):
+                        additional_headers=None,
+                        additional_info=lambda *_: [],
+                        show_file_dialog_=True):
         # remember to disconnect this signal in your slot
         partition = self.partition_dialog.current_partition()
         if not partition:
             return
 
         def show_file_dialog(entries):
-            self.clv_files.clear()
-            if partition.type == FAT32.type:
-                self.clv_files.setup_headers(['',
-                                              '路径',
-                                              '首簇',
-                                              '创建时间',
-                                              '修改时间',
-                                              '访问时间'] +
-                                             (additional_header or []))
+            self.files_dialog.clear()
+            self.files_dialog.setup_headers_by(partition.type,
+                                               additional_headers)
 
-            for i, (ts, row) in enumerate(
+            for i, (_, row) in enumerate(
                     self.filter_entries(entries).iterrows()
             ):
                 if partition.type == FAT32.type:
                     self.signal_append_to_files_dialog.emit(
-                        [i,
-                         row.full_path,
+                        [row.full_path,
                          row.cluster_list[0][0],
                          row.create_time,
                          row.modify_time,
                          row.access_date] + additional_info(i, row)
+                    )
+                elif partition.type == NTFS.type:
+                    self.signal_append_to_files_dialog.emit(
+                        [row.full_path,
+                         row.lsn, row.sn,
+                         row.first_cluster,
+                         row.si_create_time, row.si_modify_time,
+                         row.si_access_time, row.si_mft_time,
+                         row.fn_create_time, row.fn_modify_time,
+                         row.fn_access_time, row.fn_mft_time,
+                         ] + additional_info(i, row)
                     )
 
             self.files_dialog.show()
@@ -333,7 +356,8 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
         if e is not None:
             slot(e)
 
-            show_file_dialog(e)
+            if show_file_dialog_:
+                show_file_dialog(e)
 
             return
 
@@ -342,7 +366,8 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
 
             slot(entries)
 
-            show_file_dialog(e)
+            if show_file_dialog_:
+                show_file_dialog(e)
 
             self.signal_partition_parsed.disconnect(_slot)
 
@@ -416,5 +441,5 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                 return [_.conclusions]
 
         self.parse_partition(_slot,
-                             additional_header=['结论'],
+                             additional_headers=['结论'],
                              additional_info=_ai)
