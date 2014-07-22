@@ -3,6 +3,7 @@
 import matplotlib
 matplotlib.use('Qt4Agg')
 matplotlib.rcParams['backend.qt4'] = 'PySide'
+matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei']
 
 from PySide.QtGui import QApplication
 import sys

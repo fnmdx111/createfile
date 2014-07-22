@@ -114,6 +114,8 @@ def plot_fat32(entries,
         ax.plot(x, y_prime, 'gx',
                  linestyle='dashed', label='first cluster')
     ax.legend()
+    ax.set_xlabel('文件编号')
+    ax.set_ylabel('簇号')
 
     if show:
         plt.show(figure)
