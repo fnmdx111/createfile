@@ -413,13 +413,13 @@ class MainWindow(QMainWindow, AsyncTaskMixin):
                     for c in item.conclusions:
                         items.append({
                             'start': item.entry.create_time.timestamp() * 1000,
-                            'content': '文件编号%s' % i,
+                            'content': '#%s' % i,
                             'group': c_id[c]
                         })
                 else:
                     items.append({
                         'start': item.entry.create_time.timestamp() * 1000,
-                        'content': '文件编号%s' % i,
+                        'content': '#%s' % i,
                         'group': len(conclusions) - 1
                     })
 
