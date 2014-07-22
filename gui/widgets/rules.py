@@ -1,61 +1,9 @@
 # encoding: utf-8
-
 from PySide.QtCore import *
 from PySide.QtGui import *
 from judge import *
 from datetime import datetime, timedelta
-
-
-class ColumnListView(QTreeView):
-    def __init__(self, headers, parent, headers_fit_content=False):
-        super(ColumnListView, self).__init__(parent)
-
-        self.headers_ = headers
-
-        self.model_ = QStandardItemModel(parent)
-        self.setModel(self.model_)
-
-        self.setItemsExpandable(False)
-        self.setRootIsDecorated(False)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-
-        self.setup_headers()
-        if headers_fit_content:
-            self.header().setResizeMode(QHeaderView.ResizeToContents)
-
-    def setup_headers(self, headers=None):
-        self.headers_ = headers or self.headers_
-        self.model_.setHorizontalHeaderLabels(self.headers_)
-
-    def clear(self):
-        self.model_.clear()
-        self.setup_headers()
-
-    def append(self, items, editable=False, checkable=False):
-        def new_item(item, editable=editable, checkable=checkable):
-            _ = QStandardItem(str(item))
-            _.setEditable(editable)
-            _.setCheckable(checkable)
-            if checkable:
-                _.setCheckState(Qt.Checked)
-
-            return _
-
-        if checkable:
-            _ = [new_item('', checkable=True)]
-            _.extend([new_item(i, checkable=False) for i in items[1:]])
-        else:
-            _ = [new_item(i) for i in items]
-
-        self.model_.appendRow(_)
-
-    def remove(self, row_number):
-        if 0 <= row_number < self.model_.rowCount():
-            self.model_.removeRow(row_number)
-
-    def resize_columns(self):
-        for i, _ in enumerate(self.headers_):
-            self.resizeColumnToContents(i)
+from .column_list_view import ColumnListView
 
 
 class RulesWidget(QWidget):
