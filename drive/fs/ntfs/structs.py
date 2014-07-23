@@ -6,18 +6,17 @@
     This module implements the structs used when parsing NTFS partition and class
     :class:`NTFS`.
 """
+import datetime
 from functools import partial
-from io import BytesIO
-import os
 from construct import Struct, Bytes, String, ULInt16, ULInt8, ULInt64, SLInt8,\
-    Magic, Value, ULInt32
+    Magic, Value
 from pandas import DataFrame
-from drive.fs import Partition, EntryMixin
-from .attributes import attributes, Data, StandardInformation, FileName
+from drive.fs import Partition
 from .misc import StrictlyUnused, Unused
+from .indxparse.MFT import MFTEnumerator, FixupBlock
 from drive.keys import *
 from misc import MAGIC_END_SECTION
-from stream.auxiliary import NTFSClusterStream
+from stream.auxiliary import MFTStream
 
 
 def _sl_int8_entry(c, key):
@@ -69,116 +68,22 @@ NTFSBootSector = Struct(k_NTFSBootSector,
     Magic           (MAGIC_END_SECTION)
 )
 
-FileRecordHeader = Struct(k_FileRecordHeader,
-    ULInt16(k_offset_to_update_sequence),
-    ULInt16(k_size_of_update_sequence),
-    ULInt64(k_logfile_sequence_number),
-    ULInt16(k_sequence_number), # WinHex denotes this as `use/deletion count'
-    Unused (2), # hard link count
-    ULInt16(k_offset_to_first_attribute),
-    ULInt16(k_flags), # 0x00 - deleted file,
-                      # 0x01 - file,
-                      # 0x02 - deleted directory,
-                      # 0x03 - directory
-    ULInt32(k_logical_size),
-    ULInt32(k_allocated_size),
-    ULInt64(k_base_record_index),
-    ULInt16(k_id_of_next_attribute),
-    Unused (2),
-    ULInt32(k_number_of_this_record),
-)
-
-
-class MFTRecord(EntryMixin):
-    """
-    Class which represents MFT records.
-    """
-
-    __attr__ = ['lsn', 'sn',
-                'si_modify_time', 'si_access_time',
-                'si_create_time', 'si_mft_time',
-                'fn_modify_time', 'fn_access_time',
-                'fn_create_time', 'fn_mft_time',
-                'first_cluster',
-                'full_path',
-                'order_number']
-
-    def __init__(self, parent, stream, order_number):
-        """
-        :param parent: the partition which this MFT record resides on.
-        :param stream: a `BytesIO` object which contains the MFT record. Since
-                       we've already had the size of an MFT record from boot
-                       sector, this can be easily done.
-        """
-
-        self.stop = False
-
-        self.order_number = order_number
-
-        assert isinstance(stream, BytesIO)
-        self.stream = stream
-        self.parent = parent
-
-        self.attributes = {}
-
-        signature = stream.read(4)
-        if signature != b'FILE' and signature != b'BAAD':
-            self.stop = True
-            return
-
-        {b'FILE': self.do_file,
-         b'BAAD': self.do_bad}[signature]()
-
-    def do_file(self):
-        """Parse `FILE` records."""
-
-        header = FileRecordHeader.parse_stream(self.stream)
-
-        self.lsn = header[k_logfile_sequence_number]
-        self.sn = header[k_sequence_number]
-
-        self.stream.seek(header[k_offset_to_update_sequence])
-        update_seq = self.stream.read(header[k_size_of_update_sequence] * 2)
-
-        ntfs_stream = NTFSClusterStream(self.stream.getvalue(),
-                                        self.parent.bytes_per_sector,
-                                        update_seq)
-
-        ntfs_stream.seek(header[k_offset_to_first_attribute])
-        for attribute in attributes(ntfs_stream):
-            # this may not be appropriate, there are times that multiple
-            # instances of attributes of the same type exist
-            # what are the relationships between them?
-            if attribute.type == Data.type:
-                if attribute.data_runs:
-                    self.first_cluster = attribute.data_runs[0][0]
-                else:
-                    self.first_cluster = -1
-            elif attribute.type == StandardInformation.type:
-                self.si_create_time = attribute.create_time
-                self.si_modify_time = attribute.modify_time
-                self.si_access_time = attribute.access_time
-                self.si_mft_time = attribute.mft_change_time
-            elif attribute.type == FileName.type:
-                self.fn_create_time = attribute.create_time
-                self.fn_modify_time = attribute.modify_time
-                self.fn_access_time = attribute.access_time
-                self.fn_mft_time = attribute.mft_change_time
-                self.full_path = attribute.filename
-
-            self.attributes[attribute.type] = attribute
-
-    def do_bad(self):
-        """Parse `BAAD` records, which are simply ignored."""
-
-        pass
-
 
 class NTFS(Partition):
     """
     Class that represents NTFS partitions.
     """
     type = 'NTFS'
+
+    __mft_attr__ = ['lsn', 'sn',
+                    'si_modify_time', 'si_access_time',
+                    'si_create_time', 'si_mft_time',
+                    'fn_modify_time', 'fn_access_time',
+                    'fn_create_time', 'fn_mft_time',
+                    'first_cluster', 'cluster_list',
+                    'full_path',
+                    'is_directory',
+                    'order_number']
 
     def __init__(self, stream, preceding_bytes, ui_handler=None):
         """
@@ -191,6 +96,8 @@ class NTFS(Partition):
                                    ui_handler=ui_handler)
 
         self.bytes_per_sector = self.boot_sector[k_bytes_per_sector]
+        FixupBlock.set_sector_size(self.bytes_per_sector)
+
         self.bytes_per_cluster = (self.boot_sector[k_sectors_per_cluster] *
                                   self.bytes_per_sector)
         self.bytes_per_mft_record = self.boot_sector[k_bytes_per_MFT_record]
@@ -200,12 +107,16 @@ class NTFS(Partition):
                          self.bytes_per_sector, self.bytes_per_cluster,
                          self.bytes_per_mft_record)
 
-        mft_abs_pos = self.abs_lcn2b(
+        self.mft_abs_pos = self.abs_lcn2b(
             self.boot_sector[k_cluster_number_of_MFT_start])
-        stream.seek(mft_abs_pos, os.SEEK_SET)
+        # stream.seek(mft_abs_pos, os.SEEK_SET)
         self.logger.info('stream jumped to %s and ready to read MFT records',
-                         hex(mft_abs_pos))
-        self.mft_records = []
+                         hex(self.mft_abs_pos))
+
+        self.mft_enumerator = MFTEnumerator(self,
+                                            MFTStream(self.stream,
+                                                      self.mft_abs_pos,
+                                                      self.bytes_per_mft_record))
 
     def get_mft_records(self):
         """Parse the MFT records residing on this partition."""
@@ -215,21 +126,78 @@ class NTFS(Partition):
 
         return self.mft_records
 
+    @staticmethod
+    def runs_to_cluster_list(runs):
+        cluster_list = []
+        current_offset = 0
+        for offset, length in runs:
+            current_offset += offset
+            cluster_list.append([current_offset, current_offset + length - 1])
+
+        return cluster_list
+
     def __iter__(self):
         """Implement iterator protocol for pythonicness."""
+        for order_number, (record, record_path) in enumerate(
+                self.mft_enumerator.enumerate_paths()
+        ):
+            si = record.standard_information()
+            fn = record.filename_information()
 
-        cnt = 0
-        while True:
-            record = MFTRecord(self,
-                               BytesIO(self.stream.read(
-                                   self.bytes_per_mft_record)),
-                               cnt)
-            if record.stop:
-                break
-            if StandardInformation.type in record.attributes:
-                yield record
+            if not (record.is_active() or fn):
+                continue
 
-            cnt += 1
+            first_cluster = -1
+            cluster_list = []
+            if record.is_directory():
+                is_directory = True
+            else:
+                is_directory = False
+
+                data_attr = record.data_attribute()
+                if data_attr and data_attr.non_resident() > 0:
+                    cluster_list = self.runs_to_cluster_list(
+                        data_attr.runlist().runs()
+                    )
+                    if cluster_list:
+                        first_cluster = cluster_list[0][0]
+                    else:
+                        first_cluster = (
+                            order_number * self.bytes_per_mft_record +
+                            self.mft_abs_pos
+                        ) // self.bytes_per_cluster
+
+            si_create_time = datetime.datetime.utcfromtimestamp(0)
+            si_modify_time = datetime.datetime.utcfromtimestamp(0)
+            si_access_time = datetime.datetime.utcfromtimestamp(0)
+            si_mft_time = datetime.datetime.utcfromtimestamp(0)
+            if si:
+                si_create_time = si.created_time()
+                si_modify_time = si.modified_time()
+                si_access_time = si.accessed_time()
+                si_mft_time = si.changed_time()
+
+            fn_create_time = datetime.datetime.utcfromtimestamp(0)
+            fn_modify_time = datetime.datetime.utcfromtimestamp(0)
+            fn_access_time = datetime.datetime.utcfromtimestamp(0)
+            fn_mft_time = datetime.datetime.utcfromtimestamp(0)
+            if fn:
+                fn_create_time = fn.created_time()
+                fn_modify_time = fn.modified_time()
+                fn_access_time = fn.accessed_time()
+                fn_mft_time = fn.changed_time()
+
+            lsn = record.lsn()
+            sn = record.sequence_number()
+
+            yield (lsn, sn,
+                   si_create_time, si_modify_time, si_access_time, si_mft_time,
+                   fn_create_time, fn_modify_time, fn_access_time, fn_mft_time,
+                   first_cluster, cluster_list,
+                   record_path,
+                   is_directory,
+                   order_number)
+
 
     def lcn2b(self, lcn):
         """Convert logical cluster number to offset in bytes.
@@ -251,8 +219,8 @@ class NTFS(Partition):
     def get_entries(self):
         entries = self.get_mft_records()
 
-        return DataFrame(list(map(lambda x: x.to_tuple(), entries))
+        return DataFrame(entries
                          if entries
-                         else [(None,) * len(MFTRecord.__attr__)],
-                         index=map(lambda x: x.si_create_time, entries),
-                         columns=MFTRecord.__attr__)
+                         else [(None,) * len(self.__mft_attr__)],
+                         index=map(lambda x: x[2], entries),
+                         columns=self.__mft_attr__)
