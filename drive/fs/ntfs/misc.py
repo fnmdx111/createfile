@@ -16,8 +16,3 @@ StrictlyUnused = lambda n: (all_zero(n) if STRICT else id_)(Bytes(None, n))
 Unused = lambda n: Bytes(None, n)
 
 STRICT = False
-
-_local_time_delta = (datetime(year=1970, month=1, day=1) -
-                     datetime(year=1601, month=1, day=1)).total_seconds()
-_local_datetime = lambda n: datetime.fromtimestamp(n / 10000000
-                                                   - _local_time_delta)

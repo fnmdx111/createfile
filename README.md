@@ -101,6 +101,12 @@ Minimal dependencies
 * six (library providing compatibility, dependency of various libraries)
 * Cython (optional, used for compiling speed-up modules for various packages)
 
+Thanks
+----
+The NTFS driver in package `drive.fs.ntfs` utilizes the project
+[INDXParse](https://github.com/williballenthin/INDXParse ) from Willi Ballenthin.
+
+**Thanks a lot.**
 
 Licensing
 ====
