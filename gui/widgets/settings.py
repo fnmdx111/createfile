@@ -1,5 +1,6 @@
 # encoding: utf-8
 from collections import OrderedDict
+from itertools import product
 from PySide.QtGui import *
 from PySide.QtCore import *
 
@@ -229,9 +230,6 @@ class BaseSettingsWidget(QWidget):
 
         def _slot(item):
             self.sort_by = self.sort_keys[keys[item]]
-            self._real_parent.entries = self._real_parent.entries.sort_index(
-                by=self.sort_by
-            )
 
         sort_by = QComboBox(self)
         sort_by.addItems(keys)
@@ -296,9 +294,7 @@ class BaseSettingsWidget(QWidget):
         return entries
 
     def sort(self, entries):
-        if self.sort_by != 'id':
-            return entries.sort_index(by=self.sort_by)
-        return entries
+        return entries.sort_index(by=self.sort_by)
 
 
 class FAT32SettingsWidget(BaseSettingsWidget):
@@ -431,4 +427,25 @@ class FAT32SettingsWidget(BaseSettingsWidget):
 
 
 class NTFSSettingsWidget(BaseSettingsWidget):
-    pass
+
+    __sort_keys__ = []
+    for (ctg_name, ctg), (attr_name, attr) in product(zip(['$SI', '$FN'],
+                                                          ['si', 'fn']),
+                                                      zip(['创建时间',
+                                                           '修改时间',
+                                                           '访问时间',
+                                                           'MFT修改时间'],
+                                                          ['create_time',
+                                                           'modify_time',
+                                                           'access_time',
+                                                           'mft_time'])):
+        __sort_keys__.append(('%s%s' % (ctg_name, attr_name),
+                              '%s_%s' % (ctg, attr)))
+    __sort_keys__.append(('MFT序号', 'id'))
+
+    def __init__(self, parent):
+        super().__init__(parent=parent,
+                         sort_keys=OrderedDict(NTFSSettingsWidget.__sort_keys__))
+
+    def setup_custom_layout(self, layout):
+        pass

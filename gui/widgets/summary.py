@@ -44,8 +44,8 @@ class SummaryWidget(QWidget):
                      entries['modify_time'].max(),
                      entries['access_date'].max())
         else:
-            st = entries[0]['si_create_time'].min()
-            et = entries[0]['si_create_time'].max()
+            st = entries.iloc[0]['si_create_time']
+            et = entries.iloc[0]['si_create_time']
             for prefix in ['fn', 'si']:
                 for ctg in ['create', 'modify', 'access', 'mft']:
                     name = '%s_%s_time' % (prefix, ctg)
@@ -55,7 +55,6 @@ class SummaryWidget(QWidget):
         self.set_end_time(et)
 
         for _, item in entries.iterrows():
-            # FIXME no conclusion recorded
             if isinstance(item.conclusions, tuple):
                 for c in item.conclusions:
                     self.conclusions[c] += 1
