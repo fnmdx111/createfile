@@ -26,12 +26,17 @@ class ColumnListView(QTreeView):
 
         self.setup_headers()
 
-    def setup_headers(self, headers=None):
+    def setup_headers(self, headers=None, size_hints=()):
         self.headers_ = headers or self.headers_
         if self.order_column:
             if self.headers_[0] != '编号':
                 self.headers_.insert(0, '编号')
             self.header().setResizeMode(0, QHeaderView.ResizeToContents)
+
+        for hint in size_hints:
+            if self.order_column:
+                hint += 1
+            self.header().setResizeMode(hint, QHeaderView.ResizeToContents)
 
         self.model_.setHorizontalHeaderLabels(self.headers_)
 
@@ -42,6 +47,9 @@ class ColumnListView(QTreeView):
 
     def append(self, items, editable=False, checkable=False):
         def new_item(item, editable=editable, checkable=checkable):
+            if isinstance(item, QStandardItem):
+                return item
+
             _ = QStandardItem(str(item))
             _.setEditable(editable)
             _.setCheckable(checkable)

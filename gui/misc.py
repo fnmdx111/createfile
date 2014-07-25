@@ -1,8 +1,29 @@
 # encoding: utf-8
+from collections import namedtuple
 from logging import Handler, Formatter, makeLogRecord
 import threading
 from PySide.QtCore import *
 from PySide.QtGui import *
+import pandas as pd
+
+
+def nested_tuple(_):
+    if isinstance(_, list):
+        return tuple(map(lambda x: nested_tuple(x)
+                                   if isinstance(x, list)
+                                   else x,
+                         _))
+    else:
+        return _
+
+def namedtuplize(df):
+    cls = namedtuple('Row', df.columns)
+
+    return tuple(map(lambda x: cls(*map(nested_tuple, x)), df.values))
+
+
+def denamedtuplize(nt):
+    return pd.DataFrame(list(map(vars, nt)))
 
 
 class ColoredFormatter(Formatter):

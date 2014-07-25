@@ -5,15 +5,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, \
     NavigationToolbar2QTAgg
 
 
-class FigureDialog(QDialog):
-    def __init__(self, parent, figure, title='绘图结果'):
+class FigureWidget(QWidget):
+    def __init__(self, parent, figure, parameters=None):
         super().__init__(parent=parent)
-
-        self.setWindowTitle(title)
-        self.setWindowFlags(self.windowFlags() |
-                            Qt.WindowMaximizeButtonHint)
-
-        self.setModal(False)
 
         self.figure_widget = FigureCanvasQTAgg(figure)
         self.figure_widget.setSizePolicy(QSizePolicy.Expanding,
@@ -27,3 +21,5 @@ class FigureDialog(QDialog):
         layout.addWidget(self.figure_widget)
         layout.addWidget(self.navbar)
         self.setLayout(layout)
+
+        self.parameters = parameters

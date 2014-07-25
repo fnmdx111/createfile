@@ -4,17 +4,22 @@ from PySide.QtGui import *
 from judge import *
 from datetime import datetime, timedelta
 from .column_list_view import ColumnListView
+import judge
 
 
 class RulesWidget(QWidget):
 
-    _fat32_rules = [['_.create_time > _.modify_time', '复制']]
+    _fat32_rules = [['_.create_time > _.modify_time',  # rule text
+                     '复制',                           # conclusion
+                     False]]                           # mark as abnormal                           # is extended rule
     _ntfs_rules = []
 
     def __init__(self, parent):
         super(RulesWidget, self).__init__(parent=parent)
 
-        self._clv = ColumnListView(['已启用', '规则', '结论'], parent)
+        self._clv = ColumnListView(['已启用', '规则', '结论', '标记为异常'],
+                                   parent)
+        self._ext_rules = {}
 
         self._setup_layout()
 
@@ -22,8 +27,25 @@ class RulesWidget(QWidget):
         if clear:
             self._clv.clear()
 
-        for r, c in which_rules:
-            self._clv.append(['', r, c], checkable=True)
+        def cb_abnormal(a):
+            _ = QStandardItem('')
+            _.setEditable(False)
+            _.setCheckable(True)
+            _.setCheckState(Qt.Checked if a else Qt.Unchecked)
+
+            return _
+
+        for r, c, a in which_rules:
+            self._clv.append(['', r, c, cb_abnormal(a)], checkable=True)
+
+        for cls in judge.ext.registry.values():
+            obj = cls()
+            self._clv.append(['',
+                              obj.name,
+                              obj.conclusion,
+                              cb_abnormal(obj.mark_as_abnormal)],
+                             checkable=True)
+            self._ext_rules[obj.name] = obj
 
     def inflate_with_fat32_rules(self, clear=True):
         self._inflate_rules(self._fat32_rules, clear)
@@ -68,9 +90,17 @@ class RulesWidget(QWidget):
 
     def rules(self):
         for r in range(self._clv.model_.rowCount()):
-            on, rule, conclusion = (self._clv.model_.item(r, 0),
-                                    self._clv.model_.item(r, 1),
-                                    self._clv.model_.item(r, 2))
+            on, rule, conclusion, abnormal = (self._clv.model_.item(r, 0),
+                                              self._clv.model_.item(r, 1),
+                                              self._clv.model_.item(r, 2),
+                                              self._clv.model_.item(r, 3))
 
             if on.checkState() == Qt.Checked:
-                yield If(eval(rule.text())).then(conclusion=conclusion.text())
+                name = rule.text()
+                if name in self._ext_rules:
+                    obj = self._ext_rules[name]
+                else:
+                    obj = (If(eval(rule.text()))
+                            .then(conclusion=conclusion.text(),
+                                  abnormal=abnormal.checkState() == Qt.Checked))
+                yield obj

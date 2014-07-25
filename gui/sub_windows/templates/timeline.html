@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>时间线</title>
     <link href="../static/css/vis.min.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .vis.timeline .red {
+            color: white;
+            background-color: red;
+            border-color: darkred;
+        }
+    </style>
 </head>
 
 <body>
@@ -27,11 +34,16 @@
             group: {{ i['group'] }},
             content: '{{ i['content'] }}',
             start: moment({{ i['start'] }}).format('YYYY/MM/DD HH:mm:ss.SSS'),
+        {% if 'className' in i -%}
+            className: '{{ i['className'] }}',
+        {%- endif %}
             type: 'box'
         });
     {% endfor %}
     var options = {
-        groupOrder: 'id'
+        groupOrder: 'id',
+        start: new Date({{ start }}),
+        end: new Date({{ end }})
     };
 
     var timeline = new vis.Timeline(container);

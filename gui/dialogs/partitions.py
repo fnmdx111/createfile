@@ -21,7 +21,7 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.setup_mixin(kwargs['parent'])
+        self.setup_mixin(parent=kwargs['parent'])
 
         self.original_title = '选择分区'
         self.setWindowTitle(self.original_title)
@@ -43,8 +43,6 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
 
         self._setup_layout()
         self._setup_connections()
-
-        self._load_wpd()
 
     def _setup_connections(self):
         def _partition_read(i, t, p):
@@ -201,23 +199,25 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
 
         entry = self._partition_table[row]
 
-        if isinstance(entry[k_partition_type], int) and\
-           entry[k_partition_type] not in supported_partition_types:
-            error_box(self,
-                      '不支持所选的分区类型（类型：%s）' %
-                      entry[k_partition_type])
-            return
+        if k_partition_type in entry:
+            if isinstance(entry[k_partition_type], int) and\
+               entry[k_partition_type] not in supported_partition_types:
+                error_box(self,
+                          '不支持所选的分区类型（类型：%s）' %
+                          entry[k_partition_type])
+                return
+        elif k_OEM_name in entry:
+            entry[k_first_byte_address] = 0
+
+            type_ = str(entry[k_OEM_name], 'ascii')
+            if 'NTFS' in type_:
+                entry[k_partition_type] = 'NTFS'
+            elif 'MSDOS' in type_:
+                entry[k_partition_type] = 'FAT32'
 
         def target():
-            self.parent().logger.info(row, entry)
             partition = get_partition_obj(entry,
-                                          self._current_stream,
-                                          self.parent().log_dialog.new_handler())
-
-            if not self.parent().settings_dialog.display_entry_log:
-                partition.logger.setLevel(logging.INFO)
-            else:
-                partition.logger.setLevel(logging.DEBUG)
+                                          self._current_stream)
 
             self.signal_partition_loaded.emit(partition, row)
 
@@ -245,5 +245,12 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
 
         return '%s上的第%s个分区' % (_1, row)
 
-    def accept(self, *args, **kwargs):
-        return super().accept()
+    def exec_(self, *args, **kwargs):
+        self._current_stream = None
+        self._current_partition = None
+        self._current_partition_address = ''
+        self._partition_table = []
+
+        self._load_wpd()
+
+        return super().exec_(*args, **kwargs)
