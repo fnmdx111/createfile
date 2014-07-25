@@ -165,6 +165,10 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
     def _apply_rules(nt, rules):
         entries = denamedtuplize(nt)
 
+        entries['abnormal'] = False
+        entries['abnormal_src'] = [[] for _ in entries.iterrows()]
+        entries['conclusions'] = [[] for _ in entries.iterrows()]
+
         objects = []
         for _, o in entries.iterrows():
             objects.append(o)
