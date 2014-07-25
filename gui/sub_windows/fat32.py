@@ -60,6 +60,11 @@ class FAT32SubWindow(BaseSubWindow):
         )
 
     def deduce_abnormal_files(self, entries):
+        if not self.settings.enable_metrics_abnormality_detection:
+            entries['abnormal'] = False
+
+            return entries
+
         _, a_fc, _ = self.validate_first_clusters_with_settings()
         _, a_tau, _ = self.validate_metrics_with_settings('tau')
         _, a_rho, _ = self.validate_metrics_with_settings('rho')

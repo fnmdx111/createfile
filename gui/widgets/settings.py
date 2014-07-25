@@ -306,6 +306,7 @@ class FAT32SettingsWidget(BaseSettingsWidget):
         self.exclude_deleted_files = True
         self.plot_first_cluster = True
         self.plot_avg_cluster = True
+        self.enable_metrics_abnormality_detection = False
 
         self.start_time_attr = 'create_time'
 
@@ -323,6 +324,10 @@ class FAT32SettingsWidget(BaseSettingsWidget):
                                            'plot_first_cluster'))
         layout.addWidget(self.new_checkbox('绘制平均簇号折线',
                                            'plot_avg_cluster'))
+        layout.addWidget(self.new_checkbox(
+            '启用参数异常报警',
+            'enable_metrics_abnormality_detection')
+        )
 
         self.tau_settings = MetricsSettingsWidget(
             self, 'tau', "Kendall's tau",
@@ -386,6 +391,8 @@ class FAT32SettingsWidget(BaseSettingsWidget):
         my = {'exclude_deleted_files': self.exclude_deleted_files,
               'plot_first_cluster': self.plot_first_cluster,
               'plot_avg_cluster': self.plot_avg_cluster,
+              'enable_metrics_abnormality_detection':
+                  self.enable_metrics_abnormality_detection,
               'tau': self.tau_settings.export(),
               'rho': self.rho_settings.export(),
               'cluster_plot': self.cluster_plot_settings.export()}
