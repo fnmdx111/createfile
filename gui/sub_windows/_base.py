@@ -10,7 +10,7 @@ from jinja2 import Environment, PackageLoader
 from stats import windowed
 from ..widgets import FilesWidget, SummaryWidget, FigureWidget, RulesWidget, \
     FAT32SettingsWidget, NTFSSettingsWidget
-from ..misc import AsyncTaskMixin, denamedtuplize, namedtuplize
+from ..misc import AsyncTaskMixin, denamedtuplize, namedtuplize, info_box
 import pandas as pd
 from drive.fs.fat32 import FAT32
 
@@ -293,6 +293,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             view.setHtml(html, self.timeline_base_url)
             self.figures_widget.addTab(view, '时间线')
         else:
+            info_box(self, '将会打开外部浏览器查看时间线')
+
             path = os.path.join(self.template_path, 'r.html')
             print(html, file=open(path, 'w', encoding='utf-8'))
             webbrowser.open(QUrl.fromLocalFile(path).toString())
