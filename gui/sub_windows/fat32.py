@@ -9,7 +9,8 @@ from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
 import pandas as pd
-from ..misc import namedtuplize, denamedtuplize
+from ..misc import namedtuplize, denamedtuplize, abnormal_standard_item, \
+    filter_empty_cluster_list
 import matplotlib.pyplot as plt
 
 
@@ -25,7 +26,7 @@ class FAT32SubWindow(BaseSubWindow):
         self.signal_plot_prepared.connect(lambda ret: self.add_figure(*ret))
 
     def plot_partition(self):
-        figure = plot_fat32(self.entries,
+        figure = plot_fat32(filter_empty_cluster_list(self.entries),
                             log_info=False,
                             logger=self.logger,
                             plot_first_cluster=self.settings.plot_first_cluster,
@@ -40,7 +41,7 @@ class FAT32SubWindow(BaseSubWindow):
                                            value_domain,
                                            rect_size,
                                            threshold):
-        entries = denamedtuplize(nt)
+        entries = filter_empty_cluster_list(denamedtuplize(nt))
 
         return validate_clusters([entries.id.tolist()],
                                  [list(zip(first_clusters_of_fat32(entries),
@@ -217,14 +218,8 @@ class FAT32SubWindow(BaseSubWindow):
         return _
 
     def gen_file_row_data(self, row):
-        abnormal = QStandardItem()
-        abnormal.setCheckState(Qt.Checked
-                               if row.abnormal == True
-                               else Qt.Unchecked)
-        abnormal.setCheckable(False)
-        abnormal.setEditable(False)
-
-        return [abnormal, row.id,
+        return [abnormal_standard_item(row),
+                row.id,
                 row.full_path, row.first_cluster,
                 row.create_time, row.modify_time, row.access_date,
                 row.conclusions,
