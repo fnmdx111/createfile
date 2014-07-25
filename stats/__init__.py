@@ -45,7 +45,7 @@ def calc_windowed_metrics(fs, entries,
     #             [f2_0, f2_1, f2_2, ..., f2_n],
     #             ...,
     #             [fn_0, fn_1, fn_2, ..., fn_n]]
-    w_cnt, values = 0, [[] for _ in fs]
+    w_cnt, xs, values = 0, [[] for _ in fs], [[] for _ in fs]
     for w in windowed(list(entries.iterrows()),
                       size=window_size,
                       step=window_step):
@@ -59,6 +59,7 @@ def calc_windowed_metrics(fs, entries,
                   # timestamps are multiplied by 1000 so that they are integers
                                     w))))
             values[i].append(v)
+            xs[i].append(w[0][1].id)
 
         if echo:
             _p('window %s:' % w_cnt)
@@ -73,4 +74,4 @@ def calc_windowed_metrics(fs, entries,
 
         w_cnt += 1
 
-    return values
+    return xs, values

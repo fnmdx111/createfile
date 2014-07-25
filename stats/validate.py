@@ -13,13 +13,14 @@ Abnormal = False
 Normal = True
 
 
-def _check_series(series,
+def _check_series(id_, series,
                   rect_size=(5, 5),
                   y_ext=(-1, 1),
                   count_threshold=1,
                   check_clusters=False):
     """Check if any point in the given series agrees with the given box.
 
+    :param id_: list of id of the entries of the points.
     :param series: the series of points to check.
     :param rect_size: box (or rectangle) size, (width, height).
     :param y_ext: extreme values of the y axis or (value domain if you like).
@@ -56,18 +57,19 @@ def _check_series(series,
         canonical_y = canonicalize(y)
 
         if _count < count_threshold:
-            yield Abnormal, (x, canonical_y)
+            yield Abnormal, (id_[x], canonical_y)
         else:
-            yield Normal, (x, canonical_y)
+            yield Normal, (id_[x], canonical_y)
 
 
-def validate_metrics(metrics,
+def validate_metrics(ids, metrics,
                      value_domains,
                      rect_sizes,
                      count_thresholds,
                      check_clusters=False):
     """Validate the metrics and detects abnormalities.
 
+    :param ids: id of the entries of the metrics.
     :param metrics: metrics to validate.
     :param value_domains: value domains of the functions used in calculating the
                          metrics.
@@ -78,15 +80,16 @@ def validate_metrics(metrics,
     """
 
     normal, abnormal, line = [], [], []
-    for series, y_ext, rect_size, count_threshold in zip(metrics,
-                                                         value_domains,
-                                                         rect_sizes,
-                                                         count_thresholds):
+    for id_, series, y_ext, rect_size, count_threshold in zip(ids,
+                                                              metrics,
+                                                              value_domains,
+                                                              rect_sizes,
+                                                              count_thresholds):
         normal.append([[], []])
         abnormal.append([[], []])
         line.append([[], []])
 
-        for status, (x, y) in _check_series(series,
+        for status, (x, y) in _check_series(id_, series,
                                             rect_size=rect_size,
                                             y_ext=y_ext,
                                             count_threshold=count_threshold,
