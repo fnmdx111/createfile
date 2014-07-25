@@ -82,6 +82,9 @@ def error_box(parent, msg, title='错误', buttons=QMessageBox.Ok):
 def warning_box(parent, msg, title='警告', buttons=QMessageBox.Ok):
     return QMessageBox.warning(parent, title, msg, buttons)
 
+def info_box(parent, msg, title='提示', buttons=QMessageBox.Ok):
+    return QMessageBox.information(parent, title, msg, buttons)
+
 
 def human_readable(size, a_million_byte=1024 * 1024):
     if size > 1024 * a_million_byte:
