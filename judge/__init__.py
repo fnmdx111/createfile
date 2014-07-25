@@ -5,7 +5,7 @@ from .wrappers import AttributeWrapper, AttributeWrapperEx,\
 from .misc import id_
 
 __all__ = ['If', '_', '_1', '_2', 'DummyEntry',
-           'all_', 'any_', 'every', 'some']
+           'all_', 'any_', 'every', 'some', 'ext']
 
 
 class DummyEntry:
@@ -51,10 +51,12 @@ class Rule:
 
         self.conclusion = ''
         self.action = id_
+        self.abnormal = False
 
-    def then(self, conclusion='', action=id_):
+    def then(self, conclusion='', action=id_, abnormal=False):
         self.conclusion = conclusion
         self.action = action
+        self.abnormal = abnormal
 
         return self
 
