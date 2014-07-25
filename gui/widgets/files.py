@@ -1,4 +1,5 @@
 # encoding: utf-8
+from datetime import datetime
 from PySide.QtGui import *
 from ..widgets import ColumnListView
 from drive.fs.fat32 import FAT32
@@ -12,7 +13,8 @@ class FilesWidget(QDialog):
         self._clv = ColumnListView(['路径'],
                                    self,
                                    headers_fit_content=True,
-                                   order_column=True)
+                                   order_column=True,
+                                   sortable=True)
         self.setup_headers_by(self.parent().partition.type)
 
         _l = QVBoxLayout()
@@ -34,13 +36,20 @@ class FilesWidget(QDialog):
                                      '可用结论',
                                      '异常报警来源',
                                      '正确创建时间推测'],
-                                    [0, 1, 3])
+                                    size_hints=[0, 1, 3],
+                                    sort_types=[bool,
+                                                int,
+                                                str,
+                                                int,
+                                                datetime, datetime, datetime,
+                                                str, str, str])
         elif type_ == NTFS.type:
             self._clv.setup_headers(['异常',
+                                     'MFT记录编号',
                                      '路径',
                                      'LSN',
                                      'SN',
-                                     '首VCN',
+                                     '首LCN',
                                      '$SI 创建时间',
                                      '$SI 修改时间',
                                      '$SI 访问时间',
@@ -51,7 +60,13 @@ class FilesWidget(QDialog):
                                      '$FN MFT修改时间',
                                      '可用结论',
                                      '异常报警来源',
-                                     '正确创建时间推测'])
+                                     '正确创建时间推测'],
+                                    sort_types=[bool, int, str, int, int, int,
+                                                datetime, datetime,
+                                                datetime, datetime,
+                                                datetime, datetime,
+                                                datetime, datetime,
+                                                str, str, str])
 
     def clear(self):
         self._clv.clear()

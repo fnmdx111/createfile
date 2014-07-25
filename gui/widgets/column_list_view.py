@@ -1,12 +1,15 @@
 # encoding: utf-8
 from PySide.QtGui import *
 from PySide.QtCore import *
+from ..misc import SortableStandardItemModel
 
 
 class ColumnListView(QTreeView):
     def __init__(self, headers, parent,
                  order_column=False,
-                 headers_fit_content=False):
+                 headers_fit_content=False,
+                 sortable=False,
+                 sort_types=None):
         super(ColumnListView, self).__init__(parent)
 
         self.headers_ = headers
@@ -21,13 +24,42 @@ class ColumnListView(QTreeView):
         if headers_fit_content:
             self.header().setResizeMode(QHeaderView.ResizeToContents)
 
+        self.sortable = sortable
+        if sortable:
+            self.setSortingEnabled(True)
+
+            self.model_ = SortableStandardItemModel(parent, sort_types)
+
+            self.sort_types = sort_types
+
+            self.proxy = QSortFilterProxyModel(parent)
+            self.proxy.setSortRole(SortableStandardItemModel.SortRole)
+            self.proxy.setSourceModel(self.model_)
+
+            self.setModel(self.proxy)
+        else:
+            self.proxy = None
+
+            self.model_ = QStandardItemModel(parent)
+
+            self.setModel(self.model_)
+
         self.order_column = order_column
         self.count = 0
 
         self.setup_headers()
 
-    def setup_headers(self, headers=None, size_hints=()):
+    def setup_headers(self, headers=None, size_hints=(), sort_types=None):
         self.headers_ = headers or self.headers_
+
+        if self.sortable:
+            if sort_types:
+                self.sort_types = sort_types
+                if self.order_column:
+                    self.sort_types.insert(0, int)
+
+                self.model_.sort_types = self.sort_types
+
         if self.order_column:
             if self.headers_[0] != '编号':
                 self.headers_.insert(0, '编号')

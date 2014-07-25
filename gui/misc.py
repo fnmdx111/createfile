@@ -1,5 +1,6 @@
 # encoding: utf-8
 from collections import namedtuple
+from datetime import datetime
 from logging import Handler, Formatter, makeLogRecord
 import threading
 from PySide.QtCore import *
@@ -175,6 +176,7 @@ def new_button(text, slot):
 
     return btn
 
+
 def abnormal_standard_item(row):
     _ = QStandardItem()
     _.setCheckState(Qt.Checked if row.abnormal == True else Qt.Unchecked)
@@ -183,5 +185,43 @@ def abnormal_standard_item(row):
 
     return _
 
+
 def filter_empty_cluster_list(e):
     return e[e.cluster_list.map(lambda x: bool(x))]
+
+
+class SortableStandardItemModel(QStandardItemModel):
+
+    SortRole = Qt.UserRole + 10
+
+    def __init__(self, parent, sort_types):
+        super().__init__(parent=parent)
+
+        self.sort_types = sort_types
+
+    def data(self, idx, role=Qt.DisplayRole):
+        if role == self.SortRole:
+            row, col = idx.row(), idx.column()
+            if not (0 <= col < self.columnCount()):
+                return None
+            if not (0 <= row < self.rowCount()):
+                return None
+
+            item = self.item(row, col)
+            sort_type = self.sort_types[col]
+            if sort_type == bool:
+                return item.checkState() == Qt.Checked
+            elif sort_type == str:
+                return item.text()
+            elif sort_type == int:
+                return int(item.text())
+            elif sort_type == datetime:
+                text = item.text()
+                if '.' in text:
+                    return datetime.strptime(text, '%Y-%m-%d %H:%M:%S.%f')
+                else:
+                    return datetime.strptime(text, '%Y-%m-%d %H:%M:%S')
+            else:
+                return item.text()
+        else:
+            return super().data(idx, role)
