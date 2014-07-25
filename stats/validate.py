@@ -57,9 +57,9 @@ def _check_series(id_, series,
         canonical_y = canonicalize(y)
 
         if _count < count_threshold:
-            yield Abnormal, (id_[x], canonical_y)
+            yield Abnormal, (x, canonical_y)
         else:
-            yield Normal, (id_[x], canonical_y)
+            yield Normal, (x, canonical_y)
 
 
 def validate_metrics(ids, metrics,

@@ -80,8 +80,8 @@ def plot_fat32(entries,
 
     _p = logger.info if logger else print
 
-    for _, (_, obj) in enumerate(entries.iterrows()):
-        i = obj.id
+    for _i, (_, obj) in enumerate(entries.iterrows()):
+        i = _i
 
         x.append(i)
 
@@ -116,7 +116,7 @@ def plot_fat32(entries,
         ax.plot(x, y_prime, 'gx',
                  linestyle='dashed', label='first cluster')
     ax.legend()
-    ax.set_xlabel('文件编号')
+    ax.set_xlabel('编号')
     ax.set_ylabel('簇号')
 
     if show:
