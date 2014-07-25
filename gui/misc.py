@@ -174,3 +174,14 @@ def new_button(text, slot):
     btn.clicked.connect(slot)
 
     return btn
+
+def abnormal_standard_item(row):
+    _ = QStandardItem()
+    _.setCheckState(Qt.Checked if row.abnormal == True else Qt.Unchecked)
+    _.setCheckable(False)
+    _.setEditable(False)
+
+    return _
+
+def filter_empty_cluster_list(e):
+    return e[e.cluster_list.map(lambda x: bool(x))]
