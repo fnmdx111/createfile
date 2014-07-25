@@ -2,7 +2,6 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from judge import *
-from datetime import datetime, timedelta
 from .column_list_view import ColumnListView
 import judge
 

@@ -4,8 +4,12 @@ from .wrappers import AttributeWrapper, AttributeWrapperEx,\
                       all_, any_, every, some
 from .misc import id_
 
+from datetime import datetime as dt, datetime, timedelta as td, timedelta,\
+    date, time
+
 __all__ = ['If', '_', '_1', '_2', 'DummyEntry',
-           'all_', 'any_', 'every', 'some', 'ext']
+           'all_', 'any_', 'every', 'some', 'ext',
+           'dt', 'datetime', 'td', 'timedelta', 'time', 'date']
 
 
 class DummyEntry:
