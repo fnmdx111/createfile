@@ -83,7 +83,7 @@ class NTFS(Partition):
                     'first_cluster', 'cluster_list',
                     'full_path',
                     'is_directory',
-                    'order_number']
+                    'id']
 
     def __init__(self, stream, preceding_bytes, ui_handler=None):
         """
@@ -138,7 +138,7 @@ class NTFS(Partition):
 
     def __iter__(self):
         """Implement iterator protocol for pythonicness."""
-        for order_number, (record, record_path) in enumerate(
+        for id_, (record, record_path) in enumerate(
                 self.mft_enumerator.enumerate_paths()
         ):
             si = record.standard_information()
@@ -163,7 +163,7 @@ class NTFS(Partition):
                         first_cluster = cluster_list[0][0]
                     else:
                         first_cluster = (
-                            order_number * self.bytes_per_mft_record +
+                            id_ * self.bytes_per_mft_record +
                             self.mft_abs_pos
                         ) // self.bytes_per_cluster
 
@@ -194,9 +194,9 @@ class NTFS(Partition):
                    si_create_time, si_modify_time, si_access_time, si_mft_time,
                    fn_create_time, fn_modify_time, fn_access_time, fn_mft_time,
                    first_cluster, cluster_list,
-                   record_path,
+                   '/%s' % record_path,
                    is_directory,
-                   order_number)
+                   id_)
 
 
     def lcn2b(self, lcn):

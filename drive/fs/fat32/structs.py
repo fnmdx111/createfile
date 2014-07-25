@@ -5,7 +5,6 @@
 
     This module implements certain structs used in constructing FAT32 objects.
 """
-import codecs
 from decimal import Decimal
 from functools import reduce
 import os
@@ -92,7 +91,7 @@ class FAT32DirectoryTableEntry(EntryMixin):
                  'modify_time',
                  'access_date',
                  'skip', 'is_deleted',
-                 'order_number']
+                 'id']
 
     __attr__ = __slots__[:]
     __attr__.remove('skip')
@@ -110,7 +109,7 @@ class FAT32DirectoryTableEntry(EntryMixin):
 
         obj = self.__struct__.parse(raw)
 
-        self.order_number = order_number
+        self.id = order_number
 
         self.skip = False
         self.is_deleted = obj[k_short_file_name].startswith(b'\xe5')
@@ -172,17 +171,6 @@ class FAT32DirectoryTableEntry(EntryMixin):
                                      dir_name, name, y, m_, d)
             self.skip = True
             return
-
-        partition.logger.debug('found FDT entry:\n'
-                               '\tfc: %s\tfp: %s\n'
-                               '\tcr: %s\n'
-                               '\tmd: %s\n'
-                               '\t%s' % (self.first_cluster,
-                                         self.full_path,
-                                         self.create_time,
-                                         self.modify_time,
-                                         codecs.encode(raw[:11],
-                                                       'hex_codec')))
 
     def _get_names(self, obj, state_mgr, current_obj):
         """Get the file name of this entry.
@@ -598,6 +586,8 @@ class FAT32(Partition):
             self.fat2, self.number_of_eoc_2 = self.get_fat()
 
     def get_entries(self):
+        self.items_count = 0
+
         self.read_fats()
 
         return self.get_fdt()

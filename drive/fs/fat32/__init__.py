@@ -80,7 +80,9 @@ def plot_fat32(entries,
 
     _p = logger.info if logger else print
 
-    for i, (_, obj) in enumerate(entries.iterrows()):
+    for _, (_, obj) in enumerate(entries.iterrows()):
+        i = obj.id
+
         x.append(i)
 
         if plot_first_cluster:
