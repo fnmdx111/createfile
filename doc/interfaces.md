@@ -66,5 +66,9 @@ stream包
 * `seek(pos, whence)`: 设置流指针以whence方式移动到pos处，请参阅Python文档中对`io.IOBase.seek`的说明
 * `close`: 关闭流
 
+ImageStream类的构造函数签名如下：
+* `img_path`: 指明镜像路径的字符串
 
+WindowsPhysicalDriveStream类的构造函数签名如下：
+* `number`: 整数，物理驱动序号
 
