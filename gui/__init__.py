@@ -78,7 +78,10 @@ class MainWindow(QMainWindow):
                 sub_window = None
 
             if sub_window:
-                self.mdi_area.addSubWindow(sub_window)
+                sub_window = self.mdi_area.addSubWindow(sub_window)
+                sub_window.setWindowIcon(
+                    QFileIconProvider().icon(QFileIconProvider.Drive)
+                )
                 sub_window.show()
 
     def update_actions(self, sub_window):
