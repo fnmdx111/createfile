@@ -1,6 +1,7 @@
 # encoding: utf-8
 from functools import lru_cache
 import logging
+import time
 import os
 import webbrowser
 from PySide.QtGui import *
@@ -19,6 +20,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
     signal_partition_parsed = Signal(object)
 
     USE_QT_WEBKIT = False
+    MEASURE_RELOAD_TIME = True
 
     def __init__(self,
                  parent,
@@ -72,33 +74,69 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         self.reload()
 
     def reload(self):
+        reload_start_time = time.time()
+
         self.raw_entries = None
         self.entries = None
 
         self.abnormal_files = set()
 
         def _slot(entries):
-            self.raw_entries = entries
+            self.entries = entries
 
-            self.entries = self.settings.filter(self.raw_entries)
+            target_finished_time = time.time()
+
+            _1 = time.time()
+            print('filtering and sorting entries...')
+            self.entries = self.settings.filter(self.entries)
             self.entries = self.settings.sort(self.entries)
+            _1f = time.time()
 
+            _2 = time.time()
+            print('generating summary...')
             self.summary_widget.summarize(self.entries)
+            self.summary_widget.set_summary()
+            _2f = time.time()
 
+            _3 = time.time()
+            print('deducing abnormal files...')
             self.entries = self.deduce_abnormal_files(self.entries)
+            _3f = time.time()
 
+            _4 = time.time()
+            print('deducing authentic time...')
             self.entries = self.deduce_authentic_time(self.entries)
+            _4f = time.time()
 
-            self.entries = self.settings.sort(self.entries)
-
+            _5 = time.time()
+            print('displaying files in files widget...')
             self.show_files(self.entries)
+            _5f = time.time()
 
             self.signal_partition_parsed.disconnect(_slot)
+
+            print('reload finished')
+            reload_finish_time = time.time()
+
+            if self.MEASURE_RELOAD_TIME:
+                print('reloading elapsed: %s,\n'
+                      'target elapsed:    %s,\n'
+                      '_1 elapsed:        %s,\n'
+                      '_2 elapsed:        %s,\n'
+                      '_3 elapsed:        %s,\n'
+                      '_4 elapsed:        %s,\n'
+                      '_5 elapsed:        %s,\n' % (
+                    reload_finish_time - reload_start_time,
+                    target_finished_time - target_start_time,
+                    _1f - _1, _2f - _2, _3f - _3, _4f - _4, _5f - _5
+                ))
 
         def _target():
             return self.apply_rules(self.partition.get_entries())
 
         self.signal_partition_parsed.connect(_slot)
+
+        target_start_time = time.time()
         self.do_async_task(_target,
                            signal_after=self.signal_partition_parsed,
                            title_before='正在读取分区...')
