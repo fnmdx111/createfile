@@ -7,7 +7,6 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 from PySide.QtWebKit import QWebView
 from jinja2 import Environment, PackageLoader
-from stats import windowed
 from ..widgets import FilesWidget, SummaryWidget, FigureWidget, RulesWidget, \
     FAT32SettingsWidget, NTFSSettingsWidget
 from ..misc import AsyncTaskMixin, info_box
@@ -239,45 +238,65 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         return pd.DataFrame(objects)
 
     @staticmethod
-    def deduce_authentic_time(entries):
-        entries = entries.sort_index(by='first_cluster')
-        entries_list = list(map(lambda _: _[1], entries.iterrows()))
+    def deduce_authentic_time(e):
+        entries = e.sort_index(by='first_cluster')
+        reversed_entries_list = list(reversed(list(map(lambda _: _[1],
+                                                       entries.iterrows()))))
 
         visited_files = set()
 
         first_entry, last_entry = entries.iloc[0], entries.iloc[-1]
 
-        for o in entries_list:
-            if o.abnormal == True:
-                if o.first_cluster < first_entry.first_cluster:
-                    if o.id not in visited_files:
-                        o['deduced_time'] = '%s之前' % first_entry.create_time
-
-                        visited_files.add(o.id)
-
-        for entry2, entry1 in windowed(list(reversed(entries_list)), size=2):
-            for o in entries_list:
-                if o.abnormal == True:
-                    if (entry1.first_cluster
-                     <= o.first_cluster
-                     < entry2.first_cluster):
-                        if o.id not in visited_files:
-                            o['deduced_time'] = '%s与%s之间' % (
-                                entry1.create_time,
-                                entry2.create_time
-                            )
+        for _, o in e.iterrows():
+            if o.abnormal:
+                if o.id not in visited_files:
+                    if o.id == first_entry.id:
+                        e.loc[_, 'abnormal'] = False
+                    else:
+                        if o.first_cluster < first_entry.first_cluster:
+                            e.loc[_, 'deduced_time'] = '%s之前' %\
+                                                       first_entry.create_time
 
                             visited_files.add(o.id)
 
-        for o in entries_list:
-            if o.abnormal == True:
-                if last_entry.first_cluster <= o.first_cluster:
-                    if o.id not in visited_files:
-                        o['deduced_time'] = '%s之后' % last_entry.create_time
+        for _, o in e.iterrows():
+            if o.abnormal:
+                if o.id not in visited_files:
+                    if o.id == last_entry.id:
+                        e.loc[_, 'abnormal'] = False
+                    else:
+                        if last_entry.first_cluster <= o.first_cluster:
+                            e.loc[_, 'deduced_time'] = '%s之后' % \
+                                                       last_entry.create_time
 
-                        visited_files.add(o.id)
+                            visited_files.add(o.id)
 
-        return pd.DataFrame(entries_list)
+        class ItIsSimplyNotPossible(BaseException):
+            pass
+
+        for _, o in e.iterrows():
+            if o.abnormal:
+                if o.id not in visited_files:
+                    closest_entry_right = last_entry
+                    for entry in reversed_entries_list:
+                        if entry.id == o.id:
+                            continue
+                        if entry.first_cluster <= o.first_cluster:
+                            closest_entry_left = entry
+                            break
+                        elif entry.first_cluster >= o.first_cluster:
+                            closest_entry_right = entry
+                    else:
+                        raise ItIsSimplyNotPossible
+
+                    e.loc[_, 'deduced_time'] = '%s与%s之间' % (
+                        closest_entry_left.create_time,
+                        closest_entry_right.create_time
+                    )
+
+                    visited_files.add(o.id)
+
+        return e
 
     def add_figure(self, figure, label='绘图结果'):
         self.figures_widget.addTab(FigureWidget(self, figure),
