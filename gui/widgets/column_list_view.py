@@ -14,6 +14,8 @@ class ColumnListView(QTreeView):
 
         self.headers_ = headers
 
+        self.setUniformRowHeights(True)
+
         self.model_ = QStandardItemModel(parent)
         self.setModel(self.model_)
 

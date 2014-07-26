@@ -291,8 +291,9 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         return e
 
     def add_figure(self, figure, label='绘图结果'):
-        self.figures_widget.addTab(FigureWidget(self, figure),
-                                   label)
+        idx = self.figures_widget.addTab(FigureWidget(self, figure),
+                                         label)
+        self.figures_widget.setCurrentIndex(idx)
 
     def _show_timeline(self, start_time_attr, display_abnormal_source=True):
         conclusions = set()
