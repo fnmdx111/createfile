@@ -19,6 +19,8 @@ class SummaryWidget(QWidget):
 
         self.partition_type = partition_type
 
+        self.summary_text = ''
+
     def set_start_time(self, start_time):
         self.start_time = start_time
 
@@ -32,6 +34,12 @@ class SummaryWidget(QWidget):
         self.start_time = None
         self.end_time = None
         self.conclusions.clear()
+        self.summary_text = ''
+
+    def set_summary(self, summary=''):
+        s = summary or self.summary_text
+
+        self.label.setText(s)
 
     def summarize(self, entries):
         self.clear()
@@ -55,9 +63,8 @@ class SummaryWidget(QWidget):
         self.set_end_time(et)
 
         for _, item in entries.iterrows():
-            if isinstance(item.conclusions, tuple):
-                for c in item.conclusions:
-                    self.conclusions[c] += 1
+            for c in item.conclusions:
+                self.conclusions[c] += 1
 
         t = ('分区使用起始时间：%s\n'
              '分区使用结束时间：%s\n' % (self.start_time,
@@ -68,4 +75,6 @@ class SummaryWidget(QWidget):
             for c, n in self.conclusions.items():
                 t += '\t有%s次%s操作' % (n, c)
 
-        self.label.setText(t)
+        self.summary_text = t
+
+        return self.summary_text
