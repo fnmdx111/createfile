@@ -30,9 +30,9 @@ class MainWindow(QMainWindow):
 
         self.partition_dialog = PartitionsDialog(parent=self)
 
-        self.set_menus()
+        self.setup_menus()
 
-    def set_menus(self):
+    def setup_menus(self):
         file_menu = self.menuBar().addMenu('文件(&F)')
 
         open_partition_action = QAction('打开分区(&O)...', self)
@@ -52,7 +52,14 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        self.window_menu = self.menuBar().addMenu('窗口(&W)')
+        window_menu = self.menuBar().addMenu('窗口(&W)')
+        cascade_windows_action = QAction('层叠窗口(&C)', self)
+        cascade_windows_action.triggered.connect(self.mdi_area.cascadeSubWindows)
+        window_menu.addAction(cascade_windows_action)
+
+        tile_windows_action = QAction('平铺窗口(&T)', self)
+        tile_windows_action.triggered.connect(self.mdi_area.tileSubWindows)
+        window_menu.addAction(tile_windows_action)
 
     def open_partition(self):
         accepted = self.partition_dialog.exec_()
