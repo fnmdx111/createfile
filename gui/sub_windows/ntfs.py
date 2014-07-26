@@ -14,9 +14,6 @@ class NTFSSubWindow(BaseSubWindow):
         self.rules_widget.inflate_with_ntfs_rules()
 
     def deduce_abnormal_files(self, entries):
-        entries['abnormal'] = False
-        entries['abnormal_src'] = [() for _ in entries.iterrows()]
-
         return entries
 
     def setup_related_buttons(self):

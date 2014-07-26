@@ -1,5 +1,4 @@
 # encoding: utf-8
-from functools import lru_cache
 from PySide.QtCore import *
 from PySide.QtGui import *
 from ._base import BaseSubWindow
@@ -8,9 +7,7 @@ from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
 from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
-import pandas as pd
-from ..misc import namedtuplize, denamedtuplize, abnormal_standard_item, \
-    filter_empty_cluster_list
+from ..misc import abnormal_standard_item, filter_empty_cluster_list
 import matplotlib.pyplot as plt
 
 
@@ -36,12 +33,10 @@ class FAT32SubWindow(BaseSubWindow):
         self.add_figure(figure, label='时簇图')
 
     @staticmethod
-    @lru_cache(maxsize=64)
-    def _validate_points_by_first_clusters(nt,
+    def _validate_points_by_first_clusters(entries,
                                            value_domain,
                                            rect_size,
                                            threshold):
-        entries = filter_empty_cluster_list(denamedtuplize(nt))
 
         return validate_clusters([entries.id.tolist()],
                                  [list(zip(first_clusters_of_fat32(entries),
@@ -52,7 +47,7 @@ class FAT32SubWindow(BaseSubWindow):
 
     def validate_first_clusters_with_settings(self):
         return self._validate_points_by_first_clusters(
-            namedtuplize(self.entries),
+            filter_empty_cluster_list(self.entries),
             (self.settings.cluster_plot_value_domain_min,
              self.settings.cluster_plot_value_domain_max),
             (self.settings.cluster_plot_rect_size_width,
@@ -118,16 +113,13 @@ class FAT32SubWindow(BaseSubWindow):
                            title_before='正在准备簇号参数图...')
 
     @staticmethod
-    @lru_cache(maxsize=64)
     def _validate_points_by_metrics(method,
-                                    nt,
+                                    entries,
                                     attr1_expr,
                                     attr2_expr,
                                     value_domain,
                                     rect_size,
                                     threshold):
-        entries = denamedtuplize(nt)
-
         func = {'tau': u_tau, 'rho': u_rho}[method]
         ids, values = calc_windowed_metrics(
             [func],
@@ -147,15 +139,17 @@ class FAT32SubWindow(BaseSubWindow):
             return getattr(self.settings,
                            '%s_%s' % (method, attr))
 
-        return self._validate_points_by_metrics(method,
-                                                namedtuplize(self.entries),
-                                                s('attr1'),
-                                                s('attr2'),
-                                                (s('value_domain_min'),
-                                                 s('value_domain_max')),
-                                                (s('rect_size_width'),
-                                                 s('rect_size_height')),
-                                                s('threshold'))
+        return self._validate_points_by_metrics(
+            method,
+            filter_empty_cluster_list(self.entries),
+            s('attr1'),
+            s('attr2'),
+            (s('value_domain_min'),
+             s('value_domain_max')),
+            (s('rect_size_width'),
+             s('rect_size_height')),
+            s('threshold')
+        )
 
     def plot_statistical_metrics(self, method):
         figure = plt.figure()

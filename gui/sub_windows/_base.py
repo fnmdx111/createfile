@@ -1,5 +1,4 @@
 # encoding: utf-8
-from functools import lru_cache
 import logging
 import time
 import os
@@ -11,8 +10,7 @@ from jinja2 import Environment, PackageLoader
 from stats import windowed
 from ..widgets import FilesWidget, SummaryWidget, FigureWidget, RulesWidget, \
     FAT32SettingsWidget, NTFSSettingsWidget
-from ..misc import AsyncTaskMixin, denamedtuplize, namedtuplize, info_box
-import pandas as pd
+from ..misc import AsyncTaskMixin, info_box
 from drive.fs.fat32 import FAT32
 
 class BaseSubWindow(QMainWindow, AsyncTaskMixin):
@@ -195,22 +193,20 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         raise NotImplementedError
 
     def apply_rules(self, entries):
-        return self._apply_rules(namedtuplize(entries),
-                                 tuple(self.rules_widget.rules()))
+        return self._apply_rules(self.normalize_entries(entries),
+                                 self.rules_widget.rules())
 
     @staticmethod
-    @lru_cache(maxsize=64)
-    def _apply_rules(nt, rules):
-        entries = denamedtuplize(nt)
-
+    def normalize_entries(entries):
         entries['abnormal'] = False
-        entries['abnormal_src'] = [[] for _ in entries.iterrows()]
-        entries['conclusions'] = [[] for _ in entries.iterrows()]
+        entries['abnormal_src'] = [[] for _ in range(entries.shape[0])]
+        entries['conclusions'] = [[] for _ in range(entries.shape[0])]
+        entries['deduced_time'] = ''
 
-        objects = []
-        for _, o in entries.iterrows():
-            objects.append(o)
+        return entries
 
+    @staticmethod
+    def _apply_rules(entries, rules):
         for r_id, rule in enumerate(rules):
             _result, positives = rule.apply_to(entries)
 
