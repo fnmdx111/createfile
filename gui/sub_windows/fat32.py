@@ -63,36 +63,23 @@ class FAT32SubWindow(BaseSubWindow):
         _, a_tau, _ = self.validate_metrics_with_settings('tau')
         _, a_rho, _ = self.validate_metrics_with_settings('rho')
 
-        objects = []
-        for _, o in entries.iterrows():
-            objects.append(o)
-
         a_fc_id_set, a_tau_id_set, a_rho_id_set = map(
-            lambda s: s[0][0], [a_fc, a_tau, a_rho]
+            lambda s: entries.iloc[s[0][0]].id.tolist(), [a_fc, a_tau, a_rho]
         )
 
-        def append_abnormal_src(s, src):
-            if 'abnormal_src' in s:
-                if isinstance(s['abnormal_src'], float):
-                    s['abnormal_src'] = (src,)
-                else:
-                    s['abnormal_src'] += (src,)
-            else:
-                s['abnormal_src'] = (src,)
-
-        for o in objects:
+        for _, o in entries.iterrows():
             if ((o.id in a_fc_id_set)
              or (o.id in a_tau_id_set)
              or (o.id in a_rho_id_set)):
-                o['abnormal'] = True
+                entries.loc[_, 'abnormal'] = True
                 if o.id in a_fc_id_set:
-                    append_abnormal_src(o, '簇号分布异常')
+                    o.abnormal_src.append('簇号分布异常')
                 if o.id in a_tau_id_set:
-                    append_abnormal_src(o, 'tau参数异常')
+                    o.abnormal_src.append('tau参数异常')
                 if o.id in a_rho_id_set:
-                    append_abnormal_src(o, 'rho参数异常')
+                    o.abnormal_src.append('rho参数异常')
 
-        return pd.DataFrame(objects)
+        return entries
 
     def plot_first_clusters_metrics(self):
         figure = plt.figure()

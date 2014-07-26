@@ -218,29 +218,16 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         for r_id, rule in enumerate(rules):
             _result, positives = rule.apply_to(entries)
 
-            for i, (r, o) in enumerate(zip(_result, objects)):
-                if 'conclusions' not in o:
-                    o['conclusions'] = r.conclusions
-                else:
-                    o['conclusions'].extend(r.conclusions)
+            for i, (r, (_, o)) in enumerate(zip(_result, entries.iterrows())):
+                o['conclusions'].extend(r.conclusions)
 
                 if rule.abnormal:
-                    o['abnormal'] = i in positives
+                    entries.loc[_, 'abnormal'] = i in positives
 
                     if o['abnormal']:
-                        src = '%s号规则' % r_id
-                        if 'abnormal_src' in o:
-                            o['abnormal_src'].append(src)
-                        else:
-                            o['abnormal_src'] = [src]
+                        o['abnormal_src'].append('%s号规则' % r_id)
 
-        for o in objects:
-            if 'conclusions' in o:
-                o['conclusions'] = tuple(o['conclusions'])
-            if 'abnormal_src' in o:
-                o['abnormal_src'] = tuple(o['abnormal_src'])
-
-        return pd.DataFrame(objects)
+        return entries
 
     @staticmethod
     def deduce_authentic_time(e):
@@ -324,7 +311,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         def _gen_item(item, group_id=len(conclusions) - 1):
             content = '#%s' % item.id
             if display_abnormal_source:
-                if not isinstance(item.abnormal_src, float):
+                if item.abnormal_src:
                     content += '<br />%s' % ', '.join(item.abnormal_src)
 
             _ = {'start': item[start_time_attr].timestamp() * 1000,
@@ -338,10 +325,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
         items = []
         for i, (_t, item) in enumerate(self.entries.iterrows()):
-            if item.conclusions:
-                _ = {}
-                for c in item.conclusions:
-                    _ = _gen_item(item, c_id[c])
+            for c in item.conclusions:
+                _ = _gen_item(item, c_id[c])
             else:
                 _ = _gen_item(item)
 
