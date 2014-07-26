@@ -352,3 +352,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             path = os.path.join(self.template_path, 'r.html')
             print(html, file=open(path, 'w', encoding='utf-8'))
             webbrowser.open(QUrl.fromLocalFile(path).toString())
+
+    def closeEvent(self, event):
+        self.partition.stream.close()
+
+        event.accept()
