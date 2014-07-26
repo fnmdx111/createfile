@@ -165,7 +165,6 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         settings_group_box = new_group_box(self.settings_widget, '设置')
         rules_group_box = new_group_box(self.rules_widget, '规则列表')
 
-        layout = QGridLayout(self)
         _1 = QVBoxLayout(self)
         _1.addLayout(buttons_layout)
         _1.addWidget(summary_group_box)
@@ -175,16 +174,22 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         _2.addWidget(files_group_box)
         _2.addWidget(rules_group_box)
 
+        __1 = QHBoxLayout()
+        __1.addLayout(_1)
+        __1.addLayout(_2)
+        _w = QWidget()
+        _w.setLayout(__1)
+
         _3 = QVBoxLayout(self)
         _3.addWidget(self.figures_widget)
+        _3w = QWidget()
+        _3w.setLayout(_3)
 
-        layout.addLayout(_1, 0, 0, 1, 1)
-        layout.addLayout(_2, 0, 1, 1, 1)
-        layout.addLayout(_3, 0, 2, 1, 3)
+        splitter = QSplitter()
+        splitter.addWidget(_w)
+        splitter.addWidget(_3w)
 
-        _ = QWidget(self)
-        _.setLayout(layout)
-        self.setCentralWidget(_)
+        self.setCentralWidget(splitter)
 
     def show_files(self, entries):
         self.files_widget.clear()
