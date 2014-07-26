@@ -12,7 +12,7 @@ class FilesWidget(QDialog):
 
         self._clv = ColumnListView(['路径'],
                                    self,
-                                   headers_fit_content=True,
+                                   headers_fit_content=False,
                                    order_column=True,
                                    sortable=True)
         self.setup_headers_by(self.parent().partition.type)
