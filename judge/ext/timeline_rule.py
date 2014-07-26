@@ -10,16 +10,14 @@ class TimelineRule(Rule):
 
     name = '时间线事件逻辑规则'
     type = FAT32.type
+    conclusion = '时间线事件逻辑异常'
+    abnormal = True
 
     def __init__(self):
-        super().__init__(None, name=self.name)
+        super().__init__(None)
 
-        self.conclusion = '时间线事件逻辑异常'
-        self.abnormal = True
 
-    def apply_to(self, entries):
-        ret = result, positives = self._pending_return_values(entries)
-
+    def do_apply(self, entries):
         for i, (_, o) in enumerate(entries.iterrows()):
             if i == 0 or i == entries.shape[0] - 1:
                 continue
@@ -30,7 +28,4 @@ class TimelineRule(Rule):
                 if prev.conclusions == next_.conclusions:
                     if (abs(this.create_time - prev.create_time)
                             > dt.timedelta(seconds=2)):
-                        positives.append(i)
-                        result[i].append_conclusion(self.conclusion)
-
-        return ret
+                        self.mark_as_positive(i)

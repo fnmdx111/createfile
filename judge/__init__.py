@@ -49,40 +49,36 @@ class JudgedEntry:
 
 
 class Rule:
-    def __init__(self, predicate, name=''):
+    def __init__(self, predicate):
         self.predicate = predicate
-        self.name = name
 
-        self.conclusion = ''
-        self.action = id_
-        self.abnormal = False
+        self.result = []
+        self.positives = []
 
-    def then(self, conclusion='', action=id_, abnormal=False):
+    def then(self, conclusion='', abnormal=False):
         self.conclusion = conclusion
-        self.action = action
         self.abnormal = abnormal
 
         return self
 
-    @staticmethod
-    def _pending_return_values(e):
-        return [JudgedEntry(o) for _, o in e.iterrows()], []
+    def _pending_return_values(self, e):
+        self.result = [JudgedEntry(o) for _, o in e.iterrows()]
+        self.positives = []
 
-    def apply_to(self, entries):
-        result, positives = [], []
+    def mark_as_positive(self, i):
+        self.positives.append(i)
+        self.result[i].append_conclusion(self.conclusion)
+
+    def do_apply(self, entries):
         for i, (ts, obj) in enumerate(entries.iterrows()):
             if self.predicate(obj):
-                positives.append(i)
-                result.append(JudgedEntry(obj, [self.conclusion]))
-            else:
-                result.append(JudgedEntry(obj))
+                self.mark_as_positive(i)
 
-        return result, positives
+    def apply_to(self, entries):
+        self._pending_return_values(entries)
 
-    def apply(self, obj):
-        if self.predicate(obj):
-            return self.conclusion, self.action(obj)
-        else:
-            return '', None
+        self.do_apply(entries)
+
+        return self.result, self.positives
 
 If = Rule
