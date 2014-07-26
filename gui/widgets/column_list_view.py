@@ -95,11 +95,11 @@ class ColumnListView(QTreeView):
         if checkable:
             _ = [new_item('', checkable=True)]
             _.extend([new_item(i, checkable=False) for i in items[1:]])
-        elif self.order_column:
-            _ = [new_item(self.count)]
-            _.extend([new_item(i) for i in items])
         else:
             _ = [new_item(i) for i in items]
+
+        if self.order_column:
+            _.insert(0, new_item(self.count, editable=False, checkable=False))
 
         self.model_.appendRow(_)
         self.count += 1

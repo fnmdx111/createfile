@@ -17,7 +17,7 @@ class RulesWidget(QWidget):
         super(RulesWidget, self).__init__(parent=parent)
 
         self._clv = ColumnListView(['已启用', '规则', '结论', '标记为异常'],
-                                   parent)
+                                   parent, order_column=True)
         self._ext_rules = {}
 
         self._setup_layout()
@@ -89,10 +89,10 @@ class RulesWidget(QWidget):
 
     def rules(self):
         for r in range(self._clv.model_.rowCount()):
-            on, rule, conclusion, abnormal = (self._clv.model_.item(r, 0),
-                                              self._clv.model_.item(r, 1),
+            on, rule, conclusion, abnormal = (self._clv.model_.item(r, 1),
                                               self._clv.model_.item(r, 2),
-                                              self._clv.model_.item(r, 3))
+                                              self._clv.model_.item(r, 3),
+                                              self._clv.model_.item(r, 4))
 
             if on.checkState() == Qt.Checked:
                 name = rule.text()
