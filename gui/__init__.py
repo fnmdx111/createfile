@@ -9,6 +9,9 @@ from .widgets import RulesWidget, ColumnListView
 
 
 class MainWindow(QMainWindow):
+
+    USE_TAB_MODE = False
+
     def __init__(self):
         super().__init__(parent=None)
 
@@ -16,6 +19,11 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QFileIconProvider().icon(QFileIconProvider.Trashcan))
 
         self.mdi_area = QMdiArea()
+        if self.USE_TAB_MODE:
+            self.mdi_area.setViewMode(QMdiArea.TabbedView)
+            self.mdi_area.setTabsClosable(True)
+            self.mdi_area.setTabsMovable(True)
+
         self.setCentralWidget(self.mdi_area)
 
         self.mdi_area.subWindowActivated.connect(self.update_actions)
