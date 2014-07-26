@@ -12,6 +12,7 @@ from ..widgets import FilesWidget, SummaryWidget, FigureWidget, RulesWidget, \
     FAT32SettingsWidget, NTFSSettingsWidget
 from ..misc import AsyncTaskMixin, info_box
 from drive.fs.fat32 import FAT32
+import matplotlib.pyplot as plt
 
 class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
@@ -38,6 +39,9 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         self.figures_widget.setTabsClosable(True)
 
         def close_tab(id_):
+            w = self.figures_widget.widget(id_)
+            plt.close(w.figure)
+
             self.figures_widget.removeTab(id_)
         self.figures_widget.tabCloseRequested.connect(close_tab)
 

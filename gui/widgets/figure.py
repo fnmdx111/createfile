@@ -1,5 +1,4 @@
 # encoding: utf-8
-from PySide.QtCore import *
 from PySide.QtGui import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, \
     NavigationToolbar2QTAgg
@@ -8,6 +7,8 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, \
 class FigureWidget(QWidget):
     def __init__(self, parent, figure, parameters=None):
         super().__init__(parent=parent)
+
+        self.figure = figure
 
         self.figure_widget = FigureCanvasQTAgg(figure)
         self.figure_widget.setSizePolicy(QSizePolicy.Expanding,
