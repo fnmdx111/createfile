@@ -13,6 +13,7 @@ class TimelineRule(Rule):
 
     def __init__(self):
         super().__init__(None, name=self.name)
+
         self.conclusion = '时间线事件逻辑异常'
         self.abnormal = True
 
