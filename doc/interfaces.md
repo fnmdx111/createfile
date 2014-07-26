@@ -29,7 +29,7 @@ drive包
 |:--------------:|:--------------------:|:---------:|
 |该文件项是否是文件夹|该文件项所代表文件的绝对路径|该文件项的序号|
 
-用户在使用`Partition.get_entries`获得DataFrame对象后，可以使用DataFrame对象所自带的功能，如输出到Excel电子表格，输出到csv文件等。具体请查阅pandas的相关文档。
+用户在使用`Partition.get_entries`获得DataFrame对象后，可以使用DataFrame对象所自带的功能，如输出到Excel电子表格，输出到csv文件等。具体请查阅[pandas的相关文档](http://pandas.pydata.org/pandas-docs/version/0.14.0/ )。
 
 请参阅`drive.fs.fat32.__init__.py:get_fat32_obj`，`drive.fs.fat32.structs.py:FAT32BootSector`，`drive.fs.fat32.structs.py:FAT32`。
 
