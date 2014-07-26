@@ -64,6 +64,10 @@ class Rule:
 
         return self
 
+    @staticmethod
+    def _pending_return_values(e):
+        return [JudgedEntry(o) for _, o in e.iterrows()], []
+
     def apply_to(self, entries):
         result, positives = [], []
         for i, (ts, obj) in enumerate(entries.iterrows()):

@@ -42,7 +42,7 @@ class RulesWidget(QWidget):
             self._clv.append(['',
                               obj.name,
                               obj.conclusion,
-                              cb_abnormal(obj.mark_as_abnormal)],
+                              cb_abnormal(obj.abnormal)],
                              checkable=True)
             self._ext_rules[obj.name] = obj
 

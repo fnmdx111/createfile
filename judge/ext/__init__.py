@@ -5,7 +5,7 @@ def _make_registry():
     _registry = {}
 
     def _reg(f):
-        _registry[f.NAME] = f
+        _registry[f.name] = f
         return f
 
     return _registry, _reg
