@@ -222,9 +222,11 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                 o['conclusions'].extend(r.conclusions)
 
                 if rule.abnormal:
-                    entries.loc[_, 'abnormal'] = i in positives
+                    entries.loc[_, 'abnormal'] = o.abnormal or (i in positives)
 
-                    if o['abnormal']:
+                    # we just updated the entry in `entries` but the object `o`
+                    # is late on updates, so we query directly the DataFrame
+                    if entries.iloc[i].abnormal:
                         o['abnormal_src'].append('%s号规则' % r_id)
 
         return entries
