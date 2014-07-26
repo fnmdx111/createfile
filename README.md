@@ -108,6 +108,12 @@ The NTFS driver in package `drive.fs.ntfs` utilizes the project
 
 **Thanks a lot.**
 
+Benchmark
+----
+Following is a vague benchmark:
+* NTFS: parsing 205052 MFT records on a 678GB external hard drive (total 931GB)
+costs about 21m46s. I.e. about 10k MFT records per minute, about 30GB per minute.
+
 Licensing
 ====
 
