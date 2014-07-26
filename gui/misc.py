@@ -1,30 +1,9 @@
 # encoding: utf-8
-from collections import namedtuple
 from datetime import datetime
 from logging import Handler, Formatter, makeLogRecord
 import threading
 from PySide.QtCore import *
 from PySide.QtGui import *
-import pandas as pd
-
-
-def nested_tuple(_):
-    if isinstance(_, list):
-        return tuple(map(lambda x: nested_tuple(x)
-                                   if isinstance(x, list)
-                                   else x,
-                         _))
-    else:
-        return _
-
-def namedtuplize(df):
-    cls = namedtuple('Row', df.columns)
-
-    return tuple(map(lambda x: cls(*map(nested_tuple, x)), df.values))
-
-
-def denamedtuplize(nt):
-    return pd.DataFrame(list(map(vars, nt)))
 
 
 class ColoredFormatter(Formatter):
@@ -152,6 +131,9 @@ class AsyncTaskMixin(QObject):
 
             ret = target()
 
+            if title_after:
+                self.signal_title_changed.emit(title_after)
+
             if signal_after:
                 signal_after.emit(ret)
 
@@ -160,9 +142,6 @@ class AsyncTaskMixin(QObject):
 
             self.signal_title_restored.emit()
             self.signal_label_restored.emit()
-
-            if title_after:
-                self.signal_title_changed.emit(title_after)
 
         thread = threading.Thread(target=_)
         thread.start()
