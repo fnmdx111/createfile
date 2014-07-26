@@ -4,6 +4,8 @@ from PySide.QtGui import *
 from judge import *
 from .column_list_view import ColumnListView
 import judge
+from drive.fs.fat32 import FAT32
+from drive.fs.ntfs import NTFS
 
 
 class RulesWidget(QWidget):
@@ -22,6 +24,8 @@ class RulesWidget(QWidget):
 
         self._setup_layout()
 
+        self.type = ''
+
     def _inflate_rules(self, which_rules, clear):
         if clear:
             self._clv.clear()
@@ -39,6 +43,9 @@ class RulesWidget(QWidget):
 
         for cls in judge.ext.registry.values():
             obj = cls()
+            if obj.type != self.type:
+                continue
+
             self._clv.append(['',
                               obj.name,
                               obj.conclusion,
@@ -47,9 +54,13 @@ class RulesWidget(QWidget):
             self._ext_rules[obj.name] = obj
 
     def inflate_with_fat32_rules(self, clear=True):
+        self.type = FAT32.type
+
         self._inflate_rules(self._fat32_rules, clear)
 
     def inflate_with_ntfs_rules(self, clear=True):
+        self.type = NTFS.type
+
         self._inflate_rules(self._ntfs_rules, clear)
 
     def _setup_layout(self):
