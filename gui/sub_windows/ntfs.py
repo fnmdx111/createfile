@@ -2,12 +2,11 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from ._base import BaseSubWindow
+from drive.fs.ntfs import plot_sne1, plot_lsn
 from ..misc import abnormal_standard_item
 
 
 class NTFSSubWindow(BaseSubWindow):
-
-
     def __init__(self, parent, partition, partition_address):
         super().__init__(parent, partition, partition_address)
 
@@ -16,13 +15,28 @@ class NTFSSubWindow(BaseSubWindow):
     def deduce_abnormal_files(self, entries):
         return entries
 
+    def plot_sne1(self):
+        figure = plot_sne1(self.entries)
+
+        self.add_figure(figure, label='SN = 1')
+
+    def plot_lsn(self):
+        figure = plot_lsn(self.entries)
+
+        self.add_figure(figure, label='LSN')
+
     def setup_related_buttons(self):
-        btn_plot_sne1ct = QPushButton('绘制sn = 1的MFT记录的$SI创建时间图')
+        btn_plot_sne1ct = QPushButton('绘制SN = 1的MFT记录的$SI创建时间图')
+        btn_plot_sne1ct.clicked.connect(self.plot_sne1)
+
+        btn_plot_lsn = QPushButton('绘制LSN从小到大排序的$SI创建时间图')
+        btn_plot_lsn.clicked.connect(self.plot_lsn)
 
         group_box = QGroupBox('NTFS分析工具集')
 
         _ = QVBoxLayout()
         _.addWidget(btn_plot_sne1ct)
+        _.addWidget(btn_plot_lsn)
 
         group_box.setLayout(_)
 
