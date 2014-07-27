@@ -321,19 +321,21 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                  'content': content,
                  'group': group_id}
 
-            if item.abnormal == True:
+            if item.abnormal:
                 _['className'] = 'red'
 
             return _
 
         items = []
         for i, (_t, item) in enumerate(self.entries.iterrows()):
-            for c in item.conclusions:
-                _ = _gen_item(item, c_id[c])
+            if item.conclusions:
+                for c in item.conclusions:
+                    _ = _gen_item(item, c_id[c])
+                    items.append(_)
             else:
                 _ = _gen_item(item)
+                items.append(_)
 
-            items.append(_)
 
         html = self.timeline_template.render(
             groups=groups,
