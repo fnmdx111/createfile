@@ -25,6 +25,8 @@ then simply run
 
     python setup.py build
 
+and look into the build/lib.xxx folder.
+
 
 How to run
 ----
