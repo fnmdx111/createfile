@@ -209,8 +209,7 @@ class MetricsSettingsWidget(QWidget):
 class BaseSettingsWidget(QWidget):
 
     PARTITION_PREFIX = '/'
-    SYSTEM_ENTRY_NAMES = ['$recycle', '$System Information Volume',
-                      '$MFT', '$MFTMirr'] # etc. ...
+    SYSTEM_ENTRY_NAMES = ['$recycle', '$System Information Volume'] # etc. ...
 
     def __init__(self, parent, sort_keys):
         super().__init__(parent=parent)
