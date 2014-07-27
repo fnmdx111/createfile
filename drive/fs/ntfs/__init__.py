@@ -80,7 +80,7 @@ def plot_lsn(entries,
 
     xs, ys = [], []
     for _, o in entries.iterrows():
-        xs.append(o.id)
+        xs.append(o.lsn)
         ys.append(o[y_attr])
 
         if log_info:
@@ -92,7 +92,7 @@ def plot_lsn(entries,
     ax.plot(xs, ys, 'b^', linestyle='-.', label=y_attr_name)
 
     ax.legend()
-    ax.set_xlabel('MFT编号')
+    ax.set_xlabel('$LogFile序列号')
     ax.set_ylabel(y_attr_name)
 
     if show:
