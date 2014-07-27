@@ -5,13 +5,18 @@ import operator
 from .misc import id_, wrapper_func, ex_wrapper_func, predicate_od_func, \
     attribute_od_func, combinations_ex
 
+def getattr_(x, n):
+    if n == '':
+        return x
+    else:
+        return getattr(x, n)
 
 class AbstractWrapper:
     def __init__(self, expr):
         self.expr = expr
 
         for kw in ['lt', 'le', 'eq', 'ne', 'gt', 'ge', 'add', 'sub']:
-            self.install_binary('__%s__' % kw, getattr(operator, kw))
+            self.install_binary('__%s__' % kw, getattr_(operator, kw))
         self.install_binary('__and__', operator.and_)
         self.install_binary('__or__', operator.or_)
 
@@ -39,7 +44,7 @@ def install_misc(cls, wrapper_cls, wrapper_f, operand_f):
         return dummy
 
     for kw in ['neg', 'abs']:
-        _ = gen_unary(getattr(operator, kw))
+        _ = gen_unary(getattr_(operator, kw))
         _.__name__ = '__%s__' % kw
         setattr(cls, _.__name__, _)
 
@@ -122,7 +127,7 @@ install_misc(PredicateWrapper,
 
 
 class AttributeWrapper(AbstractWrapper):
-    def __init__(self, name, parent, obj=id_, expr=''):
+    def __init__(self, name, parent, obj=id_, expr='', non_attr=False):
         super(AttributeWrapper, self).__init__(expr)
 
         self.name = name
@@ -131,10 +136,15 @@ class AttributeWrapper(AbstractWrapper):
 
         self.expr = expr or '%s.%s' % (self.parent.name, self.name)
 
+        self.non_attr=non_attr
+
     def gen_dummy(self, op):
         def dummy(self_, other):
             if type(other) == type(self_):
-                other_ = lambda x: getattr(other.obj(x), other.name)
+                if other.non_attr:
+                    other_ = lambda x: other.obj(x)
+                else:
+                    other_ = lambda x: getattr_(other.obj(x), other.name)
                 other_expr = other.expr
             elif type(other) == type(id_):
                 other_ = other
@@ -146,8 +156,12 @@ class AttributeWrapper(AbstractWrapper):
                 other_ = lambda _: other
                 other_expr = other
 
-            return PredicateWrapper(lambda x: op(getattr(self_.obj(x),
-                                                         self_.name),
+            if self.non_attr:
+                n = lambda x: self_.obj(x)
+            else:
+                n = lambda x: getattr_(self_.obj(x), self_.name)
+
+            return PredicateWrapper(lambda x: op(n(x),
                                                  other_(x)),
                                     '%s(%s, %s)' % (op.__name__,
                                                     self_.expr,
@@ -155,8 +169,15 @@ class AttributeWrapper(AbstractWrapper):
 
         return dummy
 
+    def __call__(self, *args, **kwargs):
+        return AttributeWrapper('', self,
+                                obj=lambda x: getattr_(self.obj(x),
+                                                       self.name)(*args,
+                                                                  **kwargs),
+                                non_attr=True)
+
     def __getattr__(self, item):
-        return AttributeWrapper(item, self, obj=lambda x: getattr(self.obj(x),
+        return AttributeWrapper(item, self, obj=lambda x: getattr_(self.obj(x),
                                                                   self.name))
 
 install_misc(AttributeWrapper,
@@ -228,17 +249,17 @@ class AttributeWrapperEx(AbstractWrapper):
                 coll = lambda xs: combinations_ex(
                     xs,
                     partial(map,
-                            lambda x: getattr(x, self_.name)),
+                            lambda x: getattr_(x, self_.name)),
                     partial(map,
-                            lambda x: getattr(x, other.name))
+                            lambda x: getattr_(x, other.name))
                 )
             elif isinstance(other, PredicateWrapperEx):
                 other_expr = other.expr
-                coll = lambda xs: zip(map(lambda x: getattr(x, self_.name),
+                coll = lambda xs: zip(map(lambda x: getattr_(x, self_.name),
                                           xs),
                                       other.predicate(xs))
             else:
-                coll = lambda xs: zip(map(lambda x: getattr(x, self_.name),
+                coll = lambda xs: zip(map(lambda x: getattr_(x, self_.name),
                                           xs),
                                       repeat(other))
 
