@@ -18,6 +18,9 @@ class TimelineRule(Rule):
 
 
     def do_apply(self, entries):
+        entries = entries.sort_index(by='first_cluster')
+        self._pending_return_values(entries)
+
         for i, (_, o) in enumerate(entries.iterrows()):
             if i == 0 or i == entries.shape[0] - 1:
                 continue
