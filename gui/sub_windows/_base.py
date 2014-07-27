@@ -235,8 +235,11 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
         return entries
 
+    def deduce_authentic_time(self, entries):
+        raise NotImplementedError
+
     @staticmethod
-    def deduce_authentic_time(e):
+    def _deduce_authentic_time(e, create_time_attr):
         entries = e.sort(columns=['first_cluster'])
         reversed_entries_list = list(reversed(list(map(lambda _: _[1],
                                                        entries.iterrows()))))
@@ -252,8 +255,9 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                         e.loc[_, 'abnormal'] = False
                     else:
                         if o.first_cluster < first_entry.first_cluster:
-                            e.loc[_, 'deduced_time'] = '%s之前' %\
-                                                       first_entry.create_time
+                            e.loc[_, 'deduced_time'] = (
+                                '%s之前' % first_entry[create_time_attr]
+                            )
 
                             visited_files.add(o.id)
 
@@ -264,8 +268,9 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                         e.loc[_, 'abnormal'] = False
                     else:
                         if last_entry.first_cluster <= o.first_cluster:
-                            e.loc[_, 'deduced_time'] = '%s之后' % \
-                                                       last_entry.create_time
+                            e.loc[_, 'deduced_time'] = (
+                                '%s之后' % last_entry[create_time_attr]
+                            )
 
                             visited_files.add(o.id)
 
@@ -288,8 +293,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                         raise ItIsSimplyNotPossible
 
                     e.loc[_, 'deduced_time'] = '%s与%s之间' % (
-                        closest_entry_left.create_time,
-                        closest_entry_right.create_time
+                        closest_entry_left[create_time_attr],
+                        closest_entry_right[create_time_attr]
                     )
 
                     visited_files.add(o.id)

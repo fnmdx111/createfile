@@ -31,6 +31,9 @@ class NTFSSubWindow(BaseSubWindow):
 
         return _
 
+    def deduce_authentic_time(self, entries):
+        return self._deduce_authentic_time(entries, 'si_create_time')
+
     def gen_file_row_data(self, row):
         return [abnormal_standard_item(row),
                 row.id,
@@ -43,4 +46,4 @@ class NTFSSubWindow(BaseSubWindow):
                 row.fn_access_time, row.fn_mft_time,
                 row.conclusions,
                 row.abnormal_src if 'abnormal_src' in row else '',
-                '不可用']
+                row.deduced_time]

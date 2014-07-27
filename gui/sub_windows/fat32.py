@@ -208,3 +208,6 @@ class FAT32SubWindow(BaseSubWindow):
                 row.conclusions,
                 row.abnormal_src if 'abnormal_src' in row else '',
                 row.deduced_time if 'deduced_time' in row else '']
+
+    def deduce_authentic_time(self, entries):
+        return self._deduce_authentic_time(entries, 'create_time')
