@@ -55,7 +55,11 @@ def plot_windowed_metrics(normal_data, abnormal_data,
 
             plots.append(ax.plot(vs[2][0], vs[2][1], 'r%s' % fmt[1],
                                  label=names[-1])[0])
+
     ax.legend(plots, names)
+
+    ax.set_xlabel('窗口号')
+    ax.set_ylabel('%s系数' % fn[0])
 
     if show:
         plt.show(figure)
