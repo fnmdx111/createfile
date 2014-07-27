@@ -93,6 +93,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             self.entries = self.settings.sort(self.entries)
             _1f = time.time()
 
+            self.entries = self.apply_rules(self.entries)
+
             _2 = time.time()
             print('generating summary...')
             self.summary_widget.summarize(self.entries)
@@ -133,7 +135,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                 ))
 
         def _target():
-            return self.apply_rules(self.partition.get_entries())
+            return self.normalize_entries(self.partition.get_entries())
 
         self.signal_partition_parsed.connect(_slot)
 
@@ -201,7 +203,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         raise NotImplementedError
 
     def apply_rules(self, entries):
-        return self._apply_rules(self.normalize_entries(entries),
+        return self._apply_rules(entries,
                                  self.rules_widget.rules())
 
     @staticmethod
@@ -216,24 +218,26 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
     @staticmethod
     def _apply_rules(entries, rules):
         for r_id, rule in enumerate(rules):
-            _result, positives = rule.apply_to(entries)
+            _result, positives, e = rule.apply_to(entries)
 
-            for i, (r, (_, o)) in enumerate(zip(_result, entries.iterrows())):
-                o['conclusions'].extend(r.conclusions)
+            for i, (r, (_, o)) in enumerate(zip(_result, e.iterrows())):
+                if _ not in entries.index:
+                    # wtf???
+                    print('warning, entries missing index %s' % _)
+                    continue
+
+                entries.loc[_, 'conclusions'].extend(r.conclusions)
 
                 if rule.abnormal:
-                    entries.loc[_, 'abnormal'] = o.abnormal or (i in positives)
-
-                    # we just updated the entry in `entries` but the object `o`
-                    # is late on updates, so we query directly the DataFrame
-                    if entries.iloc[i].abnormal:
-                        o['abnormal_src'].append('%s号规则' % r_id)
+                    if i in positives:
+                        entries.loc[_, 'abnormal'] = True
+                        entries.loc[_, 'abnormal_src'].append('%s号规则' % r_id)
 
         return entries
 
     @staticmethod
     def deduce_authentic_time(e):
-        entries = e.sort_index(by='first_cluster')
+        entries = e.sort(columns=['first_cluster'])
         reversed_entries_list = list(reversed(list(map(lambda _: _[1],
                                                        entries.iterrows()))))
 

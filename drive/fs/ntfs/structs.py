@@ -222,5 +222,5 @@ class NTFS(Partition):
         return DataFrame(entries
                          if entries
                          else [(None,) * len(self.__mft_attr__)],
-                         index=map(lambda x: x[2], entries),
+                         index=map(lambda x: x[-1], entries),
                          columns=self.__mft_attr__)

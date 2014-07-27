@@ -294,7 +294,7 @@ class BaseSettingsWidget(QWidget):
         return entries
 
     def sort(self, entries):
-        return entries.sort_index(by=self.sort_by)
+        return entries.sort(columns=[self.sort_by])
 
 
 class FAT32SettingsWidget(BaseSettingsWidget):

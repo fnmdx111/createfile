@@ -18,7 +18,7 @@ class TimelineRule(Rule):
 
 
     def do_apply(self, entries):
-        entries = entries.sort_index(by='first_cluster')
+        entries = entries.sort(columns=['first_cluster'])
         self._pending_return_values(entries)
 
         for i, (_, o) in enumerate(entries.iterrows()):

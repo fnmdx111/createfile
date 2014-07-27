@@ -54,6 +54,7 @@ class Rule:
 
         self.result = []
         self.positives = []
+        self.e = None
 
     def then(self, conclusion='', abnormal=False):
         self.conclusion = conclusion
@@ -64,6 +65,7 @@ class Rule:
     def _pending_return_values(self, e):
         self.result = [JudgedEntry(o) for _, o in e.iterrows()]
         self.positives = []
+        self.e = e
 
     def mark_as_positive(self, i):
         self.positives.append(i)
@@ -79,6 +81,6 @@ class Rule:
 
         self.do_apply(entries)
 
-        return self.result, self.positives
+        return self.result, self.positives, self.e
 
 If = Rule

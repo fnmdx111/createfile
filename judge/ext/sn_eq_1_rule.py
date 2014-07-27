@@ -16,7 +16,7 @@ class SNEq1Rule(Rule):
         super().__init__(None)
 
     def do_apply(self, entries):
-        entries = entries[entries.sn == 1].sort_index(by='id')
+        entries = entries[entries.sn == 1].sort(columns=['id'])
         self._pending_return_values(entries)
 
         for i, (_, o) in enumerate(entries.iterrows()):

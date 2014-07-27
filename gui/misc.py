@@ -158,7 +158,7 @@ def new_button(text, slot):
 
 def abnormal_standard_item(row):
     _ = QStandardItem()
-    _.setCheckState(Qt.Checked if row.abnormal == True else Qt.Unchecked)
+    _.setCheckState(Qt.Checked if row.abnormal else Qt.Unchecked)
     _.setCheckable(False)
     _.setEditable(False)
 

@@ -13,6 +13,7 @@ from construct import *
 from datetime import datetime
 from pandas import DataFrame
 from .. import Partition, EntryMixin
+import pytz
 from .speedup._op import find_cluster_lists
 from drive.keys import *
 from misc import STATE_LFN_ENTRY, STATE_DOS_ENTRY, MAGIC_END_SECTION, \
@@ -144,7 +145,8 @@ class FAT32DirectoryTableEntry(EntryMixin):
         try:
             self.create_time = datetime(y, m_, d, h, m, int(s),
                                         int((Decimal(str(s)) - int(s))
-                                            * 1000000))
+                                            * 1000000),
+                                        tzinfo=pytz.utc)
             # TODO implement customizable timezone
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
@@ -155,7 +157,8 @@ class FAT32DirectoryTableEntry(EntryMixin):
         h, m, s = self._get_time(obj[k_modify_time], 0)
         y, m_, d = self._get_date(obj[k_modify_date])
         try:
-            self.modify_time = datetime(y, m_, d, h, m, int(s))
+            self.modify_time = datetime(y, m_, d, h, m, int(s),
+                                        tzinfo=pytz.utc)
             # TODO implement customizable timezone
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
@@ -165,7 +168,8 @@ class FAT32DirectoryTableEntry(EntryMixin):
 
         y, m_, d = self._get_date(obj[k_access_date])
         try:
-            self.access_date = datetime(y, m_, d, 0, 0, 0)
+            self.access_date = datetime(y, m_, d, 0, 0, 0,
+                                        tzinfo=pytz.utc)
         except ValueError:
             partition.logger.warning('%s\\%s: invalid date %s, %s, %s',
                                      dir_name, name, y, m_, d)
@@ -468,7 +472,7 @@ class FAT32(Partition):
 
         return DataFrame(entries if entries else
                          [(None,) * len(FAT32DirectoryTableEntry.__attr__)],
-                         index=create_time_indices,
+                         index=map(lambda x: x[-1], entries),
                          columns=FAT32DirectoryTableEntry.__attr__)
 
     def resolve_cluster_list(self, first_cluster, fat=None):

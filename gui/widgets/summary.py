@@ -73,7 +73,7 @@ class SummaryWidget(QWidget):
         if self.conclusions:
             t += '在这期间中\n'
             for c, n in self.conclusions.items():
-                t += '\t有%s次%s操作' % (n, c)
+                t += '\t有%s次%s' % (n, c)
 
         self.summary_text = t
 
