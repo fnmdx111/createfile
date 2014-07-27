@@ -29,7 +29,8 @@ class FilesWidget(QDialog):
             self._clv.setup_headers(['异常',
                                      'FDT编号',
                                      '路径',
-                                     '首簇',
+                                     '首簇号',
+                                     '尾簇号',
                                      '创建时间',
                                      '修改时间',
                                      '访问日期',
@@ -40,7 +41,7 @@ class FilesWidget(QDialog):
                                     sort_types=[bool,
                                                 int,
                                                 str,
-                                                int,
+                                                int, int,
                                                 datetime, datetime, datetime,
                                                 str, str, str])
         elif type_ == NTFS.type:

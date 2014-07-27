@@ -196,9 +196,14 @@ class FAT32SubWindow(BaseSubWindow):
         return _
 
     def gen_file_row_data(self, row):
+        last_cluster = '0'
+        if len(row.cluster_list) > 0:
+            if len(row.cluster_list[-1]) > 0:
+                last_cluster = row.cluster_list[-1][-1]
+
         return [abnormal_standard_item(row),
                 row.id,
-                row.full_path, row.first_cluster,
+                row.full_path, row.first_cluster, last_cluster,
                 row.create_time, row.modify_time, row.access_date,
                 row.conclusions,
                 row.abnormal_src if 'abnormal_src' in row else '',
