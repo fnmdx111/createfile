@@ -19,7 +19,7 @@
 import mmap
 import struct
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import types
 import pickle
 
@@ -264,8 +264,10 @@ def dosdate(dosdate, dostime):
 
 
 def parse_filetime(qword):
-    # see http://integriography.wordpress.com/2010/01/16/using-phython-to-parse-and-present-windows-64-bit-timestamps/
-    return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600)
+    # see http://integriography.wordpress.com/2010/01/16/using-python-to-parse-and-present-windows-64-bit-timestamps/
+    # FIXME remove this hack
+    return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600) +\
+                timedelta(hours=8)
 
 
 class BinaryParserException(Exception):

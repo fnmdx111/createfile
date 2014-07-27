@@ -76,10 +76,10 @@ class NTFS(Partition):
     type = 'NTFS'
 
     __mft_attr__ = ['lsn', 'sn',
-                    'si_modify_time', 'si_access_time',
-                    'si_create_time', 'si_mft_time',
-                    'fn_modify_time', 'fn_access_time',
-                    'fn_create_time', 'fn_mft_time',
+                    'si_create_time', 'si_modify_time',
+                    'si_access_time', 'si_mft_time',
+                    'fn_create_time', 'fn_modify_time',
+                    'fn_access_time', 'fn_mft_time',
                     'first_cluster', 'cluster_list',
                     'full_path',
                     'is_directory',
@@ -113,11 +113,6 @@ class NTFS(Partition):
         self.logger.info('stream jumped to %s and ready to read MFT records',
                          hex(self.mft_abs_pos))
 
-        self.mft_enumerator = MFTEnumerator(self,
-                                            MFTStream(self.stream,
-                                                      self.mft_abs_pos,
-                                                      self.bytes_per_mft_record))
-
     def get_mft_records(self):
         """Parse the MFT records residing on this partition."""
 
@@ -138,8 +133,12 @@ class NTFS(Partition):
 
     def __iter__(self):
         """Implement iterator protocol for pythonicness."""
+        mft_enumerator = MFTEnumerator(self,
+                                       MFTStream(self.stream,
+                                                 self.mft_abs_pos,
+                                                 self.bytes_per_mft_record))
         for id_, (record, record_path) in enumerate(
-                self.mft_enumerator.enumerate_paths()
+                mft_enumerator.enumerate_paths()
         ):
             si = record.standard_information()
             fn = record.filename_information()
