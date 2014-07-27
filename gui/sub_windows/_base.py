@@ -171,16 +171,14 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         _1.addLayout(buttons_layout)
         _1.addWidget(summary_group_box)
         _1.addWidget(settings_group_box)
+        _1w = QWidget()
+        _1w.setLayout(_1)
 
         _2 = QVBoxLayout(self)
         _2.addWidget(files_group_box)
         _2.addWidget(rules_group_box)
-
-        __1 = QHBoxLayout()
-        __1.addLayout(_1)
-        __1.addLayout(_2)
-        _w = QWidget()
-        _w.setLayout(__1)
+        _2w = QWidget()
+        _2w.setLayout(_2)
 
         _3 = QVBoxLayout(self)
         _3.addWidget(self.figures_widget)
@@ -188,7 +186,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         _3w.setLayout(_3)
 
         splitter = QSplitter()
-        splitter.addWidget(_w)
+        splitter.addWidget(_1w)
+        splitter.addWidget(_2w)
         splitter.addWidget(_3w)
 
         self.setCentralWidget(splitter)
