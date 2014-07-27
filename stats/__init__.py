@@ -6,10 +6,14 @@
     This module implements the :func:`get_windowed_metrics` function which is
     the only public interface of this package.
 """
+from collections import Counter, defaultdict
 from .misc import windowed, segmented
+import datetime as dt
 import numpy as np
 from .validate import validate_metrics
 from .plot import plot_windowed_metrics
+from drive.fs.fat32 import FAT32
+from drive.fs.ntfs import NTFS
 
 __all__ = ['plot_windowed_metrics',
            'calc_windowed_metrics',
@@ -75,3 +79,58 @@ def calc_windowed_metrics(fs, entries,
         w_cnt += 1
 
     return xs, values
+
+
+def _dtf(row, attrs, days_counter):
+    for t in map(lambda a: row[a], attrs):
+        days_counter[t.date()] += 1
+
+        yield t
+
+
+def _fat32_dtf(row, days_counter):
+    time_attrs = ['create_time', 'modify_time', 'access_date']
+    return _dtf(row, time_attrs, days_counter)
+
+
+def _ntfs_dtf(row, days_counter):
+    time_attrs = ['%s_%s_time' % (attr, name)
+                  for attr in ['si', 'fn']
+                  for name in ['create', 'modify', 'access', 'mft']]
+    return _dtf(row, time_attrs, days_counter)
+
+
+suffices = {'.exe', '.txt', '.pdf', '.jpg', '.rar', '.doc', '.png'}
+
+def statistical_summary_of(type_, entries):
+    dtf = {FAT32.type: _fat32_dtf, NTFS.type: _ntfs_dtf}[type_]
+
+    days_counter = Counter()
+    file_type_counter = Counter()
+    conclusion_counter = Counter()
+    abnormal_counter = Counter()
+
+    min_st, max_et = dt.datetime.max, dt.datetime.min
+    for _, o in entries.iterrows():
+        dts = list(dtf(o, days_counter))
+
+        min_st = min(min_st, *dts)
+        max_et = max(max_et, *dts)
+
+        maybe_suffix = o.full_path[-4:]
+        if maybe_suffix in suffices:
+            file_type_counter[maybe_suffix] += 1
+
+        for c in o.conclusions:
+            conclusion_counter[c] += 1
+
+        if o.abnormal:
+            abnormal_counter[True] += 1
+        else:
+            abnormal_counter[False] += 1
+
+    return ((min_st, max_et),
+            days_counter,
+            file_type_counter,
+            conclusion_counter,
+            abnormal_counter)
