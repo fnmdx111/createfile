@@ -72,7 +72,11 @@ class RulesWidget(QWidget):
         le_conclusion = QLineEdit()
 
         def add():
-            self._clv.append(['', le_rule.text(), le_conclusion.text()],
+            _ = QStandardItem()
+            _.setEditable(True)
+            _.setCheckable(True)
+
+            self._clv.append(['', le_rule.text(), le_conclusion.text(), _],
                              checkable=True)
             le_rule.setText('')
             le_conclusion.setText('')
