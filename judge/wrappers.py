@@ -1,19 +1,48 @@
 # encoding: utf-8
+from datetime import datetime
 import operator
 from .misc import id_, wrapper_func, predicate_od_func, \
-    attribute_od_func, getattr_
+    attribute_od_func, getattr_, approximate_seconds
 
 
 class AbstractWrapper:
     def __init__(self, expr):
         self.expr = expr
 
-        for kw in ['lt', 'le', 'eq', 'ne', 'gt', 'ge', 'add', 'sub']:
+        def ne(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return abs(x - y) > approximate_seconds
+            else:
+                return x == y
+
+        def eq(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return abs(x - y) < approximate_seconds
+            else:
+                return x == y
+
+        def le(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return x < y or eq(x, y)
+            else:
+                return x <= y
+
+        def ge(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return x > y or eq(x, y)
+            else:
+                return x >= y
+
+        for kw in ['lt', 'gt', 'add', 'sub']:
             self.install_binary('__%s__' % kw, getattr_(operator, kw))
         self.install_binary('__and__', operator.and_)
         self.install_binary('__or__', operator.or_)
         self.install_binary('__max__', max)
         self.install_binary('__min__', min)
+        self.install_binary('__eq__', eq)
+        self.install_binary('__ne__', ne)
+        self.install_binary('__le__', le)
+        self.install_binary('__ge__', ge)
 
     def install_binary(self, name, op):
         dummy = self.gen_dummy(op)
