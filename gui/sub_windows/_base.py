@@ -216,7 +216,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
     @staticmethod
     def _apply_rules(entries, rules):
-        for r_id, rule in enumerate(rules):
+        for r_id, rule in rules:
             _result, positives, e = rule.apply_to(entries)
 
             for i, (r, (_, o)) in enumerate(zip(_result, e.iterrows())):

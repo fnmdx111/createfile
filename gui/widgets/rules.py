@@ -105,10 +105,11 @@ class RulesWidget(QWidget):
 
     def rules(self):
         for r in range(self._clv.model_.rowCount()):
-            on, rule, conclusion, abnormal = (self._clv.model_.item(r, 1),
-                                              self._clv.model_.item(r, 2),
-                                              self._clv.model_.item(r, 3),
-                                              self._clv.model_.item(r, 4))
+            id_, on, rule, conclusion, abnormal = (self._clv.model_.item(r, 0),
+                                                   self._clv.model_.item(r, 1),
+                                                   self._clv.model_.item(r, 2),
+                                                   self._clv.model_.item(r, 3),
+                                                   self._clv.model_.item(r, 4))
 
             if on.checkState() == Qt.Checked:
                 name = rule.text()
@@ -118,4 +119,4 @@ class RulesWidget(QWidget):
                     obj = (If(eval(rule.text()))
                             .then(conclusion=conclusion.text(),
                                   abnormal=abnormal.checkState() == Qt.Checked))
-                yield obj
+                yield int(id_.text()), obj
