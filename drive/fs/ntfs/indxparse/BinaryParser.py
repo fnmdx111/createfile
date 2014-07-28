@@ -262,12 +262,11 @@ def dosdate(dosdate, dostime):
     except:
         return datetime.datetime.min
 
-
+_local_time_delta = (datetime(year=1970, month=1, day=1) -
+                     datetime(year=1601, month=1, day=1)).total_seconds()
 def parse_filetime(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-python-to-parse-and-present-windows-64-bit-timestamps/
-    # FIXME remove this hack
-    return datetime.utcfromtimestamp(float(qword) * 1e-7 - 11644473600) +\
-                timedelta(hours=8)
+    return datetime.fromtimestamp(qword / 10000000 - _local_time_delta)
 
 
 class BinaryParserException(Exception):
