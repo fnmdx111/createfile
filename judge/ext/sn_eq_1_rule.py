@@ -20,9 +20,10 @@ class SNEq1Rule(Rule):
         self._pending_return_values(entries)
 
         for i, (_, o) in enumerate(entries.iterrows()):
-            if i == entries.shape[0] - 1:
-                continue # last file entry, no successor
+            if i == 0 or i == entries.shape[0] - 1:
+                continue
 
-            this, next_ = o, entries.iloc[i + 1]
-            if this.si_create_time > next_.si_create_time:
+            prev, this, next_ = entries.iloc[i - 1], o, entries.iloc[i + 1]
+            if (this.si_create_time > next_.si_create_time
+             or prev.si_create_time > this.si_create_time):
                 self.mark_as_positive(i)
