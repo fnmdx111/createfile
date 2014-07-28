@@ -82,7 +82,7 @@ class NTFS(Partition):
                     'fn_access_time', 'fn_mft_time',
                     'first_cluster', 'cluster_list',
                     'full_path',
-                    'is_directory',
+                    'is_directory', 'is_deleted',
                     'id']
 
     def __init__(self, stream, preceding_bytes, ui_handler=None):
@@ -153,6 +153,11 @@ class NTFS(Partition):
             else:
                 is_directory = False
 
+            if record.is_active():
+                is_deleted = False
+            else:
+                is_deleted = True
+
                 data_attr = record.data_attribute()
                 if data_attr and data_attr.non_resident() > 0:
                     cluster_list = self.runs_to_cluster_list(
@@ -194,7 +199,7 @@ class NTFS(Partition):
                    fn_create_time, fn_modify_time, fn_access_time, fn_mft_time,
                    first_cluster, cluster_list,
                    '/%s' % record_path,
-                   is_directory,
+                   is_directory, is_deleted,
                    id_)
 
 
