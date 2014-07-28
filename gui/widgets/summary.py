@@ -84,6 +84,9 @@ class SummaryWidget(QWidget):
             entries
         )
 
+        self.set_start_time(min_st)
+        self.set_end_time(max_et)
+
         self.summary_text = self.template.render(min_st=min_st,
                                                  max_et=max_et,
                                                  days_counter=dc,
