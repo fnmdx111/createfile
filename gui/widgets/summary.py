@@ -13,7 +13,8 @@ class SummaryWidget(QWidget):
 {{ abnormal_counter[True] + abnormal_counter[False] }}
 个可用文件项目。{%- if file_type_counter -%}其中<ul>
 {% for suffix in file_type_counter %}
-    <li>{{ suffix }}文件共有 {{ file_type_counter[suffix] }} 个</li>
+    <li><b><font color='blue'>{{ suffix }}文件</font></b>共有
+{{ file_type_counter[suffix] }} 个</li>
 {% endfor %}</ul>
 {%- endif %}
 正常文件共 {{ abnormal_counter[False] }}
@@ -29,7 +30,13 @@ class SummaryWidget(QWidget):
 天。{% if conclusion_counter -%}在这些天中有:
 <ul>
 {% for c in conclusion_counter %}
-    <li>{{ c }}共 {{ conclusion_counter[c] }} 次</li>
+    {% if rules_category[c] %}
+        {% set color = 'red' %}
+    {% else %}
+        {% set color = 'green' %}
+    {% endif %}
+    <li><b><font color='{{ color }}'>{{ c }}</font></b>共
+{{ conclusion_counter[c] }} 次</li>
 {% endfor %}
 </ul>
 {%- endif %}
@@ -79,7 +86,7 @@ class SummaryWidget(QWidget):
     def summarize(self, entries):
         self.clear()
 
-        (min_st, max_et), dc, ftc, cc, ac = statistical_summary_of(
+        (min_st, max_et), dc, ftc, cc, ac, rc = statistical_summary_of(
             self.partition_type,
             entries
         )
@@ -92,6 +99,7 @@ class SummaryWidget(QWidget):
                                                  days_counter=dc,
                                                  file_type_counter=ftc,
                                                  conclusion_counter=cc,
-                                                 abnormal_counter=ac)
+                                                 abnormal_counter=ac,
+                                                 rules_category=rc)
 
         return self.summary_text

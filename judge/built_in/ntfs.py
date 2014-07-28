@@ -56,3 +56,5 @@ rule10 = ['(_.SI_M != _.SI_E)'
        ' & approx_eq(SI_C, SI_A, FN_ALL)',
           '复制的文件M往后改',
           True]
+
+rules = [rule1, rule2, rule3,rule4, rule5, rule6, rule7, rule8, rule9, rule10]
