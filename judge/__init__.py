@@ -1,39 +1,28 @@
 # encoding: utf-8
 
-from .wrappers import AttributeWrapper, AttributeWrapperEx,\
-                      all_, any_, every, some
+from .dummy import _
+from .utils import max_, min_, approx_eq, ntfs_mace_congruent, ctg_eq, attr_eq,\
+    axe, nmc, ce, ate
+from .abbr import _c_, _m_, _a_, _e_, _si_, _fn_, si_e, si_m, si_a, si_c,\
+    fn_e, fn_m, fn_a, fn_c, f_c, f_a, f_m, C, M, A, E, SI, FN,\
+    SI_E, SI_M, SI_A, SI_C, FN_E, FN_M, FN_A, FN_C, F_C, F_M, F_A,\
+    SI_ALL, FN_ALL, M_ALL, C_ALL, E_ALL, A_ALL
 from .misc import id_
 
 from datetime import datetime as dt, datetime, timedelta as td, timedelta,\
     date, time
 
-__all__ = ['If', '_', '_1', '_2', 'DummyEntry',
-           'all_', 'any_', 'every', 'some', 'ext',
+__all__ = ['If', '_',
+           'ext', 'max_', 'min_', 'approx_eq', 'axe',
+           'ntfs_mace_congruent', 'nmc', 'ctg_eq', 'ce', 'attr_eq', 'ate',
+           '_m_', '_a_', '_c_', '_e_', '_si_', '_fn_',
+           'si_a', 'si_c', 'si_m', 'si_e', 'fn_a', 'fn_c', 'fn_m', 'fn_e',
+           'f_a', 'f_c', 'f_m',
+           'C', 'M', 'A', 'E', 'SI', 'FN',
+           'SI_E', 'SI_M', 'SI_A', 'SI_C', 'FN_E', 'FN_M', 'FN_A', 'FN_C',
+           'F_C', 'F_A', 'F_M',
+           'SI_ALL', 'FN_ALL', 'M_ALL', 'C_ALL', 'E_ALL', 'A_ALL',
            'dt', 'datetime', 'td', 'timedelta', 'time', 'date']
-
-
-class DummyEntry:
-    """
-    A dummy entry class for rule definition mechanism.
-    """
-    def __init__(self, name='_'):
-        self.name = name
-
-    def __getattr__(self, item):
-        return AttributeWrapper(item, self)
-
-# universal dummy entry
-_ = DummyEntry()
-
-
-class DummyEntryEx:
-    def __init__(self, name):
-        self.name = name
-
-    def __getattr__(self, item):
-        return AttributeWrapperEx(item, self)
-
-_1, _2 = DummyEntryEx('_1'), DummyEntryEx('_2')
 
 
 class JudgedEntry:

@@ -2,6 +2,8 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from judge import *
+import judge.built_in.fat32 as jf
+import judge.built_in.ntfs as jn
 from .column_list_view import ColumnListView
 import judge
 from drive.fs.fat32 import FAT32
@@ -10,10 +12,9 @@ from drive.fs.ntfs import NTFS
 
 class RulesWidget(QWidget):
 
-    _fat32_rules = [['_.create_time > _.modify_time',  # rule text
-                     '复制',                           # conclusion
-                     False]]                           # mark as abnormal                           # is extended rule
-    _ntfs_rules = []
+    _fat32_rules = [jf.rule1]
+    _ntfs_rules = [jn.rule1, jn.rule2, jn.rule3, jn.rule4, jn.rule5, jn.rule6,
+                   jn.rule7, jn.rule8, jn.rule9, jn.rule10, jn.rule11]
 
     def __init__(self, parent):
         super(RulesWidget, self).__init__(parent=parent)
