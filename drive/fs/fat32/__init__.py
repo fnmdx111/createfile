@@ -90,8 +90,12 @@ def plot_fat32(entries,
 
         if plot_average_cluster:
             y.append(obj.avg_cluster)
-            y_err[0].append(y[-1] - obj.cluster_list[0][0])
-            y_err[1].append(obj.cluster_list[-1][-1] - y[-1])
+
+            min_cluster = min(map(lambda x: min(*x), obj.cluster_list))
+            max_cluster = max(map(lambda x: max(*x), obj.cluster_list))
+
+            y_err[0].append(y[-1] - min_cluster)
+            y_err[1].append(max_cluster - y[-1])
 
         if log_info:
             _p('found FDT entry %s:\n'

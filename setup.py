@@ -12,7 +12,7 @@ extensions = [Extension('stats.speedup.alg',
 
 setup(
     name='createfile',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/mad4alcohol/createfile',
     license='GNU LGPLv3',
     author='mad4a',

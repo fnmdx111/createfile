@@ -35,7 +35,10 @@ cdef inline void operate(object c,
         if last_segment[neg_one] + 1 == c:
             last_segment[neg_one] = c
         else:
-            cluster_list.append([c, c])
+            if c in obj:
+                cluster_list.extend(c)
+            else:
+                cluster_list.append([c, c])
     cluster_head[c] = head
 
 
