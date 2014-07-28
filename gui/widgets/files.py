@@ -28,6 +28,7 @@ class FilesWidget(QDialog):
         if type_ == FAT32.type:
             self._clv.setup_headers(['异常',
                                      'FDT编号',
+                                     '已删除',
                                      '路径',
                                      '首簇号',
                                      '尾簇号',
@@ -47,6 +48,7 @@ class FilesWidget(QDialog):
         elif type_ == NTFS.type:
             self._clv.setup_headers(['异常',
                                      'MFT记录编号',
+                                     '活动',
                                      '路径',
                                      'LSN',
                                      'SN',

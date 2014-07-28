@@ -7,7 +7,7 @@ from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
 from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
-from ..misc import abnormal_standard_item, filter_empty_cluster_list
+from ..misc import boolean_item, filter_empty_cluster_list
 import matplotlib.pyplot as plt
 
 
@@ -201,8 +201,9 @@ class FAT32SubWindow(BaseSubWindow):
             if len(row.cluster_list[-1]) > 0:
                 last_cluster = row.cluster_list[-1][-1]
 
-        return [abnormal_standard_item(row),
+        return [boolean_item(row.abnormal),
                 row.id,
+                boolean_item(row.is_deleted),
                 row.full_path, row.first_cluster, last_cluster,
                 row.create_time, row.modify_time, row.access_date,
                 row.conclusions,

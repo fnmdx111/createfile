@@ -220,6 +220,7 @@ class BaseSettingsWidget(QWidget):
 
         self._real_parent = parent
 
+        self.exclude_deleted_files = True
         self.exclude_folders = False
         self.exclude_system_entries = True
 
@@ -244,6 +245,8 @@ class BaseSettingsWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.addLayout(_)
+        layout.addWidget(self.new_checkbox('排除已删除的文件项',
+                                           'exclude_deleted_files'))
         layout.addWidget(self.new_checkbox('排除标记为文件夹的目录项',
                                            'exclude_folders'))
         layout.addWidget(self.new_checkbox('排除系统目录项',
@@ -271,7 +274,8 @@ class BaseSettingsWidget(QWidget):
         return _
 
     def export(self):
-        return {'exclude_folders': self.exclude_folders,
+        return {'exclude_deleted_files': self.exclude_deleted_files,
+                'exclude_folders': self.exclude_folders,
                 'exclude_system_entries': self.exclude_system_entries}
 
     def import_(self, parameters):
@@ -286,6 +290,8 @@ class BaseSettingsWidget(QWidget):
         raise NotImplementedError
 
     def filter(self, entries):
+        if self.exclude_deleted_files:
+            entries = entries[entries.is_deleted == False]
         if self.exclude_folders:
             entries = entries[entries.is_directory == False]
         if self.exclude_system_entries:
@@ -302,7 +308,6 @@ class BaseSettingsWidget(QWidget):
 
 class FAT32SettingsWidget(BaseSettingsWidget):
     def __init__(self, parent):
-        self.exclude_deleted_files = True
         self.plot_first_cluster = True
         self.plot_avg_cluster = True
         self.enable_metrics_abnormality_detection = False
@@ -317,8 +322,6 @@ class FAT32SettingsWidget(BaseSettingsWidget):
                                                 ('FDT顺序', 'id')]))
 
     def setup_custom_layout(self, layout):
-        layout.addWidget(self.new_checkbox('排除已删除的文件项',
-                                           'exclude_deleted_files'))
         layout.addWidget(self.new_checkbox('绘制首簇折线',
                                            'plot_first_cluster'))
         layout.addWidget(self.new_checkbox('绘制平均簇号折线',
@@ -387,8 +390,7 @@ class FAT32SettingsWidget(BaseSettingsWidget):
         layout.addWidget(btn)
 
     def export(self):
-        my = {'exclude_deleted_files': self.exclude_deleted_files,
-              'plot_first_cluster': self.plot_first_cluster,
+        my = {'plot_first_cluster': self.plot_first_cluster,
               'plot_avg_cluster': self.plot_avg_cluster,
               'enable_metrics_abnormality_detection':
                   self.enable_metrics_abnormality_detection,
@@ -408,9 +410,6 @@ class FAT32SettingsWidget(BaseSettingsWidget):
 
     def filter(self, entries):
         entries = super().filter(entries)
-
-        if self.exclude_deleted_files:
-            entries = entries[entries.is_deleted == False]
 
         return entries
 

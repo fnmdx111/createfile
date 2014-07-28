@@ -3,7 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from ._base import BaseSubWindow
 from drive.fs.ntfs import plot_sne1, plot_lsn
-from ..misc import abnormal_standard_item
+from ..misc import boolean_item
 
 
 class NTFSSubWindow(BaseSubWindow):
@@ -49,8 +49,9 @@ class NTFSSubWindow(BaseSubWindow):
         return self._deduce_authentic_time(entries, 'si_create_time')
 
     def gen_file_row_data(self, row):
-        return [abnormal_standard_item(row),
+        return [boolean_item(row.abnormal),
                 row.id,
+                boolean_item(not row.is_deleted),
                 row.full_path,
                 row.lsn, row.sn,
                 row.first_cluster,
