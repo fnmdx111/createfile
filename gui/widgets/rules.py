@@ -14,7 +14,7 @@ class RulesWidget(QWidget):
 
     _fat32_rules = [jf.rule1]
     _ntfs_rules = [jn.rule1, jn.rule2, jn.rule3, jn.rule4, jn.rule5, jn.rule6,
-                   jn.rule7, jn.rule8, jn.rule9, jn.rule10, jn.rule11]
+                   jn.rule7, jn.rule8, jn.rule9, jn.rule10]
 
     def __init__(self, parent):
         super(RulesWidget, self).__init__(parent=parent)

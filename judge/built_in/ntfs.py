@@ -25,37 +25,33 @@ rule5 = ['approx_eq(SI_M, SI_E, SI_A)'
          '编辑文件',
          False]
 
-rule6 = ['_.SI_E > max_(FN_ALL, SI_A, SI_M, SI_C)',
-         '卷内替换',
-         False]
-
-rule7 = ['approx_eq(SI_E, SI_A)'
+rule6 = ['approx_eq(SI_E, SI_A)'
       ' & (min_(SI_E, SI_A) > max_(SI_C, FN_ALL))'
       ' & (_.SI_E != _.SI_M)',
          '未命名异常',
          True]
 
-rule8 = ['(_.SI_E > max_(FN_ALL, SI_M))'
+rule7 = ['(_.SI_E > max_(FN_ALL, SI_M))'
       ' & approx_eq(FN_ALL, SI_M)'
       ' & (min_(FN_ALL, SI_M) > _.SI_C)',
          '未命名异常',
          True]
 
-rule9 = ['(_.SI_E > max_(SI_A, FN_ALL))'
+rule8 = ['(_.SI_E > max_(SI_A, FN_ALL))'
       ' & approx_eq(SI_A, FN_ALL)'
       ' & (min_(SI_A, FN_ALL) > _.SI_M)'
       ' & (_.SI_C != _.SI_E)',
          '未命名异常',
          True]
 
-rule10 = ['(_.SI_E > max_(SI_C, FN_ALL))'
-       ' & approx_eq(SI_C, FN_ALL)'
-       ' & (min_(SI_C, FN_ALL) > _.SI_M)'
-       ' & (_.SI_A != _.SI_E)',
+rule9 = ['(_.SI_E > max_(SI_C, FN_ALL))'
+      ' & approx_eq(SI_C, FN_ALL)'
+      ' & (min_(SI_C, FN_ALL) > _.SI_M)'
+      ' & (_.SI_A != _.SI_E)',
           '未命名异常',
           True]
 
-rule11 = ['(_.SI_M != _.SI_E)'
+rule10 = ['(_.SI_M != _.SI_E)'
        ' & (min_(SI_M, SI_E) > max_(SI_C, SI_A, FN_ALL))'
        ' & approx_eq(SI_C, SI_A, FN_ALL)',
           '未命名异常',
