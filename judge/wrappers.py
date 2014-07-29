@@ -21,19 +21,31 @@ class AbstractWrapper:
             else:
                 return x == y
 
+        def lt(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return x < y and (y - x) > approximate_seconds
+            else:
+                return x < y
+
+        def gt(x, y):
+            if isinstance(x, datetime) and isinstance(y, datetime):
+                return x > y and (x - y) > approximate_seconds
+            else:
+                return x > y
+
         def le(x, y):
             if isinstance(x, datetime) and isinstance(y, datetime):
-                return x < y or eq(x, y)
+                return eq(x, y) or lt(x, y)
             else:
                 return x <= y
 
         def ge(x, y):
             if isinstance(x, datetime) and isinstance(y, datetime):
-                return x > y or eq(x, y)
+                return eq(x, y) or gt(x, y)
             else:
                 return x >= y
 
-        for kw in ['lt', 'gt', 'add', 'sub']:
+        for kw in ['add', 'sub']:
             self.install_binary('__%s__' % kw, getattr_(operator, kw))
         self.install_binary('__and__', operator.and_)
         self.install_binary('__or__', operator.or_)
@@ -41,6 +53,8 @@ class AbstractWrapper:
         self.install_binary('__min__', min)
         self.install_binary('__eq__', eq)
         self.install_binary('__ne__', ne)
+        self.install_binary('__lt__', lt)
+        self.install_binary('__gt__', gt)
         self.install_binary('__le__', le)
         self.install_binary('__ge__', ge)
 
