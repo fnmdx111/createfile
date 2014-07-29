@@ -25,6 +25,10 @@ class NTFSSubWindow(BaseSubWindow):
 
         self.add_figure(figure, label='LSN')
 
+    def plot_timeline(self):
+        self._show_timeline('si_create_time',
+                            True)
+
     def setup_related_buttons(self):
         btn_plot_sne1ct = QPushButton('绘制SN = 1的MFT记录的$SI创建时间图')
         btn_plot_sne1ct.clicked.connect(self.plot_sne1)
@@ -32,11 +36,15 @@ class NTFSSubWindow(BaseSubWindow):
         btn_plot_lsn = QPushButton('绘制LSN从小到大排序的$SI创建时间图')
         btn_plot_lsn.clicked.connect(self.plot_lsn)
 
+        btn_plot_timeline = QPushButton('时间线')
+        btn_plot_timeline.clicked.connect(self.plot_timeline)
+
         group_box = QGroupBox('NTFS分析工具集')
 
         _ = QVBoxLayout()
         _.addWidget(btn_plot_sne1ct)
         _.addWidget(btn_plot_lsn)
+        _.addWidget(btn_plot_timeline)
 
         group_box.setLayout(_)
 
