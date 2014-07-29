@@ -1,11 +1,9 @@
 # encoding: utf-8
-
-rule1 = ['ntfs_mace_congruent()', '新建，下载，解压', False]
+rule1 = ['ntfs_mace_congruent()', '新建（下载）', False]
 
 rule2 = ['ctg_eq(C) & ctg_eq(M)'
-      ' & approx_eq(SI_E, SI_A)'
-      ' & (min_(SI_E, SI_A) > max_(FN_E, FN_A))',
-         '重命名，卷内移动',
+      ' & (_.SI_E > max_(SI_A, FN_E, FN_A))',
+         '重命名（卷内移动）',
          False]
 
 rule3 = ['attr_eq(FN)'
@@ -17,44 +15,45 @@ rule3 = ['attr_eq(FN)'
 rule4 = ['attr_eq(FN)'
       ' & approx_eq(FN_C, SI_C, SI_E, SI_A)'
       ' & (min_(SI_C, SI_E, SI_A, FN_ALL) > _.SI_M)',
-         '复制',
+         '复制（解压）',
          False]
 
-rule5 = ['approx_eq(SI_M, SI_E, SI_A)'
-      ' & (min_(SI_M, SI_E, SI_A) > max_(FN_ALL, SI_C))',
+rule5 = ['approx_eq(SI_M, SI_E)'
+      ' & (min_(SI_M, SI_E) > max_(FN_ALL, SI_C, SI_A))',
          '编辑文件',
          False]
 
-rule6 = ['approx_eq(SI_E, SI_A)'
+rule6 = ['(_.SI_E > _.SI_A)'
       ' & (min_(SI_E, SI_A) > max_(SI_C, FN_ALL))'
-      ' & (_.SI_E != _.SI_M)',
-         '编辑文件的M被修改',
+      ' & (_.SI_E != _.SI_M)'
+      ' & (_.FN_M != _.SI_M)',
+         '编辑文件 M被修改',
          True]
 
 rule7 = ['(_.SI_E > max_(FN_ALL, SI_M))'
       ' & approx_eq(FN_ALL, SI_M)'
       ' & (min_(FN_ALL, SI_M) > _.SI_C)',
-         '重命名文件的C往前改',
+         '重命名文件 C往前改',
          True]
 
 rule8 = ['(_.SI_E > max_(SI_A, FN_ALL))'
       ' & approx_eq(SI_A, FN_ALL)'
       ' & (min_(SI_A, FN_ALL) > _.SI_M)'
       ' & (_.SI_C != _.SI_E)',
-         '复制的文件修改C',
+         '复制文件 c被修改',
          True]
 
 rule9 = ['(_.SI_E > max_(SI_C, FN_ALL))'
       ' & approx_eq(SI_C, FN_ALL)'
       ' & (min_(SI_C, FN_ALL) > _.SI_M)'
       ' & (_.SI_A != _.SI_E)',
-          '复制的文件修改A',
+          '复制文件 A被修改',
           True]
 
 rule10 = ['(_.SI_M != _.SI_E)'
        ' & (min_(SI_M, SI_E) > max_(SI_C, SI_A, FN_ALL))'
        ' & approx_eq(SI_C, SI_A, FN_ALL)',
-          '复制的文件M往后改',
+          '复制文件 M往后改',
           True]
 
 rules = [rule1, rule2, rule3,rule4, rule5, rule6, rule7, rule8, rule9, rule10]
