@@ -30,10 +30,10 @@ class SummaryWidget(QWidget):
 天。{% if conclusion_counter -%}在这些天中有:
 <ul>
 {% for c in conclusion_counter %}
-    {% if rules_category[c] %}
-        {% set color = 'red' %}
-    {% else %}
+    {% if rules_category[c] == False %}
         {% set color = 'green' %}
+    {% else %}
+        {% set color = 'red' %}
     {% endif %}
     <li><b><font color='{{ color }}'>{{ c }}</font></b>共
 {{ conclusion_counter[c] }} 次</li>
