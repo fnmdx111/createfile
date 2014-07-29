@@ -251,7 +251,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             if o.abnormal:
                 if o.id not in visited_files:
                     if o.id == first_entry.id:
-                        e.loc[_, 'abnormal'] = False
+                        pass
                     else:
                         if o.first_cluster < first_entry.first_cluster:
                             e.loc[_, 'deduced_time'] = (
@@ -264,7 +264,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             if o.abnormal:
                 if o.id not in visited_files:
                     if o.id == last_entry.id:
-                        e.loc[_, 'abnormal'] = False
+                        pass
                     else:
                         if last_entry.first_cluster <= o.first_cluster:
                             e.loc[_, 'deduced_time'] = (
