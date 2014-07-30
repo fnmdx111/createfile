@@ -269,19 +269,17 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                     if o.id == last_entry.id:
                         pass
                     else:
-                        if last_entry.first_cluster <= o.first_cluster:
+                        if last_entry.first_cluster < o.first_cluster:
                             e.loc[_, 'deduced_time'] = (
                                 '%s之后' % last_entry[create_time_attr]
                             )
 
                             visited_files.add(o.id)
 
-        class ItIsSimplyNotPossible(BaseException):
-            pass
-
         for _, o in e.iterrows():
             if o.abnormal:
                 if o.id not in visited_files:
+                    closest_entry_left = first_entry
                     closest_entry_right = last_entry
                     for entry in reversed_entries_list:
                         if entry.id == o.id:
@@ -291,8 +289,6 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                             break
                         elif entry.first_cluster >= o.first_cluster:
                             closest_entry_right = entry
-                    else:
-                        raise ItIsSimplyNotPossible
 
                     e.loc[_, 'deduced_time'] = '%s与%s之间' % (
                         closest_entry_left[create_time_attr],

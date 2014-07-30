@@ -76,10 +76,13 @@ class FAT32SubWindow(BaseSubWindow):
                 entries.loc[_, 'abnormal'] = True
                 if o.id in a_fc_id_set:
                     o.abnormal_src.append('簇号分布异常')
+                    o.conclusions.append('簇号分布异常')
                 if o.id in a_tau_id_set:
                     o.abnormal_src.append('tau参数异常')
+                    o.conclusions.append('tau参数异常')
                 if o.id in a_rho_id_set:
                     o.abnormal_src.append('rho参数异常')
+                    o.conclusions.append('rho参数异常')
 
         return entries
 
