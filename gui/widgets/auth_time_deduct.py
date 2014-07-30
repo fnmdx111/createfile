@@ -1,7 +1,7 @@
 # encoding: utf-8
 from PySide.QtGui import *
+
 from ..widgets import ColumnListView
-from stats import windowed
 
 
 class AuthenticTimeDeductionWidget(QWidget):

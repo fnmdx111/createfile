@@ -1,5 +1,6 @@
 # encoding: utf-8
 from PySide.QtGui import *
+
 from drive.fs.fat32 import FAT32
 from drive.fs.ntfs import NTFS
 from .dialogs import LogDialog, PartitionsDialog

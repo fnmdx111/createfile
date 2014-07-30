@@ -9,15 +9,18 @@ from decimal import Decimal
 from functools import reduce
 import os
 from struct import unpack
-from construct import *
 from datetime import datetime
+
+from construct import *
 from pandas import DataFrame
+
 from .. import Partition, EntryMixin
 from .speedup._op import find_cluster_lists
 from drive.keys import *
 from misc import STATE_LFN_ENTRY, STATE_DOS_ENTRY, MAGIC_END_SECTION, \
     clear_cur_obj, time_it, StateManager, STATE_START
 from stream.auxiliary import BufferedClusterStream
+
 
 FAT32BootSector = Struct(k_FAT32BootSector,
     Bytes       (k_jump_instruction, 3),

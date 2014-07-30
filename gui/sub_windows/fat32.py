@@ -1,15 +1,16 @@
 # encoding: utf-8
 from PySide.QtCore import *
 from PySide.QtGui import *
+from stats.speedup.alg import u_tau, u_rho
+import matplotlib.pyplot as plt
+
 from ._base import BaseSubWindow
 from drive.fs.fat32 import first_clusters_of_fat32, \
     last_clusters_of_fat32
 from drive.fs.fat32.plot import plot_fat32
 from stats import plot_windowed_metrics, calc_windowed_metrics
-from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
 from ..misc import boolean_item, filter_empty_cluster_list, new_tool_button
-import matplotlib.pyplot as plt
 
 
 class FAT32SubWindow(BaseSubWindow):

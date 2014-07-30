@@ -6,7 +6,6 @@
     This module implements miscellaneous functions useful for
     :package:`drive.fs.ntfs`.
 """
-from datetime import datetime
 from construct import Const, Bytes
 
 

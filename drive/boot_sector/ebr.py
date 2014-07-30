@@ -6,6 +6,7 @@
     This module implements the discovery of extended partitions.
 """
 import os
+
 from drive.types import register, registry
 from ..keys import *
 from ._boot_sector import boot_sector_template

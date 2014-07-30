@@ -19,7 +19,7 @@
 import mmap
 import struct
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 import types
 import pickle
 

@@ -2,6 +2,7 @@
 
 from PySide.QtGui import *
 from PySide.QtCore import *
+
 from ..misc import ColoredFormatter, LoggerHandler
 
 

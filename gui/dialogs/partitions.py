@@ -1,8 +1,9 @@
 # encoding: utf-8
-import logging
 import os
+
 from PySide.QtCore import *
 from PySide.QtGui import *
+
 from drive.boot_sector.misc import supported_partition_types
 from drive.utils import discover_physical_drives, get_partition_table, \
     get_partition_obj
@@ -11,6 +12,7 @@ from ..misc import AsyncTaskMixin, human_readable, error_box, new_button, \
 from stream import ImageStream, WindowsPhysicalDriveStream
 from ..widgets import ColumnListView
 from drive.keys import *
+
 
 class PartitionsDialog(QDialog, AsyncTaskMixin):
 

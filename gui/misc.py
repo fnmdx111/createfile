@@ -2,6 +2,7 @@
 from datetime import datetime
 from logging import Handler, Formatter, makeLogRecord
 import threading
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 

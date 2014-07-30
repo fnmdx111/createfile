@@ -1,6 +1,8 @@
 # encoding: utf-8
 from datetime import datetime
+
 from PySide.QtGui import *
+
 from ..widgets import ColumnListView
 from drive.fs.fat32 import FAT32
 from drive.fs.ntfs import NTFS

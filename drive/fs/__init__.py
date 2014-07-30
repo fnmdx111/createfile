@@ -6,7 +6,9 @@
     This module implements the abstract class :class:`Partition`.
 """
 import logging
+
 from misc import SimpleCounter
+
 
 counters = {
     'FAT32': SimpleCounter(),

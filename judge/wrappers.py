@@ -1,6 +1,7 @@
 # encoding: utf-8
 from datetime import datetime
 import operator
+
 from .misc import id_, wrapper_func, predicate_od_func, \
     attribute_od_func, getattr_, approximate_seconds
 

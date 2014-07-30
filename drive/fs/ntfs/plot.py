@@ -1,5 +1,6 @@
 # encoding: utf-8
 import matplotlib.pyplot as plt
+
 from judge.ext.sn_eq_1_rule import SNEq1Rule
 
 

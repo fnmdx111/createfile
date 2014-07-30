@@ -1,8 +1,9 @@
 # encoding: utf-8
+import datetime as dt
+
 from .. import Rule
 from . import register
 from drive.fs.fat32 import FAT32
-import datetime as dt
 
 
 @register

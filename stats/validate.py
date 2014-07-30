@@ -7,7 +7,9 @@
     (validation).
 """
 from functools import partial
+
 from .misc import segmented
+
 
 Abnormal = False
 Normal = True

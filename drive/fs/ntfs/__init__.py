@@ -6,9 +6,11 @@
     This module implements the routine functions of creation of NTFS objects.
 """
 import os
+
 from .structs import NTFS
 from drive.keys import *
 from drive.types import register
+
 
 __all__ = ['get_ntfs_obj', 'get_ntfs_partition']
 

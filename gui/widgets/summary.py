@@ -1,7 +1,9 @@
 # encoding: utf-8
 from collections import defaultdict
+
 from PySide.QtGui import *
 import jinja2
+
 from stats import statistical_summary_of
 
 
