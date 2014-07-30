@@ -39,14 +39,16 @@ rule7 = ['(_.SI_E > max_(FN_ALL, SI_M))'
 rule8 = ['(_.SI_E > max_(SI_A, FN_ALL))'
       ' & approx_eq(SI_A, FN_ALL)'
       ' & (min_(SI_A, FN_ALL) > _.SI_M)'
-      ' & (_.SI_C != _.SI_E)',
-         '复制文件 c被修改',
+      ' & (_.SI_C != _.SI_E)'
+      ' & (_.SI_C != _.FN_C)',
+         '复制文件 C被修改',
          True]
 
 rule9 = ['(_.SI_E > max_(SI_C, FN_ALL))'
       ' & approx_eq(SI_C, FN_ALL)'
       ' & (min_(SI_C, FN_ALL) > _.SI_M)'
-      ' & (_.SI_A != _.SI_E)',
+      ' & (_.SI_A != _.SI_E)'
+      ' & (_.SI_A != _.FN_A)',
           '复制文件 A被修改',
           True]
 
