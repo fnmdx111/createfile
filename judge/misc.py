@@ -1,6 +1,5 @@
 # encoding: utf-8
 from datetime import timedelta
-from itertools import combinations
 
 id_ = lambda _: _
 

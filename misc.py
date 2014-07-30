@@ -5,8 +5,6 @@
 
     Miscellaneous functions used by `createfile`.
 """
-import os
-from construct import Construct
 import time
 
 MAGIC_END_SECTION = b'\x55\xaa'

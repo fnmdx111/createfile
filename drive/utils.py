@@ -1,6 +1,8 @@
 # encoding: utf-8
 import os
+
 import pywintypes
+
 from .boot_sector.ebr import get_ext_partition_entries
 from .fs.fat32.structs import FAT32BootSector
 from .fs.ntfs.structs import NTFSBootSector

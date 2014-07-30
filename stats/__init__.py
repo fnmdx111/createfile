@@ -6,16 +6,19 @@
     This module implements the :func:`get_windowed_metrics` function which is
     the only public interface of this package.
 """
-from collections import Counter, defaultdict
-from .misc import windowed, segmented
+from collections import Counter
 import datetime as dt
+
 import numpy as np
+
+from .misc import windowed, segmented
 from .validate import validate_metrics
 from .plot import plot_windowed_metrics
 from drive.fs.fat32 import FAT32
 from drive.fs.ntfs import NTFS
 import judge.built_in.fat32 as jf
 import judge.built_in.ntfs as jn
+
 
 __all__ = ['plot_windowed_metrics',
            'calc_windowed_metrics',

@@ -5,11 +5,12 @@
 
     This module implements the routine functions of creation of FAT32 objects.
 """
+import os
+
 from drive.types import register
 from .structs import FAT32
 from drive.keys import *
-import os
-import matplotlib.pyplot as plt
+
 
 __all__ = ['get_fat32_obj', 'get_fat32_partition']
 

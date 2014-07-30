@@ -8,9 +8,11 @@
 """
 import datetime
 from functools import partial
+
 from construct import Struct, Bytes, String, ULInt16, ULInt8, ULInt64, SLInt8,\
     Magic, Value
 from pandas import DataFrame
+
 from drive.fs import Partition
 from .misc import StrictlyUnused, Unused
 from .indxparse.MFT import MFTEnumerator, FixupBlock

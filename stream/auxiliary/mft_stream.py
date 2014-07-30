@@ -1,5 +1,6 @@
 # encoding: utf-8
 import os
+
 from ..read_only_stream import ReadOnlyStream
 
 

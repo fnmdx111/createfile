@@ -1,6 +1,7 @@
 # encoding: utf-8
 from PySide.QtGui import *
 from PySide.QtCore import *
+
 from ..misc import SortableStandardItemModel
 
 

@@ -3,15 +3,18 @@ import logging
 import time
 import os
 import webbrowser
+
 from PySide.QtGui import *
 from PySide.QtCore import *
 from PySide.QtWebKit import QWebView
 from jinja2 import Environment, PackageLoader
+import matplotlib.pyplot as plt
+
 from ..widgets import FilesWidget, SummaryWidget, FigureWidget, RulesWidget, \
     FAT32SettingsWidget, NTFSSettingsWidget
 from ..misc import AsyncTaskMixin, info_box
 from drive.fs.fat32 import FAT32
-import matplotlib.pyplot as plt
+
 
 class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 

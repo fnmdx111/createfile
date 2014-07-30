@@ -6,6 +6,7 @@
     This module implements the meta struct of the various boot sectors.
 """
 from construct import *
+
 from drive.boot_sector.misc import supported_partition_types
 from ..keys import *
 from misc import MAGIC_END_SECTION

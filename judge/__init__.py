@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+from datetime import datetime as dt, datetime, timedelta as td, timedelta,\
+    date, time
+
 from .dummy import _
 from .utils import max_, min_, approx_eq, ntfs_mace_congruent, ctg_eq, attr_eq,\
     axe, nmc, ce, ate
@@ -9,8 +12,6 @@ from .abbr import _c_, _m_, _a_, _e_, _si_, _fn_, si_e, si_m, si_a, si_c,\
     SI_ALL, FN_ALL, M_ALL, C_ALL, E_ALL, A_ALL
 from .misc import id_
 
-from datetime import datetime as dt, datetime, timedelta as td, timedelta,\
-    date, time
 
 __all__ = ['If', '_',
            'ext', 'max_', 'min_', 'approx_eq', 'axe',

@@ -1,8 +1,10 @@
 # encoding: utf-8
 from collections import OrderedDict
 from itertools import product
+
 from PySide.QtGui import *
 from PySide.QtCore import *
+
 
 class MetricsSettingsWidget(QWidget):
 

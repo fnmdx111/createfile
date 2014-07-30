@@ -8,6 +8,7 @@
 from io import BytesIO
 from itertools import chain
 import os
+
 from stream.read_only_stream import ReadOnlyStream
 
 
