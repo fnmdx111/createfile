@@ -1,7 +1,7 @@
 # encoding: utf-8
 from PySide.QtGui import *
 from ._base import BaseSubWindow
-from drive.fs.ntfs import plot_sne1, plot_lsn
+from drive.fs.ntfs.plot import plot_sne1, plot_lsn
 from ..misc import boolean_item, new_tool_button
 
 
