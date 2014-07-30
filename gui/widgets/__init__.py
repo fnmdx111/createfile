@@ -2,7 +2,6 @@
 
 from .column_list_view import ColumnListView
 from .rules import RulesWidget
-from .auth_time_deduct import AuthenticTimeDeductionWidget
 from .figure import FigureWidget
 from .files import FilesWidget
 from .summary import SummaryWidget
