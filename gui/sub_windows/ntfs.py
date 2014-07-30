@@ -1,9 +1,8 @@
 # encoding: utf-8
-from PySide.QtCore import *
 from PySide.QtGui import *
 from ._base import BaseSubWindow
 from drive.fs.ntfs import plot_sne1, plot_lsn
-from ..misc import boolean_item
+from ..misc import boolean_item, new_tool_button
 
 
 class NTFSSubWindow(BaseSubWindow):
@@ -30,18 +29,18 @@ class NTFSSubWindow(BaseSubWindow):
                             True)
 
     def setup_related_buttons(self):
-        btn_plot_sne1ct = QPushButton('绘制SN = 1的MFT记录的$SI创建时间图')
+        btn_plot_sne1ct = new_tool_button('$SIC图', ':/plot.png')
         btn_plot_sne1ct.clicked.connect(self.plot_sne1)
 
-        btn_plot_lsn = QPushButton('绘制LSN从小到大排序的$SI创建时间图')
+        btn_plot_lsn = new_tool_button('LSN 图', ':/plot.png')
         btn_plot_lsn.clicked.connect(self.plot_lsn)
 
-        btn_plot_timeline = QPushButton('时间线')
+        btn_plot_timeline = new_tool_button('时间线', ':/timeline.png')
         btn_plot_timeline.clicked.connect(self.plot_timeline)
 
         group_box = QGroupBox('NTFS分析工具集')
 
-        _ = QVBoxLayout()
+        _ = QHBoxLayout()
         _.addWidget(btn_plot_sne1ct)
         _.addWidget(btn_plot_lsn)
         _.addWidget(btn_plot_timeline)

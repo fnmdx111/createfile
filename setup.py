@@ -20,6 +20,7 @@ setup(
     description='',
 
     py_modules=['misc', 'bootstrap'],
+    include_package_data=True,
     packages=find_packages(exclude=['test']),
     ext_modules=cythonize(extensions),
 

@@ -1,0 +1,5 @@
+recursive-include gui/sub_windows/templates *.html
+recursive-include gui/sub_windows/static *.*
+recursive-exclude gui/sub_windows/templates r.html
+exclude *.qrc
+prune test

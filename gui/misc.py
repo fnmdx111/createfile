@@ -156,6 +156,16 @@ def new_button(text, slot):
     return btn
 
 
+def new_tool_button(text, icon_rc, size=(32, 32)):
+    _ = QToolButton()
+    _.setIcon(QIcon(icon_rc))
+    _.setIconSize(QSize(*size))
+    _.setText(text)
+    _.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+
+    return _
+
+
 def boolean_item(b):
     _ = QStandardItem()
     _.setCheckState(Qt.Checked if b else Qt.Unchecked)

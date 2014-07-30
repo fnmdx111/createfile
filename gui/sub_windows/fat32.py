@@ -7,7 +7,7 @@ from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
 from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
-from ..misc import boolean_item, filter_empty_cluster_list
+from ..misc import boolean_item, filter_empty_cluster_list, new_tool_button
 import matplotlib.pyplot as plt
 
 
@@ -173,17 +173,18 @@ class FAT32SubWindow(BaseSubWindow):
                             True)
 
     def setup_related_buttons(self):
-        btn_plot_partition = QPushButton('绘制时簇图')
-        btn_plot_metrics = QPushButton('绘制参数图')
-        btn_plot_timeline = QPushButton('时间线')
-
+        btn_plot_partition = new_tool_button('时簇图', ':/plot.png')
         btn_plot_partition.clicked.connect(self.plot_partition)
+
+        btn_plot_metrics = new_tool_button('参数图', ':/plot.png')
         btn_plot_metrics.clicked.connect(self.plot_metrics)
+
+        btn_plot_timeline = new_tool_button('时间线', ':/timeline.png')
         btn_plot_timeline.clicked.connect(self.plot_timeline)
 
         group_box = QGroupBox('FAT32分析工具集')
 
-        _ = QVBoxLayout()
+        _ = QHBoxLayout()
         _.addWidget(btn_plot_partition)
         _.addWidget(btn_plot_metrics)
         _.addWidget(btn_plot_timeline)

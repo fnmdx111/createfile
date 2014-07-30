@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+        <file>static/js/moment.min.js</file>
+        <file>static/js/vis.min.js</file>
+        <file>static/css/vis.min.css</file>
+        <file>static/img/timeline/delete.png</file>
+        <file alias="plot.png">static/img/education20.png</file>
+        <file alias="timeline.png">static/img/calendar130.png</file>
+    </qresource>
+</RCC>
