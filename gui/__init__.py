@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__(parent=None)
 
-        self.setWindowTitle('createfile')
+        self.setWindowTitle('Apollō - 面向数字取证的时间真实性分析工具')
         self.setWindowIcon(QFileIconProvider().icon(QFileIconProvider.Trashcan))
 
         self.mdi_area = QMdiArea()
