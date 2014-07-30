@@ -66,7 +66,7 @@ Minimal dependencies
 * six (library providing compatibility, dependency of various libraries)
 * Cython (optional, used for compiling speed-up modules for various packages)
 
-About 116MB in a 7z archive.
+About 160MB in a 7z archive.
 
 
 Thanks
@@ -83,9 +83,11 @@ Following is a vague benchmark:
 * NTFS: parsing 205052 MFT records on a 678GB external hard drive (total 931GB)
 costs about 21m46s. I.e. about 10k MFT records per minute, about 30GB per minute.
 
+To get a benchmark yourself, check out module `test.benchmark`.
+
 
 Licensing
 ====
 
-Licenced under GNU LGPLv3.
+Licenced under GNU LGPLv3 (perhaps).
 
