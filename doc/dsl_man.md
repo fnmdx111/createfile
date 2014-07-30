@@ -27,7 +27,7 @@
 >
 >     如获取一个时间的日期信息，其对应的DSL表达为`_.xxx_time.date()`，更多方法与属性请参阅Python 3.4手册。
 >
-> *   你也可以在DSL中任意合法的位置创建一个datetime或`datetime.timedelta`对象，构造对象的语法与Python构造对象的语法相同。
+> *   你也可以在DSL中任意合法的位置创建一个datetime、`datetime.timedelta`、`datetime.date`或`datetime.time`对象，构造对象的语法与Python构造对象的语法相同。
 >
 >     如构造一个2秒的timedelta对象，其对应的DSL表达为`timedelta(seconds=2)`。对于datetime和timedelta，本DSL提供了简写形式，分别为`dt`与`td`。
 

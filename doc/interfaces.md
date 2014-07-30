@@ -37,7 +37,7 @@ drive包
 judge包
 ----
 
-为了实现时间规则DSL所表达不出来的语义（如look-ahead、look-behind模式），有Python经验的高级用户可以利用judge提供的二次开发接口，实现扩展的Rule类，以在规则判断中获得Python所提供的表达能力。
+为了实现时间规则DSL所表达不出来的语义（如look-ahead、look-behind模式），或无法描述的动作（如查询在线数据库等），有Python经验的高级用户可以利用judge提供的二次开发接口，扩展Rule类，以在规则判断中获得Python所能提供的表达能力。
 
 为了扩展Rule类，用户需要继承`judge.Rule`类，并重载`Rule.do_apply`方法，新建的模块应放入`judge.ext`包中，并且类需要用`judge.ext.register`装饰，以自动注册到规则表中。
 
