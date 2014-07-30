@@ -448,8 +448,17 @@ class NTFSSettingsWidget(BaseSettingsWidget):
     __sort_keys__.append(('MFT序号', 'id'))
 
     def __init__(self, parent):
+        self.exclude_root_folder = True
+
         super().__init__(parent=parent,
                          sort_keys=OrderedDict(NTFSSettingsWidget.__sort_keys__))
 
     def setup_custom_layout(self, layout):
-        pass
+        layout.addWidget(self.new_checkbox('排除根目录项',
+                                           'exclude_root_folder'))
+
+    def filter(self, entries):
+        if self.exclude_root_folder:
+            entries = entries[entries.full_path != '/']
+
+        return super().filter(entries)
