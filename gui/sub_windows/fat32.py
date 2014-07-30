@@ -2,8 +2,9 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from ._base import BaseSubWindow
-from drive.fs.fat32 import plot_fat32, first_clusters_of_fat32, \
+from drive.fs.fat32 import first_clusters_of_fat32, \
     last_clusters_of_fat32
+from drive.fs.fat32.plot import plot_fat32
 from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.speedup.alg import u_tau, u_rho
 from stats.validate import validate_clusters, validate_metrics
