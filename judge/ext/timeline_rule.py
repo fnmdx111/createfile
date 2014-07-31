@@ -17,7 +17,6 @@ class TimelineRule(Rule):
     def __init__(self):
         super().__init__(None)
 
-
     def do_apply(self, entries):
         entries = entries.sort(columns=['first_cluster'])
         self._pending_return_values(entries)

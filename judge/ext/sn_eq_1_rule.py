@@ -1,6 +1,7 @@
 # encoding: utf-8
 from .. import Rule
 from . import register
+from datetime import timedelta
 from drive.fs.ntfs import NTFS
 
 
@@ -15,15 +16,19 @@ class SNEq1Rule(Rule):
     def __init__(self):
         super().__init__(None)
 
+    @staticmethod
+    def _approx_ct_gt(_1, _2):
+        return _1.si_create_time - _2.si_create_time > timedelta(seconds=2)
+
     def do_apply(self, entries):
         entries = entries[entries.sn == 1].sort(columns=['id'])
         self._pending_return_values(entries)
 
         for i, (_, o) in enumerate(entries.iterrows()):
-            if i == 0 or i == entries.shape[0] - 1:
+            if i == entries.shape[0] - 1:
                 continue
 
-            prev, this, next_ = entries.iloc[i - 1], o, entries.iloc[i + 1]
-            if (this.si_create_time > next_.si_create_time
-             or prev.si_create_time > this.si_create_time):
+            this, next_ = o, entries.iloc[i + 1]
+            if this.si_create_time > next_.si_create_time:
                 self.mark_as_positive(i)
+                self.mark_as_positive(i + 1)
