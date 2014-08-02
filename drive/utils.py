@@ -43,5 +43,8 @@ def get_partition_table(stream):
     stream.seek(0, os.SEEK_SET)
 
 def get_partition_obj(entry, stream, ui_handler=None):
+    if entry[k_partition_type] not in registry:
+        return None
+
     return registry[entry[k_partition_type]](entry, stream,
                                              ui_handler=ui_handler)

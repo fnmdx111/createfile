@@ -226,6 +226,10 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
         self.do_async_task(target, title_before='正在载入分区...')
 
     def _set_current_partition(self, partition, row):
+        if not partition:
+            error_box(self, '你选择了类型未被支持的分区')
+            return
+
         self._current_partition = partition
         self._current_partition_address = (self._stream_type,
                                            self._stream_arg,
