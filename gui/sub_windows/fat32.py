@@ -93,7 +93,7 @@ class FAT32SubWindow(BaseSubWindow):
 
             return plot_windowed_metrics(
                 n, a, l,
-                ['first_cluster'],
+                ['首簇号'],
                 [self.settings.cluster_plot_format],
                 [self.settings.cluster_plot_plot_normal_points],
                 [self.settings.cluster_plot_plot_abnormal_points],

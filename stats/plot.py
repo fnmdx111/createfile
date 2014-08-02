@@ -45,20 +45,20 @@ def plot_windowed_metrics(normal_data, abnormal_data,
                              label=names[-1])[0])
         if pn:
             # plot normal dots
-            names.append('%s - %s' % (n, 'normal'))
+            names.append('%s - %s' % (n, '正常'))
 
             plots.append(ax.plot(vs[1][0], vs[1][1], 'g%s' % fmt[0],
                                  label=names[-1])[0])
         if pa:
             # plot abnormal dots
-            names.append('%s - %s' % (n, 'abnormal'))
+            names.append('%s - %s' % (n, '异常'))
 
             plots.append(ax.plot(vs[2][0], vs[2][1], 'r%s' % fmt[1],
                                  label=names[-1])[0])
 
     ax.legend(plots, names)
 
-    ax.set_xlabel('窗口号')
+    ax.set_xlabel('编号')
     ax.set_ylabel('%s系数' % fn[0])
 
     if show:
