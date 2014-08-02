@@ -9,7 +9,7 @@ from .utils import max_, min_, approx_eq, ntfs_mace_congruent, ctg_eq, attr_eq,\
 from .abbr import _c_, _m_, _a_, _e_, _si_, _fn_, si_e, si_m, si_a, si_c,\
     fn_e, fn_m, fn_a, fn_c, f_c, f_a, f_m, C, M, A, E, SI, FN,\
     SI_E, SI_M, SI_A, SI_C, FN_E, FN_M, FN_A, FN_C, F_C, F_M, F_A,\
-    SI_ALL, FN_ALL, M_ALL, C_ALL, E_ALL, A_ALL
+    SI_ALL, FN_ALL, F_ALL, M_ALL, C_ALL, E_ALL, A_ALL
 from .misc import id_
 
 
@@ -22,7 +22,7 @@ __all__ = ['If', '_',
            'C', 'M', 'A', 'E', 'SI', 'FN',
            'SI_E', 'SI_M', 'SI_A', 'SI_C', 'FN_E', 'FN_M', 'FN_A', 'FN_C',
            'F_C', 'F_A', 'F_M',
-           'SI_ALL', 'FN_ALL', 'M_ALL', 'C_ALL', 'E_ALL', 'A_ALL',
+           'SI_ALL', 'FN_ALL', 'F_ALL', 'M_ALL', 'C_ALL', 'E_ALL', 'A_ALL',
            'dt', 'datetime', 'td', 'timedelta', 'time', 'date']
 
 
