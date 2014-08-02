@@ -1,4 +1,5 @@
 # encoding: utf-8
+import webbrowser
 from PySide.QtGui import *
 
 from drive.fs.fat32 import FAT32
@@ -61,6 +62,14 @@ class MainWindow(QMainWindow):
         tile_windows_action = QAction('平铺窗口(&T)', self)
         tile_windows_action.triggered.connect(self.mdi_area.tileSubWindows)
         window_menu.addAction(tile_windows_action)
+
+        help_menu = self.menuBar().addMenu('帮助(&H)')
+        time_rule_help_action = QAction('时间规则DSL帮助...', self)
+        time_rule_help_action.triggered.connect(self.dsl_help)
+        help_menu.addAction(time_rule_help_action)
+
+    def dsl_help(self):
+        webbrowser.open('dsl_man.html')
 
     def open_partition(self):
         accepted = self.partition_dialog.exec_()
