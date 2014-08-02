@@ -333,6 +333,8 @@ class FAT32SettingsWidget(BaseSettingsWidget):
             'enable_metrics_abnormality_detection')
         )
 
+        self.cb_enable_metrics_abnormality_detection.setVisible(False)
+
         self.tau_settings = MetricsSettingsWidget(
             self, 'tau', "Kendall's tau",
             {'format': 'Dx--',
