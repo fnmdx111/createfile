@@ -177,11 +177,14 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         _1w = QWidget()
         _1w.setLayout(_1)
 
-        _2 = QVBoxLayout(self)
+        _2 = QSplitter()
+        _2.setOrientation(Qt.Vertical)
         _2.addWidget(files_group_box)
         _2.addWidget(rules_group_box)
+        _2l = QVBoxLayout()
+        _2l.addWidget(_2)
         _2w = QWidget()
-        _2w.setLayout(_2)
+        _2w.setLayout(_2l)
 
         _3 = QVBoxLayout(self)
         _3.addWidget(self.figures_widget)
