@@ -11,7 +11,7 @@ class SummaryWidget(QWidget):
 
     template = jinja2.Template(
         '''<p>
-磁盘共有
+分区共有
 {{ abnormal_counter[True] + abnormal_counter[False] }}
 个可用文件项目。{%- if file_type_counter -%}其中<ul>
 {% for suffix in file_type_counter %}
@@ -47,6 +47,8 @@ class SummaryWidget(QWidget):
 
     def __init__(self, parent, partition_type):
         super().__init__(parent=parent)
+
+        self._parent = parent
 
         self.text_browser = QTextBrowser()
         _l = QVBoxLayout()
@@ -90,6 +92,7 @@ class SummaryWidget(QWidget):
 
         (min_st, max_et), dc, ftc, cc, ac, rc = statistical_summary_of(
             self.partition_type,
+            self._parent.rules_widget.rules(),
             entries
         )
 

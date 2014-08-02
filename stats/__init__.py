@@ -16,8 +16,6 @@ from .validate import validate_metrics
 from .plot import plot_windowed_metrics
 from drive.fs.fat32 import FAT32
 from drive.fs.ntfs import NTFS
-import judge.built_in.fat32 as jf
-import judge.built_in.ntfs as jn
 
 
 __all__ = ['plot_windowed_metrics',
@@ -107,7 +105,7 @@ def _ntfs_dtf(row, days_counter):
 
 suffices = {'.exe', '.txt', '.pdf', '.jpg', '.rar', '.doc', '.png'}
 
-def statistical_summary_of(type_, entries):
+def statistical_summary_of(type_, rules, entries):
     dtf = {FAT32.type: _fat32_dtf, NTFS.type: _ntfs_dtf}[type_]
 
     days_counter = Counter()
@@ -115,12 +113,10 @@ def statistical_summary_of(type_, entries):
     conclusion_counter = Counter()
     abnormal_counter = Counter()
 
-    rules_category = dict()
+    rules_category = {}
 
-    for r in jf.rules:
-        rules_category[r[1]] = r[2]
-    for r in jn.rules:
-        rules_category[r[1]] = r[2]
+    for _, r in rules:
+        rules_category[r.conclusion] = r.abnormal
 
     min_st, max_et = dt.datetime.max, dt.datetime.min
     for _, o in entries.iterrows():
