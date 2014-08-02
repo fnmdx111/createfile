@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 
 from judge.ext.sn_eq_1_rule import SNEq1Rule
+from misc import setup_axis_datetime
 
 
 def plot_sne1(entries,
@@ -36,6 +37,8 @@ def plot_sne1(entries,
     ax.set_xlabel('MFT编号')
     ax.set_ylabel(y_attr_name)
 
+    setup_axis_datetime(ax.yaxis)
+
     if show:
         plt.show(figure)
 
@@ -63,6 +66,8 @@ def plot_lsn(entries,
     ax = figure.add_subplot(subplot_n)
 
     ax.plot(xs, ys, 'b^', linestyle='-.', label=y_attr_name)
+
+    setup_axis_datetime(ax.yaxis)
 
     ax.legend()
     ax.set_xlabel('$LogFile序列号')

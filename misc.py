@@ -6,6 +6,7 @@
     Miscellaneous functions used by `createfile`.
 """
 import time
+import matplotlib.dates as mdt
 
 MAGIC_END_SECTION = b'\x55\xaa'
 
@@ -118,3 +119,19 @@ class StateManager:
         """
 
         return self._state == state
+
+
+def setup_axis_datetime(axis):
+    auto_locator = mdt.AutoDateLocator()
+    auto_formatter = mdt.AutoDateFormatter(auto_locator)
+
+    auto_formatter.scaled = {
+        365.0: '%Y',
+        30.: '%Y-%m',
+        1.: '%Y-%m-%d',
+        1. / 24.: '%H:%M:%S',
+        1. / (24. * 60.): '%H:%M:%S.%f'
+    }
+
+    axis.set_major_locator(auto_locator)
+    axis.set_major_formatter(auto_formatter)
