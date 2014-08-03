@@ -135,3 +135,16 @@ def setup_axis_datetime(axis):
 
     axis.set_major_locator(auto_locator)
     axis.set_major_formatter(auto_formatter)
+
+
+class InvalidRecordException(Exception):
+    def __init__(self, msg=''):
+        super(InvalidRecordException, self).__init__(msg)
+        self._msg = msg
+
+    def __str__(self):
+        return "InvalidRecordException(%s)" % (self._msg)
+
+
+class MFTExhausted(BaseException):
+    pass

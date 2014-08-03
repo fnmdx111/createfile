@@ -135,18 +135,30 @@ class NTFS(Partition):
 
     def __iter__(self):
         """Implement iterator protocol for pythonicness."""
+
+        mft_stream = MFTStream(self.stream,
+                               self,
+                               self.abs_lcn2b,
+                               self.mft_abs_pos,
+                               self.bytes_per_mft_record)
         mft_enumerator = MFTEnumerator(self,
-                                       MFTStream(self.stream,
-                                                 self.mft_abs_pos,
-                                                 self.bytes_per_mft_record))
+                                       mft_stream)
         for id_, (record, record_path) in enumerate(
                 mft_enumerator.enumerate_paths()
         ):
             si = record.standard_information()
             fn = record.filename_information()
 
+            if record_path.endswith('$MFT'):
+                mft_stream.set_data_runs(
+                    record.data_attribute().runlist().runs()
+                )
+                continue
+
             if not (record.is_active() or fn):
                 continue
+
+            print(id_ - 1, record_path)
 
             first_cluster = -1
             cluster_list = []
@@ -202,7 +214,7 @@ class NTFS(Partition):
                    first_cluster, cluster_list,
                    '/%s' % record_path,
                    is_directory, is_deleted,
-                   id_)
+                   id_ - 1)
 
 
     def lcn2b(self, lcn):

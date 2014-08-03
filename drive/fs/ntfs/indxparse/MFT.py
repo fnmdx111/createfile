@@ -31,7 +31,8 @@ from .BinaryParser import read_byte
 from .BinaryParser import read_word
 from .BinaryParser import read_dword
 from .misc import Cache
-from stream.auxiliary.mft_stream import MFTExhausted
+
+from misc import InvalidRecordException, MFTExhausted
 
 
 class INDXException(Exception):
@@ -989,13 +990,6 @@ class MFTOperationNotImplementedError(Exception):
         return "MFTOperationNotImplemented(%s)" % (self._msg)
 
 
-class InvalidRecordException(Exception):
-    def __init__(self, msg=''):
-        super(InvalidRecordException, self).__init__(msg)
-        self._msg = msg
-
-    def __str__(self):
-        return "InvalidRecordException(%s)" % (self._msg)
 
 
 class MFTEnumerator(object):
