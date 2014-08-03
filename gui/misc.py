@@ -217,3 +217,76 @@ class SortableStandardItemModel(QStandardItemModel):
                 return item.text()
         else:
             return super().data(idx, role)
+
+
+class FAT32FileModel(QAbstractItemModel):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+
+        self._data = []
+        self.headers = ['编号', '选中', '异常',
+                                     'FDT编号',
+                                     '已删除',
+                                     '路径',
+                                     '首簇号',
+                                     '尾簇号',
+                                     '创建时间',
+                                     '修改时间',
+                                     '访问日期',
+                                     '可用结论',
+                                     '异常报警来源',
+                                     '正确创建时间推测']
+        self.sort_types = [int, bool, bool, int, bool, str, int, int,
+                           datetime, datetime, datetime, str, str, str]
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return self.headers[section]
+
+    def index(self, row, column, parent=QModelIndex()):
+        return self.createIndex(row, column)
+
+    def parent(self, index):
+        return self.createIndex(-1, -1)
+
+    def rowCount(self):
+        return len(self._data)
+
+    def columnCount(self):
+        return 13
+
+    def data(self, idx, role=Qt.DisplayRole):
+        row, col = idx.row(), idx.column()
+        if not idx.isValid() or not 0 <= row < self.rowCount()\
+            or not 0 <= col < self.columnCount():
+            return None
+
+        if role == Qt.DisplayRole:
+            if col in {0, 1, 3}:
+                return str(self._data[row][col])
+            else:
+                return str(self._data[row][col])
+        elif role == Qt.CheckStateRole:
+            if col in {0, 1, 3}:
+                return Qt.Checked if self._data[row][col] else Qt.Unchecked
+            else:
+                return None
+        elif role == SortableStandardItemModel.SortRole:
+            return self.sort_types[col]
+
+    def setData(self, idx, value, role):
+        row, col = idx.row(), idx.column()
+        if not idx.isValid() or not 0 <= row < self.rowCount()\
+            or not 0 <= col < self.columnCount():
+            return None
+
+        if role == Qt.CheckStateRole:
+            self._data[row][col] = value == Qt.Checked
+            return True
+
+        return False
+
+    def clear(self):
+        self.beginRemoveRows(QModelIndex(), 0, len(self._data) - 1)
+        self._data.clear()
+        self.endRemoveRows()

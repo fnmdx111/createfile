@@ -225,7 +225,7 @@ class FAT32SubWindow(BaseSubWindow):
         return _
 
     def gen_file_row_data(self, row):
-        last_cluster = '0'
+        last_cluster = 0
         if len(row.cluster_list) > 0:
             if len(row.cluster_list[-1]) > 0:
                 last_cluster = row.cluster_list[-1][-1]
