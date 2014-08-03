@@ -158,7 +158,7 @@ class NTFS(Partition):
             if not (record.is_active() or fn):
                 continue
 
-            print(id_ - 1, record_path)
+            self.ui_handler(id_, record_path)
 
             first_cluster = -1
             cluster_list = []

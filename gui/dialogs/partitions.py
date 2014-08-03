@@ -43,6 +43,8 @@ class PartitionsDialog(QDialog, AsyncTaskMixin):
 
         self._stream_type, self._stream_arg = '', None
 
+        self.parent_ = kwargs['parent']
+
         self._setup_layout()
         self._setup_connections()
 

@@ -55,9 +55,6 @@ class Partition:
         ))
         self.logger.addHandler(handler)
 
-        if self.ui_handler:
-            self.logger.addHandler(self.ui_handler)
-
     def get_entries(self):
         raise NotImplementedError
 

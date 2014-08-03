@@ -94,7 +94,10 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
             self.entries = self.settings.sort(self.entries)
             _1f = time.time()
 
+            _x = time.time()
+            print('applying rules...')
             self.entries = self.apply_rules(self.entries)
+            _xf = time.time()
 
             _2 = time.time()
             print('generating summary...')
@@ -126,13 +129,14 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                 print('reloading elapsed: %s,\n'
                       'target elapsed:    %s,\n'
                       '_1 elapsed:        %s,\n'
+                      '_x elapsed:        %s,\n'
                       '_2 elapsed:        %s,\n'
                       '_3 elapsed:        %s,\n'
                       '_4 elapsed:        %s,\n'
                       '_5 elapsed:        %s,\n' % (
                     reload_finish_time - reload_start_time,
                     target_finished_time - target_start_time,
-                    _1f - _1, _2f - _2, _3f - _3, _4f - _4, _5f - _5
+                    _1f - _1, _xf - _x, _2f - _2, _3f - _3, _4f - _4, _5f - _5
                 ))
 
         def _target():
@@ -144,6 +148,10 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         self.do_async_task(_target,
                            signal_after=self.signal_partition_parsed,
                            title_before='正在读取分区...')
+
+    def ui_handler(self, id_, full_path):
+        # this function runs in other thread
+        self.signal_label_changed.emit('发现 %s' % full_path)
 
     def deduce_abnormal_files(self, entries):
         raise NotImplementedError
@@ -197,10 +205,16 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         self.setCentralWidget(splitter)
 
     def show_files(self, entries):
+        _1 = time.time()
         self.files_widget.clear()
+        _2 = time.time()
+        print('>> clear files widget costs %s' % (_2 - _1))
 
+        _1 = time.time()
         for _, row in entries.iterrows():
             self.files_widget.append(self.gen_file_row_data(row))
+        _2 = time.time()
+        print('>> appending files costs %s' % (_2 - _1))
 
     def gen_file_row_data(self, row):
         raise NotImplementedError

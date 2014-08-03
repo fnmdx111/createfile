@@ -88,6 +88,8 @@ class MainWindow(QMainWindow):
                 sub_window = None
 
             if sub_window:
+                partition.ui_handler = sub_window.ui_handler
+
                 sub_window = self.mdi_area.addSubWindow(sub_window)
                 sub_window.setWindowIcon(
                     QFileIconProvider().icon(QFileIconProvider.Drive)

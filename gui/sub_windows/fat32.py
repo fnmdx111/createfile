@@ -3,6 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from stats.speedup.alg import u_tau, u_rho
 import matplotlib.pyplot as plt
+import time
 
 from ._base import BaseSubWindow
 from drive.fs.fat32 import first_clusters_of_fat32, \
@@ -176,9 +177,17 @@ class FAT32SubWindow(BaseSubWindow):
             if selected:
                 ids.add(int(self.files_widget.model().item(i, 3).text()))
 
+        if not ids:
+            ids = set(self.entries[self.entries.abnormal == True].id.tolist())
+
         def target():
-            return self.deduce_authentic_time(self.entries,
-                                              ids)
+            _1 = time.time()
+            entries = self.deduce_authentic_time(self.entries,
+                                                 ids)
+            _2 = time.time()
+            print('deducing cost %s' % (_2 - _1))
+
+            return entries
 
         self.do_async_task(target,
                            signal_after=self.signal_time_deduced,

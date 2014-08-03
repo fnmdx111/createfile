@@ -558,6 +558,9 @@ class FAT32(Partition):
                         continue
 
                     entries.append(entry.to_tuple())
+
+                    self.ui_handler(self.items_count, entry.full_path)
+
                     create_time_indices.append(entry.create_time)
 
                     if entry.is_directory:

@@ -1,6 +1,7 @@
 # encoding: utf-8
 from PySide.QtGui import *
 from PySide.QtCore import *
+import time
 
 from ..misc import SortableStandardItemModel
 
@@ -17,6 +18,8 @@ class ColumnListView(QTreeView):
 
         self.setUniformRowHeights(True)
 
+        self.parent_ = parent
+
         self.model_ = QStandardItemModel(parent)
         self.setModel(self.model_)
 
@@ -28,6 +31,7 @@ class ColumnListView(QTreeView):
             self.header().setResizeMode(QHeaderView.ResizeToContents)
 
         self.sortable = sortable
+        self.sort_types = sort_types
         if sortable:
             self.setSortingEnabled(True)
 
@@ -76,9 +80,17 @@ class ColumnListView(QTreeView):
         self.model_.setHorizontalHeaderLabels(self.headers_)
 
     def clear(self):
+        _1 = time.time()
         self.model_.clear()
+        _2 = time.time()
+        print('>>>> model clear costs %s' % (_2 - _1))
+
         self.count = 0
+
+        _1 = time.time()
         self.setup_headers()
+        _2 = time.time()
+        print('>>>> headers setup costs %s' % (_2 - _1))
 
     def append(self, items, editable=False, checkable=False):
         def new_item(item, editable=editable, checkable=checkable):
