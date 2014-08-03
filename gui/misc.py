@@ -208,9 +208,11 @@ class SortableStandardItemModel(QStandardItemModel):
             elif sort_type == datetime:
                 text = item.text()
                 if '.' in text:
-                    return datetime.strptime(text, '%Y-%m-%d %H:%M:%S.%f')
+                    return datetime.strptime(text,
+                                             '%Y-%m-%d %H:%M:%S.%f').timestamp()
                 else:
-                    return datetime.strptime(text, '%Y-%m-%d %H:%M:%S')
+                    return datetime.strptime(text,
+                                             '%Y-%m-%d %H:%M:%S').timestamp()
             else:
                 return item.text()
         else:
