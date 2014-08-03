@@ -60,10 +60,10 @@ def plot_fat32(entries,
 
     if plot_average_cluster:
         # there isn't error bar support in prettyplotlib
-        ax.errorbar(x, y, yerr=y_err, fmt='-o', label='avg cluster')
+        ax.errorbar(x, y, yerr=y_err, fmt='-o', label='平均簇号')
     if plot_first_cluster:
         ax.plot(x, y_prime, 'gx',
-                 linestyle='dashed', label='first cluster')
+                 linestyle='dashed', label='首簇号')
     ax.legend()
     ax.set_xlabel('编号')
     ax.set_ylabel('簇号')
