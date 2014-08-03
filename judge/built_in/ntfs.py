@@ -27,13 +27,13 @@ rule6 = ['(_.SI_E > _.SI_A)'
       ' & (min_(SI_E, SI_A) > max_(SI_C, FN_ALL))'
       ' & (_.SI_E != _.SI_M)'
       ' & (_.FN_M != _.SI_M)',
-         '编辑文件 M被修改',
+         '"编辑"文件的修改时间被篡改',
          True]
 
 rule7 = ['(_.SI_E > max_(FN_ALL, SI_M))'
       ' & approx_eq(FN_ALL, SI_M)'
       ' & (min_(FN_ALL, SI_M) > _.SI_C)',
-         '重命名文件 C往前改',
+         '"重命名"文件的创建时间往前改',
          True]
 
 rule8 = ['(_.SI_E > max_(SI_A, FN_ALL))'
@@ -41,7 +41,7 @@ rule8 = ['(_.SI_E > max_(SI_A, FN_ALL))'
       ' & (min_(SI_A, FN_ALL) > _.SI_M)'
       ' & (_.SI_C != _.SI_E)'
       ' & (_.SI_C != _.FN_C)',
-         '复制文件 C被修改',
+         '"复制"文件的创建时间被篡改',
          True]
 
 rule9 = ['(_.SI_E > max_(SI_C, FN_ALL))'
@@ -49,13 +49,13 @@ rule9 = ['(_.SI_E > max_(SI_C, FN_ALL))'
       ' & (min_(SI_C, FN_ALL) > _.SI_M)'
       ' & (_.SI_A != _.SI_E)'
       ' & (_.SI_A != _.FN_A)',
-          '复制文件 A被修改',
+          '"复制"文件的访问时间被篡改',
           True]
 
 rule10 = ['(_.SI_M != _.SI_E)'
        ' & (min_(SI_M, SI_E) > max_(SI_C, SI_A, FN_ALL))'
        ' & approx_eq(SI_C, SI_A, FN_ALL)',
-          '复制文件 M往后改',
+          '"复制"文件的修改时间往后改',
           True]
 
 rules = [rule1, rule2, rule3,rule4, rule5, rule6, rule7, rule8, rule9, rule10]
