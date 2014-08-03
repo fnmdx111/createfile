@@ -177,7 +177,8 @@ class FAT32SubWindow(BaseSubWindow):
                 ids.add(int(self.files_widget.model().item(i, 3).text()))
 
         def target():
-            return self.deduce_authentic_time(self.entries, ids)
+            return self.deduce_authentic_time(self.entries,
+                                              ids)
 
         self.do_async_task(target,
                            signal_after=self.signal_time_deduced,

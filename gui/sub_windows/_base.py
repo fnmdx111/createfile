@@ -75,8 +75,6 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
         self.abnormal_files = set()
 
-        self.reload()
-
     def reload(self):
         reload_start_time = time.time()
 
@@ -246,8 +244,23 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
     @staticmethod
     def _deduce_authentic_time(e, create_time_attr, ids):
         entries = e.sort(columns=['first_cluster'])
-        reversed_entries_list = reversed(list(map(lambda _: _[1],
-                                                  entries.iterrows())))
+
+        fc_order_mapping = list(map(lambda x: x[1].first_cluster,
+                                    entries.iterrows()))
+
+        def _bin_search(fc):
+            min_, max_ = 0, len(fc_order_mapping) - 1
+            while min_ <= max_:
+                mid = (min_ + max_) // 2
+                f_mid = fc_order_mapping[mid]
+                if f_mid == fc:
+                    return mid
+                elif f_mid < fc:
+                    min_ = mid + 1
+                else:
+                    max_ = mid - 1
+
+            return max_
 
         visited_files = set()
 
@@ -282,23 +295,25 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         for _, o in e.iterrows():
             if o.id in ids and o.abnormal:
                 if o.id not in visited_files:
-                    closest_entry_left = first_entry
-                    closest_entry_right = last_entry
-                    for entry in reversed_entries_list:
-                        if entry.id == o.id:
-                            continue
-                        if entry.first_cluster <= o.first_cluster:
-                            closest_entry_left = entry
-                            break
-                        elif entry.first_cluster >= o.first_cluster:
-                            closest_entry_right = entry
+                    closest_entry_left_i = _bin_search(o.first_cluster)
+                    if (entries.iloc[closest_entry_left_i].first_cluster ==
+                        o.first_cluster):
+                        closest_entry_left_i -= 1
 
-                    e.loc[_, 'deduced_time'] = '%s与%s之间' % (
-                        closest_entry_left[create_time_attr],
-                        closest_entry_right[create_time_attr]
-                    )
-
-                    visited_files.add(o.id)
+                    if 0 <= closest_entry_left_i < len(fc_order_mapping):
+                        closest_entry_left = entries.iloc[closest_entry_left_i]
+                        closest_entry_right =\
+                            entries.iloc[closest_entry_left_i + 1]
+                        if (closest_entry_left.first_cluster <= o.first_cluster
+                            <= closest_entry_right.first_cluster):
+                            e.loc[_, 'deduced_time'] = '%s与%s之间' % (
+                                closest_entry_left[create_time_attr],
+                                closest_entry_right[create_time_attr]
+                            )
+                            visited_files.add(o.id)
+                        else:
+                            # it's a binary search failure
+                            raise ValueError('binary search failed')
 
         return e
 

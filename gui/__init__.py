@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
                     QFileIconProvider().icon(QFileIconProvider.Drive)
                 )
                 sub_window.show()
+                sub_window.widget().reload()
 
     def update_actions(self, sub_window):
         pass
