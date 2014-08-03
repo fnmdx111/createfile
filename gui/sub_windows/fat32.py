@@ -74,6 +74,8 @@ class FAT32SubWindow(BaseSubWindow):
                 o.conclusions.append('簇号分布异常')
                 entries.loc[_, 'abnormal'] = True
 
+        return entries
+
     def plot_first_clusters_metrics(self):
         figure = plt.figure()
         def target():
