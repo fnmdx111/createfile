@@ -329,11 +329,9 @@ class FAT32SettingsWidget(BaseSettingsWidget):
         layout.addWidget(self.new_checkbox('绘制平均簇号折线',
                                            'plot_avg_cluster'))
         layout.addWidget(self.new_checkbox(
-            '启用参数异常报警',
+            '启用簇分布异常报警',
             'enable_metrics_abnormality_detection')
         )
-
-        self.cb_enable_metrics_abnormality_detection.setVisible(False)
 
         self.tau_settings = MetricsSettingsWidget(
             self, 'tau', "Kendall's tau",

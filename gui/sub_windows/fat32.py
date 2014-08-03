@@ -58,6 +58,9 @@ class FAT32SubWindow(BaseSubWindow):
         )
 
     def deduce_abnormal_files(self, entries):
+        if not self.settings.enable_metrics_abnormality_detection:
+            return entries
+
         extract_ids = lambda s: entries.iloc[s[0][0]].id.tolist()
 
         _, a_fc, _ = self.validate_first_clusters_with_settings()
@@ -69,31 +72,6 @@ class FAT32SubWindow(BaseSubWindow):
                 o.abnormal_src.append('簇号分布异常')
                 o.conclusions.append('簇号分布异常')
                 entries.loc[_, 'abnormal'] = True
-
-        if not self.settings.enable_metrics_abnormality_detection:
-            return entries
-
-        _, a_tau, _ = self.validate_metrics_with_settings('tau')
-        _, a_rho, _ = self.validate_metrics_with_settings('rho')
-
-        a_tau_id_set, a_rho_id_set = [], []
-
-        if a_tau[0][0]:
-            a_tau_id_set = extract_ids(a_tau)
-
-        if a_rho[0][0]:
-            a_rho_id_set = extract_ids(a_rho)
-
-        for _, o in entries.iterrows():
-            entries.loc[_, 'abnormal'] = True
-            if o.id in a_tau_id_set:
-                o.abnormal_src.append('tau参数异常')
-                o.conclusions.append('tau参数异常')
-            elif o.id in a_rho_id_set:
-                o.abnormal_src.append('rho参数异常')
-                o.conclusions.append('rho参数异常')
-
-        return entries
 
     def plot_first_clusters_metrics(self):
         figure = plt.figure()
