@@ -23,6 +23,7 @@ class FAT32SubWindow(BaseSubWindow):
         self.rules_widget.inflate_with_fat32_rules()
 
         self.signal_plot_prepared.connect(lambda ret: self.add_figure(*ret))
+        self.signal_time_deduced.connect(lambda e: self.show_files(e))
 
     def plot_partition(self):
         figure = plot_fat32(filter_empty_cluster_list(self.entries),
@@ -164,15 +165,37 @@ class FAT32SubWindow(BaseSubWindow):
         self._show_timeline('create_time',
                             True)
 
+    signal_time_deduced = Signal(object)
+    def do_authentic_time_deduction(self):
+        ids = set()
+        for i in range(self.files_widget.model().rowCount()):
+            selected = (self.files_widget.model().item(i, 1).checkState()
+                        == Qt.Checked)
+            if selected:
+                ids.add(int(self.files_widget.model().item(i, 3).text()))
+
+        def target():
+            return self.deduce_authentic_time(self.entries, ids)
+
+        self.do_async_task(target,
+                           signal_after=self.signal_time_deduced,
+                           title_before='正在推测正确时间...')
+
     def setup_related_buttons(self):
-        btn_plot_partition = new_tool_button('时簇图', ':/plot.png')
+        btn_plot_partition = new_tool_button('时 簇 图', ':/plot.png')
         btn_plot_partition.clicked.connect(self.plot_partition)
 
-        btn_plot_metrics = new_tool_button('参数图', ':/plot.png')
+        btn_plot_metrics = new_tool_button('参 数 图', ':/plot.png')
         btn_plot_metrics.clicked.connect(self.plot_metrics)
 
-        btn_plot_timeline = new_tool_button('时间线', ':/timeline.png')
+        btn_plot_timeline = new_tool_button('时 间 线', ':/timeline.png')
         btn_plot_timeline.clicked.connect(self.plot_timeline)
+
+        btn_deduce_authentic_time = new_tool_button('时间推测',
+                                                    ':/timeline.png')
+        btn_deduce_authentic_time.clicked.connect(
+            self.do_authentic_time_deduction
+        )
 
         group_box = QGroupBox('FAT32分析工具集')
 
@@ -180,6 +203,7 @@ class FAT32SubWindow(BaseSubWindow):
         _.addWidget(btn_plot_partition)
         _.addWidget(btn_plot_metrics)
         _.addWidget(btn_plot_timeline)
+        _.addWidget(btn_deduce_authentic_time)
 
         group_box.setLayout(_)
 
@@ -194,7 +218,7 @@ class FAT32SubWindow(BaseSubWindow):
             if len(row.cluster_list[-1]) > 0:
                 last_cluster = row.cluster_list[-1][-1]
 
-        return [boolean_item(row.abnormal),
+        return [boolean_item(False, checkable=True), boolean_item(row.abnormal),
                 row.id,
                 boolean_item(row.is_deleted),
                 row.full_path, row.first_cluster, last_cluster,
@@ -203,5 +227,5 @@ class FAT32SubWindow(BaseSubWindow):
                 row.abnormal_src if 'abnormal_src' in row else '',
                 row.deduced_time if 'deduced_time' in row else '']
 
-    def deduce_authentic_time(self, entries):
-        return self._deduce_authentic_time(entries, 'create_time')
+    def deduce_authentic_time(self, entries, ids):
+        return self._deduce_authentic_time(entries, 'create_time', ids)

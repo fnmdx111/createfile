@@ -23,12 +23,15 @@ class FilesWidget(QDialog):
         _l.addWidget(self._clv)
         self.setLayout(_l)
 
+    def model(self):
+        return self._clv.model_
+
     def append(self, *args, **kwargs):
         self._clv.append(*args, **kwargs)
 
     def setup_headers_by(self, type_):
         if type_ == FAT32.type:
-            self._clv.setup_headers(['异常',
+            self._clv.setup_headers(['选中', '异常',
                                      'FDT编号',
                                      '已删除',
                                      '路径',
@@ -41,7 +44,7 @@ class FilesWidget(QDialog):
                                      '异常报警来源',
                                      '正确创建时间推测'],
                                     size_hints=[0, 1, 3],
-                                    sort_types=[bool,
+                                    sort_types=[bool, bool,
                                                 int, bool,
                                                 str,
                                                 int, int,

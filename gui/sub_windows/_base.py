@@ -111,7 +111,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
             _4 = time.time()
             print('deducing authentic time...')
-            self.entries = self.deduce_authentic_time(self.entries)
+            # self.entries = self.deduce_authentic_time(self.entries)
             _4f = time.time()
 
             _5 = time.time()
@@ -240,21 +240,21 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
 
         return entries
 
-    def deduce_authentic_time(self, entries):
+    def deduce_authentic_time(self, entries, ids):
         raise NotImplementedError
 
     @staticmethod
-    def _deduce_authentic_time(e, create_time_attr):
+    def _deduce_authentic_time(e, create_time_attr, ids):
         entries = e.sort(columns=['first_cluster'])
-        reversed_entries_list = list(reversed(list(map(lambda _: _[1],
-                                                       entries.iterrows()))))
+        reversed_entries_list = reversed(list(map(lambda _: _[1],
+                                                  entries.iterrows())))
 
         visited_files = set()
 
         first_entry, last_entry = entries.iloc[0], entries.iloc[-1]
 
         for _, o in e.iterrows():
-            if o.abnormal:
+            if o.id in ids and o.abnormal:
                 if o.id not in visited_files:
                     if o.id == first_entry.id:
                         pass
@@ -267,7 +267,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                             visited_files.add(o.id)
 
         for _, o in e.iterrows():
-            if o.abnormal:
+            if o.id in ids and o.abnormal:
                 if o.id not in visited_files:
                     if o.id == last_entry.id:
                         pass
@@ -280,7 +280,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                             visited_files.add(o.id)
 
         for _, o in e.iterrows():
-            if o.abnormal:
+            if o.id in ids and o.abnormal:
                 if o.id not in visited_files:
                     closest_entry_left = first_entry
                     closest_entry_right = last_entry

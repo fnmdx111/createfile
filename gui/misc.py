@@ -167,10 +167,10 @@ def new_tool_button(text, icon_rc, size=(32, 32)):
     return _
 
 
-def boolean_item(b):
+def boolean_item(b, checkable=False):
     _ = QStandardItem()
     _.setCheckState(Qt.Checked if b else Qt.Unchecked)
-    _.setCheckable(False)
+    _.setCheckable(checkable)
     _.setEditable(False)
 
     return _
