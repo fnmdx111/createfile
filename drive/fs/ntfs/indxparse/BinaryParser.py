@@ -22,6 +22,7 @@ import sys
 from datetime import datetime
 import types
 import pickle
+from .misc import parse_error_datetime_stub
 
 verbose = False
 
@@ -266,7 +267,10 @@ _local_time_delta = (datetime(year=1970, month=1, day=1) -
                      datetime(year=1601, month=1, day=1)).total_seconds()
 def parse_filetime(qword):
     # see http://integriography.wordpress.com/2010/01/16/using-python-to-parse-and-present-windows-64-bit-timestamps/
-    return datetime.fromtimestamp(qword / 10000000 - _local_time_delta)
+    try:
+        return datetime.fromtimestamp(qword / 10000000 - _local_time_delta)
+    except OSError:
+        return parse_error_datetime_stub
 
 
 class BinaryParserException(Exception):

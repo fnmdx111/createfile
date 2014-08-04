@@ -10,6 +10,7 @@ from collections import Counter
 import datetime as dt
 
 import numpy as np
+from drive.fs.ntfs.indxparse.misc import parse_error_datetime_stub
 
 from .misc import windowed, segmented
 from .validate import validate_metrics
@@ -86,6 +87,9 @@ def calc_windowed_metrics(fs, entries,
 
 def _dtf(row, attrs, days_counter):
     for t in map(lambda a: row[a], attrs):
+        if t is parse_error_datetime_stub:
+            continue
+
         days_counter[t.date()] += 1
 
         yield t

@@ -1,6 +1,9 @@
 # encoding: utf-8
 from collections import OrderedDict
+from datetime import datetime
 
+
+parse_error_datetime_stub = datetime(year=1734, month=2, day=13)
 
 class Cache:
     def __init__(self, size):

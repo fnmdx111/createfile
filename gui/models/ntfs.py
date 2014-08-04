@@ -4,6 +4,7 @@
 from datetime import datetime
 from PySide.QtCore import *
 from ._base import BaseFileModel
+from drive.fs.ntfs.indxparse.misc import parse_error_datetime_stub
 from .misc import long_int, long_str, extra_long_str
 
 from ..misc import SortableStandardItemModel, DataRole
@@ -36,6 +37,8 @@ class NTFSFileModel(BaseFileModel):
                              datetime, datetime, datetime, datetime,
                              str, str]
 
+        self.datetime_columns = {8, 9, 10, 11, 12, 13, 14, 15}
+
         self.checkbox_columns = {1, 3}
 
     def flags(self, idx):
@@ -60,6 +63,12 @@ class NTFSFileModel(BaseFileModel):
         if role == Qt.DisplayRole:
             if col in self.checkbox_columns:
                 return None
+            elif col in self.datetime_columns:
+                dt = self._data[row][col]
+                if dt is parse_error_datetime_stub:
+                    return '时间解析错误'
+                else:
+                    return str(dt)
             else:
                 return str(self._data[row][col])
         elif role == Qt.CheckStateRole:
