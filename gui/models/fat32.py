@@ -2,6 +2,7 @@
 from datetime import datetime
 from PySide.QtCore import *
 from ._base import BaseFileModel
+from .misc import long_str, long_int, extra_long_str
 
 from ..misc import SortableStandardItemModel, DataRole
 
@@ -12,7 +13,7 @@ class FAT32FileModel(BaseFileModel):
         self._data = []
         self.headers = ['编号', '选中', '异常',
                         'FDT编号',
-                        '已删除',
+                        '删除',
                         '路径',
                         '首簇号',
                         '尾簇号',
@@ -22,6 +23,14 @@ class FAT32FileModel(BaseFileModel):
                         '可用结论',
                         '异常报警来源',
                         '正确创建时间推测']
+        self.header_types = [int,
+                             bool, bool,
+                             int,
+                             bool,
+                             long_str,
+                             long_int, long_int,
+                             datetime, datetime, datetime,
+                             str, str, extra_long_str]
 
         self.checkbox_columns = {1, 2, 4}
 

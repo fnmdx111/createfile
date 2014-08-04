@@ -220,4 +220,3 @@ class SortableStandardItemModel(QStandardItemModel):
 
 
 DataRole = Qt.UserRole + 1
-

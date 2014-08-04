@@ -8,6 +8,7 @@ class BaseFileModel(QAbstractItemModel):
 
         self._data = []
         self.headers = []
+        self.header_types = []
 
         self.checkbox_columns = set()
 

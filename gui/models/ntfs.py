@@ -4,6 +4,7 @@
 from datetime import datetime
 from PySide.QtCore import *
 from ._base import BaseFileModel
+from .misc import long_int, long_str, extra_long_str
 
 from ..misc import SortableStandardItemModel, DataRole
 
@@ -29,6 +30,11 @@ class NTFSFileModel(BaseFileModel):
                         '$FN MFT修改时间',
                         '可用结论',
                         '异常报警来源']
+        self.header_types = [int, bool, int, bool,
+                             long_str, long_int, int, long_int,
+                             datetime, datetime, datetime, datetime,
+                             datetime, datetime, datetime, datetime,
+                             str, str]
 
         self.checkbox_columns = {1, 3}
 
