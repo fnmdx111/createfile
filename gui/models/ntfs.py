@@ -29,17 +29,8 @@ class NTFSFileModel(BaseFileModel):
                         '$FN MFT修改时间',
                         '可用结论',
                         '异常报警来源']
-        self.sort_types = [bool, int, bool, str,
-                           int, int, int,
-                           datetime, datetime,
-                           datetime, datetime,
-                           datetime, datetime,
-                           datetime, datetime,
-                           str, str, str]
 
-    def columnCount(self, parent=None):
-        return 18
-
+        self.checkbox_columns = {1, 3}
 
     def flags(self, idx):
         row, col = idx.row(), idx.column()
@@ -61,12 +52,12 @@ class NTFSFileModel(BaseFileModel):
             return None
 
         if role == Qt.DisplayRole:
-            if col in {1, 3}:
+            if col in self.checkbox_columns:
                 return None
             else:
                 return str(self._data[row][col])
         elif role == Qt.CheckStateRole:
-            if col in {1, 3}:
+            if col in self.checkbox_columns:
                 return Qt.Checked if self._data[row][col] else Qt.Unchecked
             else:
                 return None

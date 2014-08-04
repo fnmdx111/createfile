@@ -14,10 +14,7 @@ class FileListView(QTreeView):
         self.parent_ = parent
 
         self.setSortingEnabled(True)
-        # self.proxy = QSortFilterProxyModel(parent)
-        # self.proxy.setSortRole(SortableStandardItemModel.SortRole)
-        # self.proxy.setSourceModel(self.model_)
-        # self.setModel(self.proxy)
+
         self.setModel(self.model_)
 
         self.setItemsExpandable(False)

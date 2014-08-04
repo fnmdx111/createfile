@@ -22,11 +22,8 @@ class FAT32FileModel(BaseFileModel):
                         '可用结论',
                         '异常报警来源',
                         '正确创建时间推测']
-        self.sort_types = [int, bool, bool, int, bool, str, int, int,
-                           datetime, datetime, datetime, str, str, str]
 
-    def columnCount(self, parent=None):
-        return 14
+        self.checkbox_columns = {1, 2, 4}
 
     def flags(self, idx):
         row, col = idx.row(), idx.column()
@@ -50,12 +47,12 @@ class FAT32FileModel(BaseFileModel):
             return None
 
         if role == Qt.DisplayRole:
-            if col in {1, 2, 4}:
+            if col in self.checkbox_columns:
                 return None
             else:
                 return str(self._data[row][col])
         elif role == Qt.CheckStateRole:
-            if col in {1, 2, 4}:
+            if col in self.checkbox_columns:
                 return Qt.Checked if self._data[row][col] else Qt.Unchecked
             else:
                 return None

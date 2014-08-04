@@ -8,7 +8,11 @@ class BaseFileModel(QAbstractItemModel):
 
         self._data = []
         self.headers = []
-        self.sort_types = []
+
+        self.checkbox_columns = set()
+
+    def columnCount(self, parent=None):
+        return len(self.headers)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
