@@ -202,6 +202,8 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         splitter.addWidget(_2w)
         splitter.addWidget(_3w)
 
+        splitter.setSizes([1, 500, 1])
+
         self.setCentralWidget(splitter)
 
     def show_files(self, entries):
