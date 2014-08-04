@@ -1,80 +1,30 @@
 # encoding: utf-8
-from datetime import datetime
-
 from PySide.QtGui import *
 
-from ..widgets import ColumnListView
+from . import FileListView
+from ..models import FAT32FileModel, NTFSFileModel
 from drive.fs.fat32 import FAT32
-from drive.fs.ntfs import NTFS
+
 
 
 class FilesWidget(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, partition_type):
         super().__init__(parent=parent)
 
-        self._clv = ColumnListView(['路径'],
-                                   self,
-                                   headers_fit_content=False,
-                                   order_column=True,
-                                   sortable=True)
-        self.setup_headers_by(self.parent().partition.type)
+        if partition_type == FAT32.type:
+            self._flv = FileListView(self, FAT32FileModel(self))
+        else:
+            self._flv = FileListView(self, NTFSFileModel(self))
 
         _l = QVBoxLayout()
-        _l.addWidget(self._clv)
+        _l.addWidget(self._flv)
         self.setLayout(_l)
 
     def model(self):
-        return self._clv.model_
+        return self._flv.model_
 
     def append(self, *args, **kwargs):
-        self._clv.append(*args, **kwargs)
-
-    def setup_headers_by(self, type_):
-        if type_ == FAT32.type:
-            self._clv.setup_headers(['选中', '异常',
-                                     'FDT编号',
-                                     '已删除',
-                                     '路径',
-                                     '首簇号',
-                                     '尾簇号',
-                                     '创建时间',
-                                     '修改时间',
-                                     '访问日期',
-                                     '可用结论',
-                                     '异常报警来源',
-                                     '正确创建时间推测'],
-                                    size_hints=[0, 1, 3],
-                                    sort_types=[bool, bool,
-                                                int, bool,
-                                                str,
-                                                int, int,
-                                                datetime, datetime, datetime,
-                                                str, str, str])
-        elif type_ == NTFS.type:
-            self._clv.setup_headers(['异常',
-                                     'MFT记录编号',
-                                     '活动',
-                                     '路径',
-                                     'LSN',
-                                     'SN',
-                                     '首LCN',
-                                     '$SI 创建时间',
-                                     '$SI 修改时间',
-                                     '$SI 访问时间',
-                                     '$SI MFT修改时间',
-                                     '$FN 创建时间',
-                                     '$FN 修改时间',
-                                     '$FN 访问时间',
-                                     '$FN MFT修改时间',
-                                     '可用结论',
-                                     '异常报警来源'],
-                                    sort_types=[bool, int, bool, str,
-                                                int, int, int,
-                                                datetime, datetime,
-                                                datetime, datetime,
-                                                datetime, datetime,
-                                                datetime, datetime,
-                                                str, str, str])
+        self._flv.append(*args, **kwargs)
 
     def clear(self):
-        self._clv.clear()
+        self._flv.clear()

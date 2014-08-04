@@ -7,7 +7,7 @@ from ..misc import SortableStandardItemModel
 
 
 class ColumnListView(QTreeView):
-    def __init__(self, headers, parent,
+    def __init__(self, headers, parent, model=None,
                  order_column=False,
                  headers_fit_content=False,
                  sortable=False,
@@ -19,9 +19,6 @@ class ColumnListView(QTreeView):
         self.setUniformRowHeights(True)
 
         self.parent_ = parent
-
-        self.model_ = QStandardItemModel(parent)
-        self.setModel(self.model_)
 
         self.setItemsExpandable(False)
         self.setRootIsDecorated(False)
@@ -35,7 +32,7 @@ class ColumnListView(QTreeView):
         if sortable:
             self.setSortingEnabled(True)
 
-            self.model_ = SortableStandardItemModel(parent, sort_types)
+            self.model_ = model or SortableStandardItemModel(parent, sort_types)
 
             self.sort_types = sort_types
 
@@ -47,14 +44,17 @@ class ColumnListView(QTreeView):
         else:
             self.proxy = None
 
-            self.model_ = QStandardItemModel(parent)
+            self.model_ = model or QStandardItemModel(parent)
 
             self.setModel(self.model_)
 
         self.order_column = order_column
         self.count = 0
 
-        self.setup_headers()
+        self.do_not_setup_headers = True
+        if not model:
+            self.do_not_setup_headers = False
+            self.setup_headers()
 
     def setup_headers(self, headers=None, size_hints=(), sort_types=None):
         self.headers_ = headers or self.headers_
@@ -87,12 +87,20 @@ class ColumnListView(QTreeView):
 
         self.count = 0
 
+        if self.do_not_setup_headers:
+            return
+
         _1 = time.time()
         self.setup_headers()
         _2 = time.time()
         print('>>>> headers setup costs %s' % (_2 - _1))
 
     def append(self, items, editable=False, checkable=False):
+        if self.do_not_setup_headers:
+            self.model_.appendRow(items)
+
+            return
+
         def new_item(item, editable=editable, checkable=checkable):
             if isinstance(item, QStandardItem):
                 return item

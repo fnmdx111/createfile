@@ -34,7 +34,7 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         self.partition_address = partition_address
 
         self.summary_widget = SummaryWidget(self, self.partition.type)
-        self.files_widget = FilesWidget(self)
+        self.files_widget = FilesWidget(self, partition.type)
         self.rules_widget = RulesWidget(self)
 
         self.figures_widget = QTabWidget(self)
@@ -211,12 +211,12 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
         print('>> clear files widget costs %s' % (_2 - _1))
 
         _1 = time.time()
-        for _, row in entries.iterrows():
-            self.files_widget.append(self.gen_file_row_data(row))
+        for i, (_, row) in enumerate(entries.iterrows()):
+            self.files_widget.append(self.gen_file_row_data(row, i))
         _2 = time.time()
         print('>> appending files costs %s' % (_2 - _1))
 
-    def gen_file_row_data(self, row):
+    def gen_file_row_data(self, row, count):
         raise NotImplementedError
 
     def apply_rules(self, entries):

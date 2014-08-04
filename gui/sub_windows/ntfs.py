@@ -3,7 +3,7 @@ from PySide.QtGui import *
 
 from ._base import BaseSubWindow
 from drive.fs.ntfs.plot import plot_sne1, plot_lsn
-from ..misc import boolean_item, new_tool_button
+from ..misc import new_tool_button
 
 
 class NTFSSubWindow(BaseSubWindow):
@@ -56,10 +56,10 @@ class NTFSSubWindow(BaseSubWindow):
     def deduce_authentic_time(self, entries):
         return entries
 
-    def gen_file_row_data(self, row):
-        return [boolean_item(row.abnormal),
+    def gen_file_row_data(self, row, count):
+        return [count, row.abnormal,
                 row.id,
-                boolean_item(not row.is_deleted),
+                not row.is_deleted,
                 row.full_path,
                 row.lsn, row.sn,
                 row.first_cluster,

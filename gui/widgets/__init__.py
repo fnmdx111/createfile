@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 from .column_list_view import ColumnListView
+from .file_list_view import FileListView
 from .rules import RulesWidget
 from .figure import FigureWidget
 from .files import FilesWidget
@@ -11,4 +12,5 @@ __all__ = ['ColumnListView', 'RulesWidget',
            'AuthenticTimeDeductionWidget',
            'FigureWidget', 'FilesWidget',
            'SummaryWidget',
-           'FAT32SettingsWidget', 'NTFSSettingsWidget']
+           'FAT32SettingsWidget', 'NTFSSettingsWidget',
+           'FileListView']

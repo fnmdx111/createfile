@@ -11,7 +11,7 @@ from drive.fs.fat32 import first_clusters_of_fat32, \
 from drive.fs.fat32.plot import plot_fat32
 from stats import plot_windowed_metrics, calc_windowed_metrics
 from stats.validate import validate_clusters, validate_metrics
-from ..misc import boolean_item, filter_empty_cluster_list, new_tool_button
+from ..misc import filter_empty_cluster_list, new_tool_button, DataRole
 
 
 class FAT32SubWindow(BaseSubWindow):
@@ -172,10 +172,11 @@ class FAT32SubWindow(BaseSubWindow):
     def do_authentic_time_deduction(self):
         ids = set()
         for i in range(self.files_widget.model().rowCount()):
-            selected = (self.files_widget.model().item(i, 1).checkState()
-                        == Qt.Checked)
+            idx = self.files_widget.model().createIndex(i, 1)
+            selected = self.files_widget.model().data(idx, role=DataRole)
             if selected:
-                ids.add(int(self.files_widget.model().item(i, 3).text()))
+                idx = self.files_widget.model().createIndex(i, 3)
+                ids.add(self.files_widget.model().data(idx, role=DataRole))
 
         if not ids:
             ids = set(self.entries[self.entries.abnormal == True].id.tolist())
@@ -224,19 +225,19 @@ class FAT32SubWindow(BaseSubWindow):
 
         return _
 
-    def gen_file_row_data(self, row):
+    def gen_file_row_data(self, row, count):
         last_cluster = 0
         if len(row.cluster_list) > 0:
             if len(row.cluster_list[-1]) > 0:
                 last_cluster = row.cluster_list[-1][-1]
 
-        return [boolean_item(False, checkable=True), boolean_item(row.abnormal),
+        return [count, False, row.abnormal,
                 row.id,
-                boolean_item(row.is_deleted),
+                row.is_deleted,
                 row.full_path, row.first_cluster, last_cluster,
                 row.create_time, row.modify_time, row.access_date,
                 row.conclusions,
-                row.abnormal_src if 'abnormal_src' in row else '',
+                row.abnormal_src if 'abnormal_src' in row else [],
                 row.deduced_time if 'deduced_time' in row else '']
 
     def deduce_authentic_time(self, entries, ids):
