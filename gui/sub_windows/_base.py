@@ -322,9 +322,11 @@ class BaseSubWindow(QMainWindow, AsyncTaskMixin):
                             entries.iloc[closest_entry_left_i + 1]
                         if (closest_entry_left.first_cluster <= o.first_cluster
                             <= closest_entry_right.first_cluster):
+                            ts = closest_entry_left[create_time_attr], closest_entry_right[create_time_attr]
+
                             e.loc[_, 'deduced_time'] = '%s与%s之间' % (
-                                closest_entry_left[create_time_attr],
-                                closest_entry_right[create_time_attr]
+                                min(*ts),
+                                max(*ts)
                             )
                             visited_files.add(o.id)
                         else:
